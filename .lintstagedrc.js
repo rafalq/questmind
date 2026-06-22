@@ -1,0 +1,6 @@
+const config = {
+  '*.{js,jsx,ts,tsx}': 'eslint --fix',
+  '*.{css,scss,sass}': 'stylelint --fix',
+}
+
+export default config
