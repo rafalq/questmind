@@ -3,7 +3,7 @@ module.exports = {
     'postcss-flexbugs-fixes': {},
     'postcss-import': {},
     /* Uncomment out if you want to add TailwindCSS to your project */
-    // '@tailwindcss/postcss': {},
+    '@tailwindcss/postcss': {},
     'postcss-preset-env': {
       autoprefixer: {
         flexbox: 'no-2009',
