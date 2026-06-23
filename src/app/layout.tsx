@@ -34,7 +34,7 @@ export default function RootLayout({
         lang="en"
         className={`${cinzel.variable} ${imFellEnglish.variable}`}
       >
-        <body className="bg-[#0a0805] text-[#e8dcc8] ">
+        <body className="bg-bg-base text-text-primary">
           <Navbar />
           {children}
           <Footer />
