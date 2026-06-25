@@ -67,7 +67,7 @@ function Hero() {
       <h1 className="text-5xl md:text-7xl font-bold tracking-wide leading-tight mb-6 max-w-4xl">
         Your Story, <span className="text-accent">Told by AI</span>
       </h1>
-      <p className="font-[family-name:var(--font-im-fell)] text-xl text-text-secondary max-w-xl mb-10 leading-relaxed italic">
+      <p className="font-(family-name:--font-im-fell) text-xl text-text-secondary max-w-xl mb-10 leading-relaxed italic">
         QuestMind is an AI Game Master that narrates your adventure, tracks your
         character, and adapts to every choice you make.
       </p>
@@ -121,7 +121,7 @@ function Feature({
       <h3 className="text-base tracking-widest mb-3 font-bold">
         {title.toUpperCase()}
       </h3>
-      <p className="font-[family-name:var(--font-im-fell)] text-text-muted text-base leading-relaxed italic group-hover:text-text-secondary transition-colors">
+      <p className="font-(family-name:--font-im-fell) text-text-muted text-base leading-relaxed italic group-hover:text-text-secondary transition-colors">
         {description}
       </p>
     </div>
@@ -164,7 +164,7 @@ function Demo() {
                 {msg.role === 'gm' ? '⚔' : '◈'}
               </div>
               <div
-                className={`max-w-sm px-4 py-3 text-sm leading-relaxed font-[family-name:var(--font-im-fell)] italic border border-border ${
+                className={`max-w-sm px-4 py-3 text-sm leading-relaxed font-(family-name:--font-im-fell) italic border border-border ${
                   msg.role === 'gm'
                     ? 'bg-[#201a11] text-[#c8b88a]'
                     : 'bg-bg-surface text-text-muted text-right'
@@ -196,7 +196,7 @@ function CTA() {
       <h2 className="text-3xl md:text-4xl font-bold tracking-wide mb-4">
         Ready to play?
       </h2>
-      <p className="font-[family-name:var(--font-im-fell)] text-text-muted italic text-lg mb-8">
+      <p className="font-(family-name:--font-im-fell) text-text-muted italic text-lg mb-8">
         Create a free account and start your first campaign in minutes.
       </p>
       <Link
