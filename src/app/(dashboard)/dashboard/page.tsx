@@ -1,6 +1,25 @@
 import { getCampaigns } from '@/features/campaign/queries/get-campaigns'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { IconSword, IconRocket, IconCpu } from '@tabler/icons-react'
+
+const genreFont = {
+  fantasy: 'var(--font-im-fell)',
+  'sci-fi': 'var(--font-exo2)',
+  cyberpunk: 'var(--font-share-tech-mono)',
+}
+
+const genreBg = {
+  fantasy: '#1a1208',
+  'sci-fi': '#080f1a',
+  cyberpunk: '#12081a',
+}
+
+const genreIcon = {
+  fantasy: <IconSword size={14} />,
+  'sci-fi': <IconRocket size={14} />,
+  cyberpunk: <IconCpu size={14} />,
+}
 
 async function CampaignList() {
   const campaigns = await getCampaigns()
@@ -19,11 +38,19 @@ async function CampaignList() {
       {campaigns.map((campaign) => (
         <div
           key={campaign.id}
-          className="p-6 border border-border bg-bg-surface"
+          className="p-6 border border-border"
+          style={{
+            fontFamily: genreFont[campaign.genre],
+            backgroundColor: genreBg[campaign.genre],
+          }}
         >
-          <p className="text-xs text-text-muted uppercase tracking-widest mb-2">
+          <div
+            className="flex items-center gap-1.5 text-xs text-text-muted uppercase tracking-widest mb-2"
+            style={{ fontFamily: 'var(--font-rajdhani)' }}
+          >
+            {genreIcon[campaign.genre]}
             {campaign.genre}
-          </p>
+          </div>
           <h2 className="text-lg font-bold text-text-primary">
             {campaign.name}
           </h2>

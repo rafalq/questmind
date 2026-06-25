@@ -2,19 +2,38 @@ import Footer from '@/components/common/footer'
 import Navbar from '@/components/common/navbar'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Metadata } from 'next'
-import { Cinzel, IM_Fell_English } from 'next/font/google'
+import {
+  Rajdhani,
+  IM_Fell_English,
+  Exo_2,
+  Share_Tech_Mono,
+} from 'next/font/google'
 import { Toaster } from 'sonner'
 import '../styles/globals.css'
 
-const cinzel = Cinzel({
+const rajdhani = Rajdhani({
   subsets: ['latin'],
-  variable: '--font-cinzel',
+  variable: '--font-rajdhani',
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 })
 
 const imFellEnglish = IM_Fell_English({
   subsets: ['latin'],
   variable: '--font-im-fell',
+  weight: '400',
+  display: 'swap',
+})
+
+const exo2 = Exo_2({
+  subsets: ['latin'],
+  variable: '--font-exo2',
+  display: 'swap',
+})
+
+const shareTechMono = Share_Tech_Mono({
+  subsets: ['latin'],
+  variable: '--font-share-tech-mono',
   weight: '400',
   display: 'swap',
 })
@@ -33,7 +52,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="en"
-        className={`${cinzel.variable} ${imFellEnglish.variable}`}
+        className={`${rajdhani.variable} ${imFellEnglish.variable} ${exo2.variable} ${shareTechMono.variable}`}
       >
         <body className="bg-bg-base text-text-primary">
           <Navbar />
