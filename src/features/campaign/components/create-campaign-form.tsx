@@ -23,6 +23,7 @@ export default function CreateCampaignForm() {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
   })
@@ -30,6 +31,7 @@ export default function CreateCampaignForm() {
   const { execute, isPending } = useAction(createCampaign, {
     onSuccess: () => {
       toast.success('Campaign created successfully!')
+      reset()
       router.push('/dashboard')
     },
     onError: () => toast.error('Something went wrong. Please try again.'),
