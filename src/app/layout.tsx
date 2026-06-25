@@ -1,9 +1,10 @@
+import Footer from '@/components/common/footer'
+import Navbar from '@/components/common/navbar'
+import { ClerkProvider } from '@clerk/nextjs'
 import { Metadata } from 'next'
 import { Cinzel, IM_Fell_English } from 'next/font/google'
+import { Toaster } from 'sonner'
 import '../styles/globals.css'
-import { ClerkProvider } from '@clerk/nextjs'
-import Navbar from '@/components/common/navbar'
-import Footer from '@/components/common/footer'
 
 const cinzel = Cinzel({
   subsets: ['latin'],
@@ -38,6 +39,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
+          <Toaster richColors />
         </body>
       </html>
     </ClerkProvider>

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createCampaign } from '@/features/campaign/actions/create-campaign'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -27,8 +28,11 @@ export default function CreateCampaignForm() {
   })
 
   const { execute, isPending } = useAction(createCampaign, {
-    onSuccess: () => router.push('/dashboard'),
-    onError: () => alert('Something went wrong. Please try again.'),
+    onSuccess: () => {
+      toast.success('Campaign created successfully!')
+      router.push('/dashboard')
+    },
+    onError: () => toast.error('Something went wrong. Please try again.'),
   })
 
   return (
