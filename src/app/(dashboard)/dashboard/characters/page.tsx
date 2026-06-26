@@ -1,4 +1,6 @@
+import ButtonLink from '@/components/ui/button-link'
 import { ROUTES } from '@/constants/routes'
+import CharacterCard from '@/features/character/components/character-card'
 import { getCharacters } from '@/features/character/queries/get-characters'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -20,34 +22,7 @@ async function CharacterList() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {characters.map((character) => (
-        <div
-          key={character.id}
-          className="border border-border p-5 flex flex-col gap-2 hover:border-accent transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-text-muted uppercase tracking-widest">
-              {character.genre}
-            </span>
-            <span
-              className={`text-xs px-2 py-0.5 border ${
-                character.isAlive
-                  ? 'border-accent text-accent'
-                  : 'border-red-700 text-red-700'
-              }`}
-            >
-              {character.isAlive ? 'Alive' : 'Dead'}
-            </span>
-          </div>
-          <h3 className="text-text-primary font-semibold text-lg">
-            {character.name}
-          </h3>
-          <p className="text-text-secondary text-sm capitalize">
-            {character.race} · {character.characterClass.replace('_', ' ')}
-          </p>
-          <p className="text-text-muted text-xs mt-auto pt-2">
-            Level {character.level} · {character.characterXp} XP
-          </p>
-        </div>
+        <CharacterCard key={character.id} character={character} />
       ))}
     </div>
   )
@@ -65,12 +40,7 @@ export default function CharactersPage() {
             Manage your adventurers across all genres.
           </p>
         </div>
-        <Link
-          href={ROUTES.newCharacter}
-          className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-accent-fg transition-all text-sm tracking-wider"
-        >
-          + New Character
-        </Link>
+        <ButtonLink href={ROUTES.newCharacter}>+ New Character</ButtonLink>
       </div>
       <Suspense
         fallback={<div className="text-text-muted">Loading characters...</div>}

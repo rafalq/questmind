@@ -1,3 +1,4 @@
+import ButtonLink from '@/components/ui/button-link'
 import SearchInput from '@/components/ui/search-input'
 import { ROUTES } from '@/constants/routes'
 import CampaignListClient from '@/features/campaign/components/campaign-list-client'
@@ -30,12 +31,7 @@ export default function DashboardPage() {
           </h1>
           <p className="text-text-secondary mt-1">Your campaigns await.</p>
         </div>
-        <Link
-          href={ROUTES.newCampaign}
-          className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-accent-fg transition-all text-sm tracking-wider"
-        >
-          + New Campaign
-        </Link>
+        <ButtonLink href={ROUTES.newCampaign}>+ New Campaign</ButtonLink>
       </div>
       <Suspense
         fallback={<div className="text-text-muted">Loading campaigns...</div>}

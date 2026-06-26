@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { createCampaign } from '@/features/campaign/actions/create-campaign'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import Button from '@/components/ui/button'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -85,13 +86,14 @@ export default function CreateCampaignForm() {
         )}
       </div>
 
-      <button
+      <Button
+        size="lg"
+        loading={isPending}
+        loadingText="Creating..."
         onClick={handleSubmit((data) => execute(data))}
-        disabled={isPending}
-        className="px-5 py-3 border border-accent text-accent hover:bg-accent hover:text-accent-fg transition-all text-sm tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isPending ? 'Creating...' : 'Create Campaign'}
-      </button>
+        Create Campaign
+      </Button>
     </div>
   )
 }

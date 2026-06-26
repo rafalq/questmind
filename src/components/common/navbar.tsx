@@ -5,6 +5,7 @@ import { UserButton } from '@clerk/nextjs'
 import { Suspense } from 'react'
 import Spinner from '../ui/loader/spinner'
 import { ROUTES } from '@/constants/routes'
+import NavLink from '../ui/nav-link'
 
 async function NavAuth() {
   await connection()
@@ -12,28 +13,13 @@ async function NavAuth() {
 
   return userId ? (
     <>
-      <Link
-        href={ROUTES.dashboard}
-        className="text-sm tracking-wider text-text-secondary hover:text-accent transition-colors"
-      >
-        Dashboard
-      </Link>
+      <NavLink href={ROUTES.dashboard}>Dashboard</NavLink>
       <UserButton />
     </>
   ) : (
     <>
-      <Link
-        href={ROUTES.signIn}
-        className="text-sm tracking-wider text-text-secondary hover:text-accent transition-colors"
-      >
-        Sign In
-      </Link>
-      <Link
-        href={ROUTES.signUp}
-        className="text-sm tracking-wider px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-accent-fg transition-all"
-      >
-        Get Started
-      </Link>
+      <NavLink href={ROUTES.signIn}>Sign In</NavLink>
+      <NavLink href={ROUTES.signUp}>Get Started</NavLink>
     </>
   )
 }

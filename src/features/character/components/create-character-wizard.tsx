@@ -14,6 +14,7 @@ import StepRace from './step-race'
 import StepClass from './step-class'
 import StepAttributes from './step-attributes'
 import StepStory from './step-story'
+import Button from '@/components/ui/button'
 
 export default function CreateCharacterWizard() {
   const router = useRouter()
@@ -77,33 +78,31 @@ export default function CreateCharacterWizard() {
       </div>
 
       <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => setStep((s) => s - 1)}
           disabled={step === 1}
-          className="px-5 py-2 border border-border text-text-secondary hover:border-text-muted hover:text-text-primary disabled:opacity-0 transition-all text-sm"
+          className="disabled:opacity-0"
         >
           ← Back
-        </button>
+        </Button>
 
         {step < STEPS.length ? (
-          <button
-            type="button"
+          <Button
             onClick={() => setStep((s) => s + 1)}
             disabled={!canProceed()}
-            className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-accent-fg disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm tracking-wider"
           >
             Next →
-          </button>
+          </Button>
         ) : (
-          <button
-            type="button"
+          <Button
+            size="lg"
+            loading={isPending}
+            loadingText="Creating..."
             onClick={handleSubmit}
-            disabled={isPending}
-            className="px-6 py-2 border border-accent text-accent hover:bg-accent hover:text-accent-fg disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm tracking-wider"
           >
-            {isPending ? 'Creating...' : 'Create Character'}
-          </button>
+            Create Character
+          </Button>
         )}
       </div>
     </div>
