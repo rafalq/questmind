@@ -10,4 +10,5 @@ export const campaignsTable = pgTable('campaigns', {
   description: text('description'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  lastPlayedAt: timestamp('last_played_at'),
 })
