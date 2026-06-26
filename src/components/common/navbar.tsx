@@ -1,14 +1,24 @@
 import Link from 'next/link'
+import { connection } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { UserButton } from '@clerk/nextjs'
 import { Suspense } from 'react'
 import Spinner from '../ui/loader/spinner'
 
 async function NavAuth() {
+  await connection()
   const { userId } = await auth()
 
   return userId ? (
-    <UserButton />
+    <>
+      <Link
+        href="/dashboard"
+        className="text-sm tracking-wider text-text-secondary hover:text-accent transition-colors"
+      >
+        Dashboard
+      </Link>
+      <UserButton />
+    </>
   ) : (
     <>
       <Link
