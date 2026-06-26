@@ -2,6 +2,8 @@ import { getCampaigns } from '@/features/campaign/queries/get-campaigns'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { IconSword, IconRocket, IconCpu } from '@tabler/icons-react'
+import { ROUTES } from '@/constants/routes'
+import CampaignCard from '@/features/campaign/components/campaign-card'
 
 const genreFont = {
   fantasy: 'var(--font-im-fell)',
@@ -36,30 +38,7 @@ async function CampaignList() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {campaigns.map((campaign) => (
-        <div
-          key={campaign.id}
-          className="p-6 border border-border"
-          style={{
-            fontFamily: genreFont[campaign.genre],
-            backgroundColor: genreBg[campaign.genre],
-          }}
-        >
-          <div
-            className="flex items-center gap-1.5 text-xs text-text-muted uppercase tracking-widest mb-2"
-            style={{ fontFamily: 'var(--font-rajdhani)' }}
-          >
-            {genreIcon[campaign.genre]}
-            {campaign.genre}
-          </div>
-          <h2 className="text-lg font-bold text-text-primary">
-            {campaign.name}
-          </h2>
-          {campaign.description && (
-            <p className="text-sm text-text-secondary mt-2 line-clamp-2">
-              {campaign.description}
-            </p>
-          )}
-        </div>
+        <CampaignCard key={campaign.id} campaign={campaign} />
       ))}
     </div>
   )
@@ -76,7 +55,7 @@ export default function DashboardPage() {
           <p className="text-text-secondary mt-1">Your campaigns await.</p>
         </div>
         <Link
-          href="/dashboard/campaigns/new"
+          href={ROUTES.newCampaign}
           className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-accent-fg transition-all text-sm tracking-wider"
         >
           + New Campaign
