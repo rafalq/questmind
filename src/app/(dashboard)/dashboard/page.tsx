@@ -1,27 +1,9 @@
+import SearchInput from '@/components/ui/search-input'
+import { ROUTES } from '@/constants/routes'
+import CampaignListClient from '@/features/campaign/components/campaign-list-client'
 import { getCampaigns } from '@/features/campaign/queries/get-campaigns'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { IconSword, IconRocket, IconCpu } from '@tabler/icons-react'
-import { ROUTES } from '@/constants/routes'
-import CampaignCard from '@/features/campaign/components/campaign-card'
-
-const genreFont = {
-  fantasy: 'var(--font-im-fell)',
-  'sci-fi': 'var(--font-exo2)',
-  cyberpunk: 'var(--font-share-tech-mono)',
-}
-
-const genreBg = {
-  fantasy: '#1a1208',
-  'sci-fi': '#080f1a',
-  cyberpunk: '#12081a',
-}
-
-const genreIcon = {
-  fantasy: <IconSword size={14} />,
-  'sci-fi': <IconRocket size={14} />,
-  cyberpunk: <IconCpu size={14} />,
-}
 
 async function CampaignList() {
   const campaigns = await getCampaigns()
@@ -35,13 +17,7 @@ async function CampaignList() {
     )
   }
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {campaigns.map((campaign) => (
-        <CampaignCard key={campaign.id} campaign={campaign} />
-      ))}
-    </div>
-  )
+  return <CampaignListClient campaigns={campaigns} />
 }
 
 export default function DashboardPage() {
@@ -61,7 +37,6 @@ export default function DashboardPage() {
           + New Campaign
         </Link>
       </div>
-
       <Suspense
         fallback={<div className="text-text-muted">Loading campaigns...</div>}
       >
