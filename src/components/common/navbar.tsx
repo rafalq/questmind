@@ -14,6 +14,7 @@ async function NavAuth() {
   return userId ? (
     <>
       <NavLink href={ROUTES.dashboard}>Dashboard</NavLink>
+      <NavLink href={ROUTES.characters}>Characters</NavLink>
       <UserButton />
     </>
   ) : (
