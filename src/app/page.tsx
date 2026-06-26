@@ -1,4 +1,5 @@
 import Divider from '@/components/ui/divider'
+import { ROUTES } from '@/constants/routes'
 import Link from 'next/link'
 
 const features = [
@@ -67,13 +68,16 @@ function Hero() {
       <h1 className="text-5xl md:text-7xl font-bold tracking-wide leading-tight mb-6 max-w-4xl">
         Your Story, <span className="text-accent">Told by AI</span>
       </h1>
-      <p className="font-(family-name:--font-im-fell) text-xl text-text-secondary max-w-xl mb-10 leading-relaxed italic">
+      <p
+        className="
+       text-xl text-text-secondary max-w-xl mb-10 leading-relaxed italic"
+      >
         QuestMind is an AI Game Master that narrates your adventure, tracks your
         character, and adapts to every choice you make.
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
         <Link
-          href="/sign-up"
+          href={ROUTES.signUp}
           className="px-8 py-3 bg-accent text-accent-fg font-bold tracking-widest text-sm hover:bg-accent-hover transition-colors"
         >
           BEGIN YOUR QUEST
@@ -200,7 +204,7 @@ function CTA() {
         Create a free account and start your first campaign in minutes.
       </p>
       <Link
-        href="/sign-up"
+        href={ROUTES.signUp}
         className="inline-block px-10 py-4 bg-accent text-accent-fg font-bold tracking-widest text-sm hover:bg-accent-hover transition-colors"
       >
         CREATE FREE ACCOUNT

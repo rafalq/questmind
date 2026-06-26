@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -17,8 +15,8 @@
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
-      "@/*": ["src/*"],
-      "test-utils": ["src/helpers/test-utils"]
+      "@/*": ["./src/*"],
+      "test-utils": ["./src/helpers/test-utils"]
     },
     "plugins": [
       {

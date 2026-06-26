@@ -4,4 +4,6 @@ export const ROUTES = {
   signUp: '/sign-up',
   dashboard: '/dashboard',
   newCampaign: '/dashboard/campaigns/new',
+  characters: '/dashboard/characters',
+  newCharacter: '/dashboard/characters/new',
 } as const

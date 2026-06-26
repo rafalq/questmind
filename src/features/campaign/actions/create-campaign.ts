@@ -13,7 +13,7 @@ const schema = z.object({
 })
 
 export const createCampaign = authActionClient
-  .schema(schema)
+  .inputSchema(schema)
   .metadata({ actionName: 'createCampaign' })
   .action(async ({ parsedInput, ctx }) => {
     await db.insert(campaignsTable).values({
