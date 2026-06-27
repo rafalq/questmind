@@ -52,6 +52,7 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
             key={i}
             role={m.role}
             content={m.content}
+            isNarration={i === 0 && m.role === 'assistant'}
             isStreaming={
               isStreaming && i === messages.length - 1 && m.role === 'assistant'
             }
