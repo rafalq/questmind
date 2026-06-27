@@ -1,0 +1,51 @@
+import {
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  jsonb,
+} from 'drizzle-orm/pg-core'
+import { campaignsTable } from './campaign'
+import { charactersTable } from './character'
+
+export const sessionStatusEnum = pgEnum('session_status', [
+  'active',
+  'completed',
+  'abandoned',
+])
+
+export const roleEnum = pgEnum('message_role', ['user', 'assistant'])
+
+export type GameSnapshot = {
+  hp: number
+  maxHp: number
+  inventory: string[]
+  quests: { id: string; title: string; status: 'active' | 'completed' }[]
+  sceneTag: string
+}
+
+export const sessionsTable = pgTable('sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(),
+  campaignId: uuid('campaign_id')
+    .notNull()
+    .references(() => campaignsTable.id, { onDelete: 'cascade' }),
+  characterId: uuid('character_id')
+    .notNull()
+    .references(() => charactersTable.id, { onDelete: 'cascade' }),
+  status: sessionStatusEnum('status').default('active').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const messagesTable = pgTable('messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sessionId: uuid('session_id')
+    .notNull()
+    .references(() => sessionsTable.id, { onDelete: 'cascade' }),
+  role: roleEnum('role').notNull(),
+  content: text('content').notNull(),
+  snapshot: jsonb('snapshot').$type<GameSnapshot>(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})

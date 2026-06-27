@@ -1,6 +1,7 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -74,6 +75,7 @@ export const charactersTable = pgTable('characters', {
   level: integer('level').default(1).notNull(),
   characterXp: integer('character_xp').default(0).notNull(),
   isAlive: boolean('is_alive').default(true).notNull(),
+  inventory: jsonb('inventory').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
