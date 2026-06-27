@@ -2,10 +2,17 @@
 
 import { useState, useMemo } from 'react'
 
+type KeyOrFn<T> = keyof T | ((item: T) => string)
+
 type FilterConfig<T> = {
   items: T[]
-  searchKey: keyof T
-  filterKey?: keyof T
+  searchKey: KeyOrFn<T>
+  filterKey?: KeyOrFn<T>
+}
+
+function getValue<T>(item: T, key: KeyOrFn<T>): string {
+  if (typeof key === 'function') return key(item)
+  return String(item[key])
 }
 
 export function useFilter<T>({ items, searchKey, filterKey }: FilterConfig<T>) {
@@ -14,12 +21,12 @@ export function useFilter<T>({ items, searchKey, filterKey }: FilterConfig<T>) {
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
-      const matchesSearch = String(item[searchKey])
+      const matchesSearch = getValue(item, searchKey)
         .toLowerCase()
         .includes(search.toLowerCase())
 
       const matchesFilter =
-        filter === 'all' || (filterKey && String(item[filterKey]) === filter)
+        filter === 'all' || (filterKey && getValue(item, filterKey) === filter)
 
       return matchesSearch && matchesFilter
     })

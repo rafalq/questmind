@@ -5,5 +5,6 @@ export const ROUTES = {
   dashboard: '/dashboard',
   newCampaign: '/dashboard/campaigns/new',
   newCharacter: '/dashboard/characters/new',
-  play: (campaignId: string) => `/dashboard/campaign/${campaignId}/play`,
+  play: (campaignId: string, sessionId: string) =>
+    `/dashboard/campaign/${campaignId}/play?sessionId=${sessionId}`,
 } as const

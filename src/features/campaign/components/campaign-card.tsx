@@ -4,6 +4,7 @@ import GenreCard from '@/components/ui/genre-card'
 import { toast } from 'sonner'
 import { deleteCampaign } from '../actions/delete-campaign'
 import { useAction } from 'next-safe-action/hooks'
+import PlayButton from '@/features/session/components/play-button'
 
 type Campaign = {
   id: string
@@ -14,11 +15,37 @@ type Campaign = {
   createdAt: Date
 }
 
-export default function CampaignCard({ campaign }: { campaign: Campaign }) {
+type Character = {
+  id: string
+  name: string
+  race: string
+  characterClass: string
+  level: number
+}
+
+type Props = {
+  campaign: Campaign
+  activeSessionId: string | null
+  availableCharacters: Character[]
+}
+
+export default function CampaignCard({
+  campaign,
+  activeSessionId,
+  availableCharacters,
+}: Props) {
   const { execute, isPending } = useAction(deleteCampaign, {
     onSuccess: () => toast.success('Campaign deleted.'),
     onError: () => toast.error('Something went wrong. Please try again.'),
   })
+
+  const actions = (
+    <PlayButton
+      campaignId={campaign.id}
+      activeSessionId={activeSessionId}
+      availableCharacters={availableCharacters}
+    />
+  )
 
   return (
     <GenreCard
@@ -30,6 +57,7 @@ export default function CampaignCard({ campaign }: { campaign: Campaign }) {
           ? `Last played: ${new Date(campaign.lastPlayedAt).toLocaleDateString('en-IE')}`
           : 'Never played'
       }
+      actions={actions}
       onDelete={{
         label: 'Delete Campaign',
         message: `Are you sure you want to delete "${campaign.name}"? This action cannot be undone.`,

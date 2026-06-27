@@ -15,6 +15,7 @@ type GenreCardProps = {
   badge?: React.ReactNode
   meta?: string
   footer?: React.ReactNode
+  actions?: React.ReactNode // ← dodaj
   onDelete?: {
     label: string
     message: string
@@ -22,7 +23,6 @@ type GenreCardProps = {
     isPending?: boolean
   }
 }
-
 export default function GenreCard({
   genre,
   title,
@@ -31,6 +31,7 @@ export default function GenreCard({
   badge,
   meta,
   footer,
+  actions,
   onDelete,
 }: GenreCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -76,6 +77,8 @@ export default function GenreCard({
             {description}
           </p>
         )}
+
+        {actions && <div className="mt-auto pt-3">{actions}</div>}
 
         {footer && (
           <div className="mt-auto pt-2 border-t border-border/50">{footer}</div>

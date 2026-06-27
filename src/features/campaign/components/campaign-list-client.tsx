@@ -5,6 +5,18 @@ import CampaignCard from './campaign-card'
 import SearchInput from '@/components/ui/search-input'
 import FilterSelect from '@/components/ui/filter-select'
 
+type Character = {
+  id: string
+  name: string
+  race: string
+  characterClass: string
+  level: number
+}
+
+type ActiveSession = {
+  id: string
+} | null
+
 type Campaign = {
   id: string
   name: string
@@ -12,6 +24,12 @@ type Campaign = {
   description: string | null
   lastPlayedAt: Date | null
   createdAt: Date
+}
+
+export type EnrichedCampaign = {
+  campaign: Campaign
+  activeSession: ActiveSession
+  availableCharacters: Character[]
 }
 
 const genreOptions = [
@@ -22,14 +40,15 @@ const genreOptions = [
 ]
 
 export default function CampaignListClient({
-  campaigns,
+  enriched,
 }: {
-  campaigns: Campaign[]
+  enriched: EnrichedCampaign[]
 }) {
+  // useFilter works on the campaign object inside each enriched item
   const { search, setSearch, filter, setFilter, filtered } = useFilter({
-    items: campaigns,
-    searchKey: 'name',
-    filterKey: 'genre',
+    items: enriched,
+    searchKey: (item) => item.campaign.name,
+    filterKey: (item) => item.campaign.genre,
   })
 
   return (
@@ -53,8 +72,13 @@ export default function CampaignListClient({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((campaign) => (
-            <CampaignCard key={campaign.id} campaign={campaign} />
+          {filtered.map(({ campaign, activeSession, availableCharacters }) => (
+            <CampaignCard
+              key={campaign.id}
+              campaign={campaign}
+              activeSessionId={activeSession?.id ?? null}
+              availableCharacters={availableCharacters}
+            />
           ))}
         </div>
       )}

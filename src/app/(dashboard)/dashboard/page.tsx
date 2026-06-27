@@ -1,24 +1,10 @@
 import ButtonLink from '@/components/ui/button-link'
 import { ROUTES } from '@/constants/routes'
 import CampaignListClient from '@/features/campaign/components/campaign-list-client'
+import CampaignListServer from '@/features/campaign/components/campaign-list-server'
 import { getCampaigns } from '@/features/campaign/queries/get-campaigns'
 import CharacterList from '@/features/character/components/character-list'
 import { Suspense } from 'react'
-
-async function CampaignList() {
-  const campaigns = await getCampaigns()
-
-  if (campaigns.length === 0) {
-    return (
-      <div className="text-center py-24 text-text-muted border border-border">
-        <p className="text-lg">No campaigns yet.</p>
-        <p className="text-sm mt-2">Create your first campaign to begin.</p>
-      </div>
-    )
-  }
-
-  return <CampaignListClient campaigns={campaigns} />
-}
 
 export default function DashboardPage() {
   return (
@@ -36,7 +22,13 @@ export default function DashboardPage() {
         <Suspense
           fallback={<div className="text-text-muted">Loading campaigns...</div>}
         >
-          <CampaignList />
+          <Suspense
+            fallback={
+              <div className="text-text-muted">Loading campaigns...</div>
+            }
+          >
+            <CampaignListServer />
+          </Suspense>
         </Suspense>
       </section>
       <section className="max-w-5xl mx-auto px-8 py-12">
