@@ -1,4 +1,9 @@
+'use client'
+
 import GenreCard from '@/components/ui/genre-card'
+import { toast } from 'sonner'
+import { deleteCharacter } from '../actions/delete-character'
+import { useAction } from 'next-safe-action/hooks'
 
 type Character = {
   id: string
@@ -12,6 +17,11 @@ type Character = {
 }
 
 export default function CharacterCard({ character }: { character: Character }) {
+  const { execute, isPending } = useAction(deleteCharacter, {
+    onSuccess: () => toast.success('Character deleted.'),
+    onError: () => toast.error('Something went wrong. Please try again.'),
+  })
+
   const badge = (
     <span
       className={`text-xs px-2 py-0.5 border ${
@@ -37,6 +47,12 @@ export default function CharacterCard({ character }: { character: Character }) {
       subtitle={`${character.race} · ${character.characterClass.replace('_', ' ')}`}
       badge={badge}
       footer={footer}
+      onDelete={{
+        label: 'Delete Character',
+        message: `Are you sure you want to delete "${character.name}"? This action cannot be undone.`,
+        onConfirm: () => execute({ id: character.id }),
+        isPending,
+      }}
     />
   )
 }
