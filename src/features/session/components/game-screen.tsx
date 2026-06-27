@@ -110,7 +110,7 @@ export default function GameScreen({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-bg-base">
       {/* Left: chat */}
       <div className="flex flex-col flex-1 min-w-0">
         <div className="px-6 py-4 border-b border-border">
@@ -129,7 +129,7 @@ export default function GameScreen({
       </div>
 
       {/* Right: stats */}
-      <aside className="w-72 border-l border-border overflow-y-auto shrink-0">
+      <aside className="w-72 border-l border-border overflow-y-auto shrink-0 bg-bg-surface">
         <StatsPanel snapshot={snapshot} character={character} />
       </aside>
     </div>

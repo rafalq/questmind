@@ -15,7 +15,7 @@ export default function MessageBubble({ role, content, isStreaming }: Props) {
         className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${
           isAssistant
             ? 'bg-surface border border-border text-text-primary'
-            : 'bg-accent text-bg-primary'
+            : 'bg-accent text-accent-fg'
         }`}
       >
         {isAssistant && (
