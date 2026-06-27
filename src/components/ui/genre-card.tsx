@@ -54,6 +54,15 @@ export default function GenreCard({
           </div>
           {badge && <div>{badge}</div>}
           {meta && <p className="text-[10px] text-text-muted">{meta}</p>}
+          {onDelete && (
+            <ButtonIcon
+              icon={<IconTrash size={16} />}
+              tooltip="Delete"
+              variant="danger"
+              onClick={() => setIsDialogOpen(true)}
+              className="opacity-0 group-hover:opacity-100"
+            />
+          )}
         </div>
 
         <h2 className="text-lg font-bold text-text-primary">{title}</h2>
@@ -70,15 +79,6 @@ export default function GenreCard({
 
         {footer && (
           <div className="mt-auto pt-2 border-t border-border/50">{footer}</div>
-        )}
-        {onDelete && (
-          <ButtonIcon
-            icon={<IconTrash size={16} />}
-            tooltip="Delete"
-            variant="danger"
-            onClick={() => setIsDialogOpen(true)}
-            className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100"
-          />
         )}
       </div>
 
