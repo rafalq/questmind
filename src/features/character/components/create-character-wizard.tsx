@@ -16,21 +16,25 @@ import StepAttributes from './step-attributes'
 import StepStory from './step-story'
 import Button from '@/components/ui/button'
 
+const INITIAL_DATA: FormData = {
+  name: '',
+  genre: null,
+  race: null,
+  characterClass: null,
+  backgroundStory: '',
+  attributes: DEFAULT_ATTRIBUTES,
+}
+
 export default function CreateCharacterWizard() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [data, setData] = useState<FormData>({
-    name: '',
-    genre: null,
-    race: null,
-    characterClass: null,
-    backgroundStory: '',
-    attributes: DEFAULT_ATTRIBUTES,
-  })
+  const [data, setData] = useState<FormData>(INITIAL_DATA)
 
   const { execute, isPending } = useAction(createCharacter, {
     onSuccess: () => {
       toast.success('Character created!')
+      setData(INITIAL_DATA)
+      setStep(1)
       router.push(ROUTES.characters)
     },
     onError: ({ error }) => {
@@ -40,6 +44,11 @@ export default function CreateCharacterWizard() {
 
   const onChange = (patch: Partial<FormData>) => {
     setData((prev) => ({ ...prev, ...patch }))
+  }
+
+  const handleReset = () => {
+    setData(INITIAL_DATA)
+    setStep(1)
   }
 
   const canProceed = () => {
@@ -78,14 +87,26 @@ export default function CreateCharacterWizard() {
       </div>
 
       <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">
-        <Button
-          variant="ghost"
-          onClick={() => setStep((s) => s - 1)}
-          disabled={step === 1}
-          className="disabled:opacity-0"
-        >
-          ← Back
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            onClick={() => setStep((s) => s - 1)}
+            disabled={step === 1}
+            className="disabled:opacity-0"
+          >
+            ← Back
+          </Button>
+          {step > 1 && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleReset}
+              disabled={isPending}
+            >
+              Reset
+            </Button>
+          )}
+        </div>
 
         {step < STEPS.length ? (
           <Button
