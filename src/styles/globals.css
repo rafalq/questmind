@@ -35,10 +35,10 @@
     --color-bg-surface: #f2ebe0;
     --color-bg-elevated: #fff;
     --color-text-primary: #1a1508;
-    --color-text-secondary: #5a4a2a;
-    --color-text-muted: #8a7a5a;
-    --color-accent: #a07830;
-    --color-accent-hover: #c9a84c;
+    --color-text-secondary: #7a5e30; /* was #5a4a2a — lighter, more readable */
+    --color-text-muted: #a08848; /* was #8a7a5a — warmer gold tone */
+    --color-accent: #c49535; /* was #a07830 — brighter gold */
+    --color-accent-hover: #d4aa4a; /* was #c9a84c — slightly lighter */
     --color-accent-fg: #fff;
     --color-border: #d4c4a0;
     --color-border-subtle: #e8dcc8;

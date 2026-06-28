@@ -106,7 +106,7 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
             isAtBottomRef.current = true
             setIsAtBottom(true)
           }}
-          className="absolute bottom-24 right-6 flex items-center gap-2 px-3 py-2 text-xs bg-bg-surface border border-border text-text-secondary hover:text-text-primary hover:border-accent transition-colors"
+          className="absolute bottom-24 right-6 flex items-center gap-2 px-3 py-2 text-xs bg-bg-surface border border-accent text-text-primary hover:bg-bg-elevated hover:border-accent-hover transition-colors"
           aria-label="Jump to bottom"
         >
           ↓ Latest
@@ -117,7 +117,7 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
       <div className="border-t border-border px-6 py-4">
         <div className="flex gap-3 items-end">
           <textarea
-            className="flex-1 bg-surface border border-border text-text-primary placeholder:text-text-muted px-4 py-3 text-sm resize-none focus:outline-none focus:border-accent transition-colors"
+            className="flex-1 bg-bg-surface border border-border text-text-primary placeholder:text-text-muted px-4 py-3 text-sm resize-none focus:outline-none focus:border-accent transition-colors"
             placeholder="What do you do? (Enter to send, Shift+Enter for new line)"
             rows={2}
             value={input}
@@ -126,6 +126,7 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
             disabled={isStreaming}
           />
           <Button
+            variant="outline"
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
             loading={isStreaming}

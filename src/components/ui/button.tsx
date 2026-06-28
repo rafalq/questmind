@@ -12,11 +12,11 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<Variant, string> = {
   outline:
-    'border border-accent text-accent hover:bg-accent hover:text-accent-fg disabled:opacity-40',
+    'border border-accent text-accent hover:bg-accent hover:text-accent-fg disabled:opacity-60',
   ghost:
-    'border border-border text-text-secondary hover:border-text-muted hover:text-text-primary disabled:opacity-40',
+    'border border-accent text-text-primary hover:border-accent-hover hover:text-accent disabled:opacity-60',
   danger:
-    'border border-red-700 text-red-500 hover:bg-red-700 hover:text-white disabled:opacity-40',
+    'border border-red-700 text-red-500 hover:bg-red-700 hover:text-white disabled:opacity-60',
 }
 
 const sizeClasses: Record<Size, string> = {
