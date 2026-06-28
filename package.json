@@ -20,7 +20,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed:treigthe": "tsx --env-file=.env.local src/db/seed/treigthe.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
