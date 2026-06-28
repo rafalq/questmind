@@ -35,7 +35,7 @@ export default function CreateCharacterWizard() {
       toast.success('Character created!')
       setData(INITIAL_DATA)
       setStep(1)
-      router.push(ROUTES.characters)
+      router.push(ROUTES.dashboard)
     },
     onError: ({ error }) => {
       toast.error(error.serverError ?? 'Something went wrong.')
