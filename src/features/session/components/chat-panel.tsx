@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import MessageBubble from './message-bubble'
 import Button from '@/components/ui/button'
 
@@ -15,20 +15,53 @@ type Props = {
   onSend: (message: string) => void
 }
 
+const SCROLL_THRESHOLD = 100
+
 export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
   const [input, setInput] = useState('')
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const [isAtBottom, setIsAtBottom] = useState(true)
 
-  // Auto-scroll to bottom on new messages
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const isAtBottomRef = useRef(true)
+
+  // ── Scroll helpers ───────────────────────────────────────────────────────
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    bottomRef.current?.scrollIntoView({ behavior })
+  }, [])
+
+  // ── Track scroll position ────────────────────────────────────────────────
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const atBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < SCROLL_THRESHOLD
+    isAtBottomRef.current = atBottom
+    setIsAtBottom(atBottom)
+  }, [])
+
+  // ── Auto-scroll on new content ───────────────────────────────────────────
+  // Only scrolls if the user is already near the bottom.
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (isAtBottomRef.current) {
+      scrollToBottom('smooth')
+    }
+  }, [messages, scrollToBottom])
+
+  // ── Send handlers ────────────────────────────────────────────────────────
 
   const handleSend = () => {
     const trimmed = input.trim()
     if (!trimmed || isStreaming) return
     onSend(trimmed)
     setInput('')
+    // Always follow scroll when player sends
+    isAtBottomRef.current = true
+    setIsAtBottom(true)
+    scrollToBottom('smooth')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -39,9 +72,13 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 relative">
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-6 py-4"
+      >
         {messages.length === 0 && (
           <p className="text-center text-text-muted text-sm mt-12">
             Your adventure begins. What do you do?
@@ -60,6 +97,21 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
         ))}
         <div ref={bottomRef} />
       </div>
+
+      {/* Jump to bottom button */}
+      {!isAtBottom && (
+        <button
+          onClick={() => {
+            scrollToBottom('smooth')
+            isAtBottomRef.current = true
+            setIsAtBottom(true)
+          }}
+          className="absolute bottom-24 right-6 flex items-center gap-2 px-3 py-2 text-xs bg-bg-surface border border-border text-text-secondary hover:text-text-primary hover:border-accent transition-colors"
+          aria-label="Jump to bottom"
+        >
+          ↓ Latest
+        </button>
+      )}
 
       {/* Input area */}
       <div className="border-t border-border px-6 py-4">

@@ -36,6 +36,9 @@ export function streamGameResponse({
   const readable = new ReadableStream({
     async start(controller) {
       let fullText = ''
+      // Track how many characters of narrative we have already sent
+      // so we can flush the remainder when the separator is found mid-chunk.
+      let sentUpTo = 0
 
       const stream = await client.messages.stream({
         model: 'claude-sonnet-4-6',
@@ -51,15 +54,29 @@ export function streamGameResponse({
         ) {
           fullText += chunk.delta.text
 
-          // Only stream narrative text to the client — stop at the separator
           const separatorIndex = fullText.indexOf(SEPARATOR)
+
           if (separatorIndex === -1) {
+            // Separator not yet seen — stream the new chunk directly.
             controller.enqueue(encoder.encode(chunk.delta.text))
+            sentUpTo = fullText.length
+          } else if (sentUpTo < separatorIndex) {
+            // Separator appeared in this chunk or a previous one but we have
+            // unsent narrative before it — flush that remainder now.
+            const remaining = fullText.slice(sentUpTo, separatorIndex)
+            if (remaining) {
+              controller.enqueue(encoder.encode(remaining))
+            }
+            sentUpTo = separatorIndex
+            // Don't break — let the stream finish so we collect the full JSON.
           }
+          // If sentUpTo >= separatorIndex we are past the separator already,
+          // just accumulate the JSON tail silently.
         }
       }
 
-      // Parse the JSON snapshot from the end of the full response
+      // ── Parse JSON snapshot ───────────────────────────────────────────
+
       const separatorIndex = fullText.indexOf(SEPARATOR)
       let snapshot: GameSnapshot | null = null
 
@@ -77,7 +94,8 @@ export function streamGameResponse({
           ? fullText.slice(0, separatorIndex).trim()
           : fullText.trim()
 
-      // Save the assistant's response and game state snapshot to the database
+      // ── Persist to database ───────────────────────────────────────────
+
       await db.insert(messagesTable).values({
         sessionId,
         role: 'assistant',
