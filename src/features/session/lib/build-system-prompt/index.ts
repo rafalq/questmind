@@ -1,0 +1,59 @@
+// src/features/game/lib/build-system-prompt/index.ts
+// Main entry point — composes lore sections into the final system prompt.
+// Import from here: import { buildSystemPrompt, SEPARATOR } from "@/features/game/lib/build-system-prompt"
+
+export interface PlayerContext {
+  campaignId: string
+  characterName: string
+  race: string
+  characterClass: string
+  backstory: string
+}
+
+export interface BuildPromptOptions {
+  genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
+  player: PlayerContext
+  sessionSummary?: string // from tiktoken summarisation (FR-006)
+}
+
+// Shape returned by lore-resolver — all optional since a session
+// might start before a location is set.
+export interface ResolvedLore {
+  worldCore: string
+  locationBlock: string
+  npcBlock: string
+  eventsBlock: string
+  secretLore: string[]
+  droppedSecretHints: string[]
+}
+
+export { SEPARATOR } from './game-master-instructions'
+
+import { resolveLore } from './lore-resolver'
+import { buildSecretBlock, buildPlayerBlock } from './section-builders'
+import { GAME_MASTER_INSTRUCTIONS } from './game-master-instructions'
+
+export async function buildSystemPrompt(
+  options: BuildPromptOptions
+): Promise<string> {
+  const { player, sessionSummary } = options
+  const lore = await resolveLore(options)
+  const secretBlock = buildSecretBlock(lore.secretLore, lore.droppedSecretHints)
+  const playerBlock = buildPlayerBlock(player)
+  const continuityBlock = sessionSummary
+    ? `## SESSION HISTORY\n${sessionSummary}`
+    : ''
+
+  return [
+    lore.worldCore,
+    lore.locationBlock,
+    lore.npcBlock,
+    lore.eventsBlock,
+    playerBlock,
+    secretBlock,
+    continuityBlock,
+    GAME_MASTER_INSTRUCTIONS,
+  ]
+    .filter(Boolean)
+    .join('\n\n---\n\n')
+}
