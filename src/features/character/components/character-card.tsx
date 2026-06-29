@@ -10,6 +10,7 @@ import CharacterDetailModal, {
 } from './character-detail-modal'
 import { deleteCharacter } from '../actions/delete-character'
 import { ROUTES } from '@/constants/routes'
+import { IconPlayerPlay } from '@tabler/icons-react'
 
 type Props = {
   character: CharacterDetail
@@ -44,14 +45,15 @@ export default function CharacterCard({ character }: Props) {
 
       {character.activeCampaign && (
         <button
-          className="text-xs text-accent hover:underline underline-offset-2 transition-colors"
+          className="text-xs text-accent hover:underline underline-offset-2 transition-colors flex items-center justify-center gap-1"
           onClick={(e) => {
             e.stopPropagation()
             const { campaignId, sessionId } = character.activeCampaign!
             router.push(ROUTES.play(campaignId!, sessionId))
           }}
         >
-          Resume {character.activeCampaign.campaignName} →
+          Resume &quot;{character.activeCampaign.campaignName}&quot;{' '}
+          <IconPlayerPlay stroke={2} size={12} />
         </button>
       )}
     </div>

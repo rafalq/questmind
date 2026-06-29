@@ -5,6 +5,7 @@ import MessageBubble from './message-bubble'
 import Button from '@/components/ui/button'
 import { genreFont, genreBg } from '@/lib/genre-config'
 import { Genre } from '@/features/character/constants'
+import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
 
 type UIMessage = {
   role: 'user' | 'assistant'
@@ -16,6 +17,7 @@ type Props = {
   isStreaming: boolean
   onSend: (message: string) => void
   genre: Genre
+  characterName: string
 }
 
 const SCROLL_THRESHOLD = 100
@@ -25,6 +27,7 @@ export default function ChatPanel({
   isStreaming,
   onSend,
   genre,
+  characterName,
 }: Props) {
   const [input, setInput] = useState('')
   const [isAtBottom, setIsAtBottom] = useState(true)
@@ -114,6 +117,7 @@ export default function ChatPanel({
             isStreaming={
               isStreaming && i === messages.length - 1 && m.role === 'assistant'
             }
+            characterName={m.role === 'user' ? characterName : undefined}
           />
         ))}
         <div ref={bottomRef} />
@@ -127,10 +131,10 @@ export default function ChatPanel({
             isAtBottomRef.current = true
             setIsAtBottom(true)
           }}
-          className="absolute bottom-24 right-6 flex items-center gap-2 px-3 py-2 text-xs bg-bg-surface border border-accent text-text-primary hover:bg-bg-elevated hover:border-accent-hover transition-colors"
+          className="absolute bottom-24 right-1/2 flex items-center gap-2 p-1 text-xs bg-bg-surface border border-accent text-text-primary hover:bg-bg-elevated hover:border-accent-hover transition-colors rounded-full"
           aria-label="Jump to bottom"
         >
-          ↓ Latest
+          <IconArrowNarrowDownDashed stroke={2} color="#c9a84c" />
         </button>
       )}
 
@@ -153,7 +157,7 @@ export default function ChatPanel({
             loading={isStreaming}
             loadingText="..."
           >
-            Send
+            <IconSend stroke={2} />
           </Button>
         </div>
       </div>

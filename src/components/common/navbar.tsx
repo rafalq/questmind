@@ -6,6 +6,11 @@ import { Suspense } from 'react'
 import Spinner from '../ui/loader/spinner'
 import { ROUTES } from '@/constants/routes'
 import NavLink from '../ui/nav-link'
+import {
+  IconLayoutDashboard,
+  IconLogin2,
+  IconUserPlus,
+} from '@tabler/icons-react'
 
 async function NavAuth() {
   await connection()
@@ -13,13 +18,22 @@ async function NavAuth() {
 
   return userId ? (
     <>
-      <NavLink href={ROUTES.dashboard}>Dashboard</NavLink>
+      <NavLink href={ROUTES.dashboard}>
+        <IconLayoutDashboard stroke={2} size={16} />
+        Dashboard
+      </NavLink>
       <UserButton />
     </>
   ) : (
     <>
-      <NavLink href={ROUTES.signIn}>Sign In</NavLink>
-      <NavLink href={ROUTES.signUp}>Get Started</NavLink>
+      <NavLink href={ROUTES.signIn}>
+        <IconLogin2 stroke={2} size={16} />
+        Sign In
+      </NavLink>
+      <NavLink href={ROUTES.signUp}>
+        <IconUserPlus stroke={2} size={16} />
+        Get Started
+      </NavLink>
     </>
   )
 }

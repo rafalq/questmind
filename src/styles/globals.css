@@ -50,3 +50,18 @@ body {
   color: var(--color-text-primary);
   background-color: var(--color-bg-base);
 }
+
+/* Genre-styled scrollbar for chat panels */
+
+.scrollbar-genre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-genre::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 0;
+}
+
+.scrollbar-genre::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}

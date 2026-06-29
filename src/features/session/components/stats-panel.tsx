@@ -1,5 +1,12 @@
 import { type GameSnapshot } from '@/db/schema/session'
 import { type charactersTable } from '@/db/schema'
+import {
+  IconBackpack,
+  IconHeart,
+  IconMapSearch,
+  IconShield,
+  IconUserShield,
+} from '@tabler/icons-react'
 
 type Character = typeof charactersTable.$inferSelect
 
@@ -30,16 +37,24 @@ export default function StatsPanel({ snapshot, character }: Props) {
           Character
         </h3>
         <p className="text-text-primary font-bold">{character.name}</p>
-        <p className="text-text-muted text-xs">
-          {character.race} · {character.characterClass.replace('_', ' ')}
-        </p>
+        <div className="text-text-muted text-xs inline-flex items-center gap-1">
+          <div className="flex items-center gap-1 justify-center">
+            <IconUserShield size={10} />
+            {character.race}
+          </div>{' '}
+          ·{' '}
+          <div className="flex items-center gap-1 justify-center">
+            <IconShield size={10} />
+            {character.characterClass.replace('_', ' ')}
+          </div>
+        </div>
       </div>
 
       {/* HP bar */}
       <div>
         <div className="flex justify-between mb-1">
-          <h3 className="text-xs text-text-muted uppercase tracking-widest">
-            HP
+          <h3 className="text-xs text-text-muted uppercase tracking-widest flex items-center gap-1 justify-center">
+            <IconHeart stroke={2} size={12} /> HP
           </h3>
           <span className="text-xs text-text-secondary">
             {hp} / {maxHp}
@@ -55,8 +70,8 @@ export default function StatsPanel({ snapshot, character }: Props) {
 
       {/* Inventory */}
       <div>
-        <h3 className="text-xs text-text-muted uppercase tracking-widest mb-2">
-          Inventory
+        <h3 className="text-xs text-text-muted uppercase tracking-widest mb-2 flex items-center gap-1">
+          <IconBackpack size={12} /> Inventory
         </h3>
         {inventory.length === 0 ? (
           <p className="text-text-muted text-xs">Nothing yet.</p>
@@ -77,8 +92,8 @@ export default function StatsPanel({ snapshot, character }: Props) {
 
       {/* Quests */}
       <div>
-        <h3 className="text-xs text-text-muted uppercase tracking-widest mb-2">
-          Quests
+        <h3 className="text-xs text-text-muted uppercase tracking-widest mb-2 flex items-center gap-1">
+          <IconMapSearch size={12} /> Quests
         </h3>
         {quests.length === 0 ? (
           <p className="text-text-muted text-xs">No active quests.</p>

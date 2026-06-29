@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { createSession } from '@/features/session/actions/create-session'
 import { ROUTES } from '@/constants/routes'
 import Button from '@/components/ui/button'
+import { IconPlayerPlay } from '@tabler/icons-react'
 
 type Character = {
   id: string
@@ -60,7 +61,12 @@ export default function PlayButton({
 
   return (
     <>
-      <Button size="sm" onClick={handlePlay}>
+      <Button
+        size="sm"
+        onClick={handlePlay}
+        className="flex items-center justify-center gap-2"
+      >
+        <IconPlayerPlay stroke={2} size={14} />
         {activeSessionId ? 'Resume' : 'Play'}
       </Button>
 

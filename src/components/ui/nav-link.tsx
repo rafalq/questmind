@@ -14,7 +14,7 @@ export default function NavLink({
   return (
     <Link
       href={href}
-      className={`text-sm tracking-wider text-text-secondary hover:text-accent transition-colors ${className}`}
+      className={`text-sm tracking-wider text-text-secondary hover:text-accent transition-colors ${className} flex items-center gap-2`}
     >
       {children}
     </Link>

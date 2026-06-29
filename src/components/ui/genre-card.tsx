@@ -13,7 +13,7 @@ type GenreCardProps = {
   subtitle?: React.ReactNode
   description?: string
   badge?: React.ReactNode
-  meta?: string
+  meta?: React.ReactNode
   footer?: React.ReactNode
   actions?: React.ReactNode
   onClick?: () => void
@@ -57,7 +57,7 @@ export default function GenreCard({
             {genre}
           </div>
           {badge && <div>{badge}</div>}
-          {meta && <p className="text-[10px] text-text-muted">{meta}</p>}
+          {meta && <div className="text-[10px] text-text-muted">{meta}</div>}
           {onDelete && (
             <ButtonIcon
               icon={<IconTrash size={16} />}

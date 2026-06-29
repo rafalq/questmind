@@ -7,6 +7,7 @@ import { useAction } from 'next-safe-action/hooks'
 import PlayButton from '@/features/session/components/play-button'
 import WorldLoreModal from '@/features/lore/components/world-lore-modal'
 import { WorldLore } from '@/features/lore/queries/get-world-lore'
+import { IconClock } from '@tabler/icons-react'
 
 type Campaign = {
   id: string
@@ -58,9 +59,12 @@ export default function CampaignCard({
         lore ? <WorldLoreModal genre={campaign.genre} lore={lore} /> : undefined
       }
       meta={
-        campaign.lastPlayedAt
-          ? `Last played: ${new Date(campaign.lastPlayedAt).toLocaleDateString('en-IE')}`
-          : 'Never played'
+        <div className="flex items-center justify-center gap-1">
+          <IconClock stroke={2} size={12} />
+          {campaign.lastPlayedAt
+            ? `Last played: ${new Date(campaign.lastPlayedAt).toLocaleDateString('en-IE')}`
+            : 'Never played'}
+        </div>
       }
       actions={actions}
       onDelete={{

@@ -7,7 +7,7 @@ export default function NewCharacterPage() {
     <div className="max-w-3xl mx-auto px-8 py-12">
       <div className="mb-10">
         <Link
-          href={ROUTES.characters}
+          href={ROUTES.dashboard}
           className="text-text-muted text-sm hover:text-text-secondary transition-colors"
         >
           ← Back to Characters

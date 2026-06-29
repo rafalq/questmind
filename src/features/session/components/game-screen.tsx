@@ -126,6 +126,7 @@ export default function GameScreen({
           isStreaming={isStreaming}
           onSend={sendMessage}
           genre={campaign.genre}
+          characterName={character.name}
         />
       </div>
 

@@ -176,6 +176,8 @@ export default function WorldLoreModal({ genre, lore }: Props) {
               style={{
                 fontFamily: genreFont[genre],
                 backgroundColor: genreBg[genre],
+                scrollbarWidth: 'thin',
+                scrollbarColor: `var(--color-border) transparent`,
               }}
             >
               <ModalHeader

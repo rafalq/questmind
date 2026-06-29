@@ -1,11 +1,13 @@
 import { genreFont } from '@/lib/genre-config'
 import type { Genre } from '@/features/character/constants'
+import { IconEye, IconUser } from '@tabler/icons-react'
 
 type Props = {
   role: 'user' | 'assistant'
   content: string
   isStreaming?: boolean
   isNarration?: boolean
+  characterName?: string
   genre: Genre
 }
 
@@ -14,6 +16,7 @@ export default function MessageBubble({
   content,
   isStreaming,
   isNarration,
+  characterName,
   genre,
 }: Props) {
   const isAssistant = role === 'assistant'
@@ -38,9 +41,14 @@ export default function MessageBubble({
           </p>
         )}
         {!isNarration && isAssistant && (
-          <p className="text-xs text-text-muted mb-2 font-semibold uppercase tracking-widest">
-            Game Master
-          </p>
+          <div className="text-xs text-text-muted mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
+            <IconEye size={16} /> Game Master
+          </div>
+        )}
+        {!isNarration && !isAssistant && (
+          <div className="text-xs text-accent-fg/70 mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
+            <IconUser size={16} /> {characterName ?? 'You'}
+          </div>
         )}
         <p className="whitespace-pre-wrap">{content}</p>
         {isStreaming && isAssistant && (
