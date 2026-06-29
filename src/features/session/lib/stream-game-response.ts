@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { db } from '@/db'
-import { messagesTable } from '@/db/schema'
+import { campaignsTable, messagesTable } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt'
@@ -96,12 +97,18 @@ export function streamGameResponse({
 
       // ── Persist to database ───────────────────────────────────────────
 
-      await db.insert(messagesTable).values({
-        sessionId,
-        role: 'assistant',
-        content: narrative,
-        snapshot,
-      })
+      await Promise.all([
+        db.insert(messagesTable).values({
+          sessionId,
+          role: 'assistant',
+          content: narrative,
+          snapshot,
+        }),
+        db
+          .update(campaignsTable)
+          .set({ lastPlayedAt: new Date() })
+          .where(eq(campaignsTable.id, context.campaign.id)),
+      ])
 
       controller.close()
     },

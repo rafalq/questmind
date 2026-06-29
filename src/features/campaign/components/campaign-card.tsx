@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { deleteCampaign } from '../actions/delete-campaign'
 import { useAction } from 'next-safe-action/hooks'
 import PlayButton from '@/features/session/components/play-button'
+import WorldLoreModal from '@/features/lore/components/world-lore-modal'
+import { WorldLore } from '@/features/lore/queries/get-world-lore'
 
 type Campaign = {
   id: string
@@ -26,12 +28,14 @@ type Props = {
   campaign: Campaign
   activeSessionId: string | null
   availableCharacters: Character[]
+  lore: WorldLore | null
 }
 
 export default function CampaignCard({
   campaign,
   activeSessionId,
   availableCharacters,
+  lore,
 }: Props) {
   const { execute, isPending } = useAction(deleteCampaign, {
     onSuccess: () => toast.success('Campaign deleted.'),
@@ -50,6 +54,9 @@ export default function CampaignCard({
     <GenreCard
       genre={campaign.genre}
       title={campaign.name}
+      subtitle={
+        lore ? <WorldLoreModal genre={campaign.genre} lore={lore} /> : undefined
+      }
       meta={
         campaign.lastPlayedAt
           ? `Last played: ${new Date(campaign.lastPlayedAt).toLocaleDateString('en-IE')}`

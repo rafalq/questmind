@@ -4,6 +4,7 @@ import { useFilter } from '@/hooks/use-filter'
 import CampaignCard from './campaign-card'
 import SearchInput from '@/components/ui/search-input'
 import FilterSelect from '@/components/ui/filter-select'
+import { WorldLore } from '@/features/lore/queries/get-world-lore'
 
 type Character = {
   id: string
@@ -30,6 +31,7 @@ export type EnrichedCampaign = {
   campaign: Campaign
   activeSession: ActiveSession
   availableCharacters: Character[]
+  lore: WorldLore | null
 }
 
 const genreOptions = [
@@ -72,14 +74,17 @@ export default function CampaignListClient({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(({ campaign, activeSession, availableCharacters }) => (
-            <CampaignCard
-              key={campaign.id}
-              campaign={campaign}
-              activeSessionId={activeSession?.id ?? null}
-              availableCharacters={availableCharacters}
-            />
-          ))}
+          {filtered.map(
+            ({ campaign, activeSession, availableCharacters, lore }) => (
+              <CampaignCard
+                key={campaign.id}
+                campaign={campaign}
+                activeSessionId={activeSession?.id ?? null}
+                availableCharacters={availableCharacters}
+                lore={lore}
+              />
+            )
+          )}
         </div>
       )}
     </>

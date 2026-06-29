@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { IconTrash } from '@tabler/icons-react'
 import { genreFont, genreBg, genreIcon } from '@/lib/genre-config'
 import type { Genre } from '@/features/character/constants'
@@ -10,7 +10,7 @@ import ButtonIcon from './button-icon'
 type GenreCardProps = {
   genre: Genre
   title: string
-  subtitle?: string
+  subtitle?: React.ReactNode
   description?: string
   badge?: React.ReactNode
   meta?: string
@@ -69,7 +69,9 @@ export default function GenreCard({
         <h2 className="text-lg font-bold text-text-primary">{title}</h2>
 
         {subtitle && (
-          <p className="text-sm text-text-secondary capitalize">{subtitle}</p>
+          <div className="text-sm text-text-secondary capitalize">
+            {subtitle}
+          </div>
         )}
 
         {description && (
