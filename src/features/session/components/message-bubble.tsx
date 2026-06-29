@@ -1,8 +1,12 @@
+import { genreFont } from '@/lib/genre-config'
+import type { Genre } from '@/features/character/constants'
+
 type Props = {
   role: 'user' | 'assistant'
   content: string
   isStreaming?: boolean
   isNarration?: boolean
+  genre: Genre
 }
 
 export default function MessageBubble({
@@ -10,12 +14,14 @@ export default function MessageBubble({
   content,
   isStreaming,
   isNarration,
+  genre,
 }: Props) {
   const isAssistant = role === 'assistant'
 
   return (
     <div
       className={`flex ${isAssistant ? 'justify-start' : 'justify-end'} mb-4`}
+      style={{ fontFamily: genreFont[genre] }}
     >
       <div
         className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${

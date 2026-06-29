@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import MessageBubble from './message-bubble'
 import Button from '@/components/ui/button'
+import { genreFont, genreBg } from '@/lib/genre-config'
+import { Genre } from '@/features/character/constants'
 
 type UIMessage = {
   role: 'user' | 'assistant'
@@ -13,11 +15,17 @@ type Props = {
   messages: UIMessage[]
   isStreaming: boolean
   onSend: (message: string) => void
+  genre: Genre
 }
 
 const SCROLL_THRESHOLD = 100
 
-export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
+export default function ChatPanel({
+  messages,
+  isStreaming,
+  onSend,
+  genre,
+}: Props) {
   const [input, setInput] = useState('')
   const [isAtBottom, setIsAtBottom] = useState(true)
 
@@ -72,7 +80,13 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 relative">
+    <div
+      className="flex flex-col flex-1 min-h-0 relative"
+      style={{
+        fontFamily: genreFont[genre],
+        backgroundColor: genreBg[genre],
+      }}
+    >
       {/* Message list */}
       <div
         ref={scrollContainerRef}
@@ -89,6 +103,7 @@ export default function ChatPanel({ messages, isStreaming, onSend }: Props) {
             key={i}
             role={m.role}
             content={m.content}
+            genre={genre}
             isNarration={i === 0 && m.role === 'assistant'}
             isStreaming={
               isStreaming && i === messages.length - 1 && m.role === 'assistant'
