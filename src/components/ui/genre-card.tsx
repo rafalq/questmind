@@ -15,7 +15,8 @@ type GenreCardProps = {
   badge?: React.ReactNode
   meta?: string
   footer?: React.ReactNode
-  actions?: React.ReactNode // ← dodaj
+  actions?: React.ReactNode
+  onClick?: () => void
   onDelete?: {
     label: string
     message: string
@@ -32,6 +33,7 @@ export default function GenreCard({
   meta,
   footer,
   actions,
+  onClick,
   onDelete,
 }: GenreCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -39,6 +41,7 @@ export default function GenreCard({
   return (
     <>
       <div
+        onClick={onClick}
         className="p-6 border border-border flex flex-col gap-2 relative group"
         style={{
           fontFamily: genreFont[genre],

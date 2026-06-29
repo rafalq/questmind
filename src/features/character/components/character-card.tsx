@@ -1,22 +1,24 @@
 'use client'
 
-import GenreCard from '@/components/ui/genre-card'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { deleteCharacter } from '../actions/delete-character'
 import { useAction } from 'next-safe-action/hooks'
+import GenreCard from '@/components/ui/genre-card'
+import CharacterDetailModal, {
+  type CharacterDetail,
+} from './character-detail-modal'
+import { deleteCharacter } from '../actions/delete-character'
+import { ROUTES } from '@/constants/routes'
 
-type Character = {
-  id: string
-  name: string
-  genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
-  race: string
-  characterClass: string
-  level: number
-  characterXp: number
-  isAlive: boolean
+type Props = {
+  character: CharacterDetail
 }
 
-export default function CharacterCard({ character }: { character: Character }) {
+export default function CharacterCard({ character }: Props) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const router = useRouter()
+
   const { execute, isPending } = useAction(deleteCharacter, {
     onSuccess: () => toast.success('Character deleted.'),
     onError: () => toast.error('Something went wrong. Please try again.'),
@@ -35,24 +37,49 @@ export default function CharacterCard({ character }: { character: Character }) {
   )
 
   const footer = (
-    <p className="text-text-muted text-xs">
-      Level {character.level} · {character.characterXp} XP
-    </p>
+    <div className="flex items-center justify-between">
+      <p className="text-text-muted text-xs">
+        Level {character.level} · {character.characterXp} XP
+      </p>
+
+      {character.activeCampaign && (
+        <button
+          className="text-xs text-accent hover:underline underline-offset-2 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation()
+            const { campaignId, sessionId } = character.activeCampaign!
+            router.push(ROUTES.play(campaignId!, sessionId))
+          }}
+        >
+          Resume {character.activeCampaign.campaignName} →
+        </button>
+      )}
+    </div>
   )
 
   return (
-    <GenreCard
-      genre={character.genre}
-      title={character.name}
-      subtitle={`${character.race} · ${character.characterClass.replace('_', ' ')}`}
-      badge={badge}
-      footer={footer}
-      onDelete={{
-        label: 'Delete Character',
-        message: `Are you sure you want to delete "${character.name}"? This action cannot be undone.`,
-        onConfirm: () => execute({ id: character.id }),
-        isPending,
-      }}
-    />
+    <>
+      <GenreCard
+        genre={character.genre}
+        title={character.name}
+        subtitle={`${character.race} · ${character.characterClass.replace(/_/g, ' ')}`}
+        badge={badge}
+        footer={footer}
+        onClick={() => setModalOpen(true)}
+        onDelete={{
+          label: 'Delete Character',
+          message: `Are you sure you want to delete "${character.name}"? This action cannot be undone.`,
+          onConfirm: () => execute({ id: character.id }),
+          isPending,
+        }}
+      />
+
+      {modalOpen && (
+        <CharacterDetailModal
+          character={character}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
+    </>
   )
 }

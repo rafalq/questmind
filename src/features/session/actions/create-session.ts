@@ -1,12 +1,19 @@
 'use server'
 
 import { db } from '@/db'
-import { sessionsTable, campaignsTable, charactersTable } from '@/db/schema'
+import {
+  campaignCharactersTable,
+  campaignsTable,
+  characterAttributesTable,
+  charactersTable,
+  sessionsTable,
+} from '@/db/schema'
 import { authActionClient } from '@/lib/safe-action'
-import { revalidatePath } from 'next/cache'
-import { eq, and } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
-import { ROUTES } from '@/constants/routes'
+
+const BASE_HP = 50
+const HP_PER_ENDURANCE = 10
 
 const schema = z.object({
   campaignId: z.string().uuid(),
@@ -20,7 +27,6 @@ export const createSession = authActionClient
     const { campaignId, characterId } = parsedInput
     const { userId } = ctx
 
-    // Check if the campaign belongs to the user
     const [campaign] = await db
       .select()
       .from(campaignsTable)
@@ -30,10 +36,8 @@ export const createSession = authActionClient
           eq(campaignsTable.userId, userId)
         )
       )
-
     if (!campaign) throw new Error('Campaign not found.')
 
-    // Check if the character belongs to the user and has the same genre
     const [character] = await db
       .select()
       .from(charactersTable)
@@ -43,13 +47,10 @@ export const createSession = authActionClient
           eq(charactersTable.userId, userId)
         )
       )
-
     if (!character) throw new Error('Character not found.')
-    if (character.genre !== campaign.genre) {
+    if (character.genre !== campaign.genre)
       throw new Error('Character genre does not match campaign genre.')
-    }
 
-    // Check if there is already an active session for this campaign
     const [existingSession] = await db
       .select()
       .from(sessionsTable)
@@ -59,17 +60,40 @@ export const createSession = authActionClient
           eq(sessionsTable.status, 'active')
         )
       )
-
     if (existingSession)
       throw new Error('This campaign already has an active session.')
 
-    // Create a new session
-    const [session] = await db
-      .insert(sessionsTable)
-      .values({ userId, campaignId, characterId })
-      .returning()
+    // Fetch endurance to calculate HP
+    const [enduranceAttr] = await db
+      .select()
+      .from(characterAttributesTable)
+      .where(
+        and(
+          eq(characterAttributesTable.characterId, characterId),
+          eq(characterAttributesTable.attribute, 'endurance')
+        )
+      )
 
-    revalidatePath(ROUTES.dashboard)
+    const endurance = enduranceAttr?.baseValue ?? 0
+    const maxHp = BASE_HP + endurance * HP_PER_ENDURANCE
+
+    // Create session and campaign-character link in parallel
+    const [[session]] = await Promise.all([
+      db
+        .insert(sessionsTable)
+        .values({ userId, campaignId, characterId })
+        .returning(),
+      db
+        .insert(campaignCharactersTable)
+        .values({
+          campaignId,
+          characterId,
+          currentHp: maxHp,
+          maxHp,
+          status: 'active',
+        })
+        .onConflictDoNothing(), // safe if record already exists
+    ])
 
     return { sessionId: session.id }
   })
