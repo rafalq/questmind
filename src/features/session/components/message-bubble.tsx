@@ -37,7 +37,7 @@ export default function MessageBubble({
       >
         {isNarration && (
           <p className="text-xs text-accent mb-3 not-italic font-semibold uppercase tracking-widest">
-            ✦ QuestMind
+            QuestMind
           </p>
         )}
         {!isNarration && isAssistant && (
@@ -50,7 +50,7 @@ export default function MessageBubble({
             <IconUser size={16} /> {characterName ?? 'You'}
           </div>
         )}
-        <p className="whitespace-pre-wrap">{content}</p>
+        <div>{renderContent(content)}</div>
         {isStreaming && isAssistant && (
           <span className="inline-flex gap-1 mt-2">
             <span className="w-1 h-1 bg-accent rounded-full animate-bounce [animation-delay:0ms]" />
@@ -61,4 +61,45 @@ export default function MessageBubble({
       </div>
     </div>
   )
+}
+
+function renderContent(content: string) {
+  const paragraphs = content.split(/\n\n+/)
+
+  return paragraphs.map((para, i) => {
+    const line = para.trim()
+    if (!line) return null
+
+    // Separator
+    if (line === '---') {
+      return (
+        <p key={i} className="text-center text-accent my-4 tracking-widest">
+          ❧ ❧ ❧
+        </p>
+      )
+    }
+
+    // Tytuł
+    if (line.startsWith('# ')) {
+      return (
+        <p key={i} className="font-semibold text-accent mb-2">
+          ✦ {line.slice(2)}
+        </p>
+      )
+    }
+
+    // Kursywa (*tekst*)
+    const parts = line.split(/(\*[^*]+\*)/)
+    return (
+      <p key={i} className="mb-3">
+        {parts.map((part, j) =>
+          part.startsWith('*') && part.endsWith('*') ? (
+            <em key={j}>{part.slice(1, -1)}</em>
+          ) : (
+            part
+          )
+        )}
+      </p>
+    )
+  })
 }
