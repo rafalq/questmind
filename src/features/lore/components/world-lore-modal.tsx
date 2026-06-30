@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { IconMap, IconX, IconBook } from '@tabler/icons-react'
 import type { WorldLore } from '@/features/lore/queries/get-world-lore'
 import type { Genre } from '@/features/character/constants'
@@ -185,7 +186,8 @@ export default function WorldLoreModal({ genre, lore }: Props) {
                 subtitle={lore.world.subtitle}
                 onClose={() => setIsOpen(false)}
               />
-              <MapPlaceholder
+              <MapImage
+                genre={genre}
                 regionName={lore.region?.name ?? lore.world.name}
               />
               <div className="p-6 flex flex-col gap-8">
@@ -198,5 +200,45 @@ export default function WorldLoreModal({ genre, lore }: Props) {
         </>
       )}
     </>
+  )
+}
+
+function MapImage({ genre, regionName }: { genre: Genre; regionName: string }) {
+  const mapSrc: Partial<Record<Genre, string>> = {
+    fantasy: '/images/fantasy/treigthe/maps/treigthe.jpg',
+  }
+
+  const src = mapSrc[genre]
+
+  if (!src) {
+    return (
+      <div className="mx-6 mt-6 h-48 border border-border/40 flex items-center justify-center bg-black/20">
+        <div
+          className="text-center text-text-muted text-xs uppercase tracking-widest"
+          style={{ fontFamily: 'var(--font-rajdhani)' }}
+        >
+          <IconMap size={32} className="mx-auto mb-2 opacity-30" />
+          <p>{regionName}</p>
+          <p className="text-[10px] mt-1 opacity-50">Coming soon</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-6 mt-6 border border-border/40">
+      <Image
+        src={src}
+        alt={`Map of ${regionName}`}
+        width={1472}
+        height={832}
+        loading="eager"
+        sizes="100vw"
+        style={{
+          width: '100%',
+          height: 'auto',
+        }}
+      />
+    </div>
   )
 }
