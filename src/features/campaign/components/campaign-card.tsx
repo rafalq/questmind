@@ -1,13 +1,12 @@
 'use client'
 
 import GenreCard from '@/components/ui/genre-card'
-import { toast } from 'sonner'
-import { deleteCampaign } from '../actions/delete-campaign'
-import { useAction } from 'next-safe-action/hooks'
-import PlayButton from '@/features/session/components/play-button'
 import WorldLoreModal from '@/features/lore/components/world-lore-modal'
 import { WorldLore } from '@/features/lore/queries/get-world-lore'
-import { IconClock } from '@tabler/icons-react'
+import PlayButton from '@/features/session/components/play-button'
+import { useAction } from 'next-safe-action/hooks'
+import { toast } from 'sonner'
+import { deleteCampaign } from '../actions/delete-campaign'
 
 type Campaign = {
   id: string
@@ -59,11 +58,17 @@ export default function CampaignCard({
         lore ? <WorldLoreModal genre={campaign.genre} lore={lore} /> : undefined
       }
       meta={
-        <div className="flex items-center justify-center gap-1">
-          <IconClock stroke={2} size={12} />
-          {campaign.lastPlayedAt
-            ? `Last played: ${new Date(campaign.lastPlayedAt).toLocaleDateString('en-IE')}`
-            : 'Never played'}
+        <div className="flex items-center justify-center gap-1 text-accent">
+          {campaign.lastPlayedAt ? (
+            <>
+              <span>Last played: </span>
+              <span className="font-medium">
+                {new Date(campaign.lastPlayedAt).toLocaleDateString('en-IE')}
+              </span>
+            </>
+          ) : (
+            'Never played'
+          )}
         </div>
       }
       actions={actions}

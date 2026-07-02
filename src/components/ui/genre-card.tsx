@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { IconTrash } from '@tabler/icons-react'
 import { genreFont, genreBg, genreIcon } from '@/lib/genre-config'
-import type { Genre } from '@/features/character/constants'
+import type { Genre } from '@/features/character/constants/constants'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import ButtonIcon from './button-icon'
 
@@ -23,6 +23,7 @@ type GenreCardProps = {
     onConfirm: () => void
     isPending?: boolean
   }
+  className?: string
 }
 export default function GenreCard({
   genre,
@@ -35,6 +36,7 @@ export default function GenreCard({
   actions,
   onClick,
   onDelete,
+  className,
 }: GenreCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -42,7 +44,7 @@ export default function GenreCard({
     <>
       <div
         onClick={onClick}
-        className="p-6 border border-border flex flex-col gap-2 relative group"
+        className={`p-6 border border-border flex flex-col gap-2 relative group ${className || ''}`}
         style={{
           fontFamily: genreFont[genre],
           backgroundColor: genreBg[genre],
@@ -63,7 +65,10 @@ export default function GenreCard({
               icon={<IconTrash size={16} />}
               tooltip="Delete"
               variant="danger"
-              onClick={() => setIsDialogOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsDialogOpen(true)
+              }}
               className="opacity-0 group-hover:opacity-100"
             />
           )}
