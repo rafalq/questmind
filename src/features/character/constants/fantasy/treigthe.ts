@@ -48,6 +48,8 @@ export const TREIGTHE_CLASS_ICONS: Record<TreigtheClass, typeof IconSword> = {
 // RACES
 // ============================================================
 
+const TREIGTHE_RACE_PORTAITS_BASE_URL = '/images/fantasy/treigthe/races/'
+
 export const TREIGTHE_RACES: RaceDefinition<TreigtheRace>[] = [
   {
     value: 'scarred',
@@ -55,6 +57,8 @@ export const TREIGTHE_RACES: RaceDefinition<TreigtheRace>[] = [
     description:
       "Survivors marked by the gods' fall. Adaptable, distrustful, and harder to kill than they should be.",
     modifiers: { strength: 1, endurance: 1 },
+    femalePortraitUrl: `${TREIGTHE_RACE_PORTAITS_BASE_URL}scarred-female.jpg`,
+    malePortraitUrl: `${TREIGTHE_RACE_PORTAITS_BASE_URL}scarred-male.jpg`,
   },
   {
     value: 'duskborn',
@@ -62,6 +66,8 @@ export const TREIGTHE_RACES: RaceDefinition<TreigtheRace>[] = [
     description:
       'Ancient elves slowly fading from the world. They remember the living gods — and the night they died.',
     modifiers: { mind: 2, perception: 2, endurance: -1 },
+    femalePortraitUrl: `${TREIGTHE_RACE_PORTAITS_BASE_URL}duskborn-female.jpg`,
+    malePortraitUrl: `${TREIGTHE_RACE_PORTAITS_BASE_URL}duskborn-male.jpg`,
   },
   {
     value: 'stonewarden',
@@ -69,6 +75,8 @@ export const TREIGTHE_RACES: RaceDefinition<TreigtheRace>[] = [
     description:
       'Dwarf guardians of the god-tombs. Patient, secretive, and bound by duties older than memory.',
     modifiers: { endurance: 3, strength: 1, agility: -1 },
+    femalePortraitUrl: `${TREIGTHE_RACE_PORTAITS_BASE_URL}stonewarden-female.jpg`,
+    malePortraitUrl: `${TREIGTHE_RACE_PORTAITS_BASE_URL}stonewarden-male.jpg`,
   },
   {
     value: 'demigod',
@@ -77,6 +85,7 @@ export const TREIGTHE_RACES: RaceDefinition<TreigtheRace>[] = [
       'Offspring of a fading god and a mortal. Neither fully divine nor fully human — a body caught between, carrying a fraction of power it was never meant to hold. Their kind know no sex, only the slow, uneven weight of incomplete divinity.',
     modifiers: { mind: 2, perception: 2, endurance: -1 },
     genderless: true,
+    portraitUrl: `${TREIGTHE_RACE_PORTAITS_BASE_URL}demigod.jpg`,
   },
 ]
 

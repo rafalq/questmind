@@ -1,5 +1,4 @@
-// steps/race/race-card.tsx — wersja bez portretów
-
+import RacePortraits from './race-portraits'
 import ModifierBadge from '@/features/character/components/steps/modifier-badge'
 import type { RaceDefinition } from '@/features/character/constants'
 
@@ -22,16 +21,16 @@ export default function RaceCard({
           : 'border-border hover:border-text-muted'
       }`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p
-            className={`font-semibold ${selected ? 'text-accent' : 'text-text-primary'}`}
-          >
-            {race.label}
-          </p>
-          <p className="text-text-muted text-sm mt-1">{race.description}</p>
-        </div>
-        <div className="flex flex-col gap-1 shrink-0">
+      <RacePortraits race={race} />
+
+      <div className="flex flex-col gap-2 justify-center items-center">
+        <p
+          className={`font-semibold ${selected ? 'text-accent' : 'text-text-primary'}`}
+        >
+          {race.label}
+        </p>
+        <p className="text-text-muted text-sm">{race.description}</p>
+        <div className="flex flex-wrap gap-2 mt-1">
           {Object.entries(race.modifiers).map(([attr, val]) => (
             <ModifierBadge key={attr} attr={attr} val={val ?? 0} />
           ))}

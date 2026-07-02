@@ -9,8 +9,8 @@ export default function RacePortraits({ race }: { race: RaceDefinition }) {
           <Image
             src={race.portraitUrl}
             alt={`${race.label} portrait`}
-            width={112}
-            height={176}
+            width={120}
+            height={188}
             className="object-cover border border-border"
           />
         )}
@@ -19,24 +19,34 @@ export default function RacePortraits({ race }: { race: RaceDefinition }) {
   }
 
   return (
-    <div className="flex justify-between gap-3 mb-4">
+    <div className="flex justify-center gap-6 mb-4">
       {race.femalePortraitUrl && (
-        <Image
-          src={race.femalePortraitUrl}
-          alt={`${race.label} female portrait`}
-          width={112}
-          height={176}
-          className="object-cover border border-border"
-        />
+        <div className="flex flex-col items-center gap-1.5">
+          <Image
+            src={race.femalePortraitUrl}
+            alt={`${race.label} female portrait`}
+            width={120}
+            height={188}
+            className="object-cover border border-border"
+          />
+          <span className="text-xs text-text-muted tracking-wider uppercase">
+            Female
+          </span>
+        </div>
       )}
       {race.malePortraitUrl && (
-        <Image
-          src={race.malePortraitUrl}
-          alt={`${race.label} male portrait`}
-          width={112}
-          height={176}
-          className="object-cover border border-border"
-        />
+        <div className="flex flex-col items-center gap-1.5">
+          <Image
+            src={race.malePortraitUrl}
+            alt={`${race.label} male portrait`}
+            width={120}
+            height={188}
+            className="object-cover border border-border"
+          />
+          <span className="text-xs text-text-muted tracking-wider uppercase">
+            Male
+          </span>
+        </div>
       )}
     </div>
   )
