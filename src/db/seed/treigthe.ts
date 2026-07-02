@@ -35,6 +35,7 @@ async function seed() {
   const [world] = await db
     .insert(worldsTable)
     .values({
+      slug: 'treigthe',
       genre: 'fantasy',
       name: 'Tréigthe',
       subtitle: 'The Forsaken',

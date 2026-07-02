@@ -15,44 +15,9 @@ import { relations } from 'drizzle-orm'
 // ─────────────────────────────────────────
 // ENUMS
 // ─────────────────────────────────────────
-
-export const raceEnum = pgEnum('race', [
-  // Fantasy — Tréigthe
-  'scarred',
-  'duskborn',
-  'stonewarden',
-  'bloodmarked',
-  // Sci-fi — The Drift
-  'drifter',
-  'unshackled',
-  'remnant',
-  'spliced',
-  // Cyberpunk — Neon Warszawa 2087
-  'zelazny',
-  'sieciowy',
-  'kopia',
-  'naturalny',
-])
-
-export const classEnum = pgEnum('character_class', [
-  // Fantasy — Tréigthe
-  'graveblade',
-  'bleeder',
-  'ashwalker',
-  'last_breath_priest',
-  // Sci-fi — The Drift
-  'rig_runner',
-  'patcher',
-  'breacher',
-  'ghost',
-  'fixer',
-  // Cyberpunk — Neon Warszawa 2087
-  'posrednik',
-  'wlamywacz',
-  'ostrze',
-  'mechanik',
-  'cien',
-])
+// race, character_class → moved to plain `text`, validated in Zod against
+// per-world config (features/character/config/*), since each world now
+// has its own evolving roster and pgEnum migrations were getting costly.
 
 export const attributeEnum = pgEnum('attribute', [
   'strength',
@@ -78,9 +43,11 @@ export const charactersTable = pgTable('characters', {
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
   genre: genreEnum('genre').notNull(),
-  race: raceEnum('race').notNull(),
-  characterClass: classEnum('character_class').notNull(),
-  backgroundStory: text('background_story'),
+  world: text('world').notNull(), // e.g. 'treigthe', 'drift', 'neon_warszawa'
+  race: text('race').notNull(), // validated against RACE_OPTIONS[world] in Zod
+  characterClass: text('character_class').notNull(), // validated against RACE_CLASS_OPTIONS[world][race]
+  gender: text('gender'), // nullable — some races (e.g. demigod) skip this step entirely
+  backgroundStory: text('background_story'), // kept for schema stability; no longer collected in the wizard
   avatarUrl: text('avatar_url'),
   level: integer('level').default(1).notNull(),
   characterXp: integer('character_xp').default(0).notNull(),
@@ -106,14 +73,11 @@ export const campaignCharactersTable = pgTable('campaign_characters', {
   campaignId: uuid('campaign_id').references(() => campaignsTable.id, {
     onDelete: 'set null',
   }),
-  // nullable — when campaign is deleted, record remains but campaignId → null
   characterId: uuid('character_id')
     .notNull()
     .references(() => charactersTable.id, { onDelete: 'cascade' }),
   currentHp: integer('current_hp').notNull(),
   maxHp: integer('max_hp').notNull(),
-  // Calculated on creation: BASE_HP + (endurance * HP_PER_ENDURANCE)
-  // Updated when character's endurance attribute changes
   status: campaignCharacterStatusEnum('status').default('active').notNull(),
   joinedAt: timestamp('joined_at').defaultNow().notNull(),
 })

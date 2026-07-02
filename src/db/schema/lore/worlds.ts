@@ -15,7 +15,8 @@ import { genreEnum } from '../enums'
 
 export const worldsTable = pgTable('worlds', {
   id: uuid('id').primaryKey().defaultRandom(),
-  genre: genreEnum('genre').notNull().unique(),
+  slug: text('slug').notNull().unique(), // "treigthe" — matches characters.world
+  genre: genreEnum('genre').notNull(), // multiple worlds can share a genre
   name: text('name').notNull(), // "Tréigthe"
   subtitle: text('subtitle'), // "The Forsaken"
   systemPromptCore: text('system_prompt_core').notNull(),
