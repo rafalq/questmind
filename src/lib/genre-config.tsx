@@ -1,5 +1,5 @@
 import { IconSword, IconRocket, IconCpu } from '@tabler/icons-react'
-import type { Genre } from '@/features/character/constants'
+import type { Genre } from '@/features/character/constants/TO-DELETE-constants'
 
 export const genreFont: Record<Genre, string> = {
   fantasy: 'var(--font-im-fell)',

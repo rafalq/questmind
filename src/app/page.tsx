@@ -61,34 +61,47 @@ export default function HomePage() {
 // ----- Hero -----
 function Hero() {
   return (
-    <section className="flex flex-col items-center text-center px-6 pt-24 pb-20">
-      <p className="text-xs tracking-[0.4em] text-accent mb-6 uppercase border border-accent px-4 py-2">
-        AI-Powered Tabletop RPG
-      </p>
-      <h1 className="text-5xl md:text-7xl font-bold tracking-wide leading-tight mb-6 max-w-4xl">
-        Your Story, <span className="text-accent">Told by AI</span>
-      </h1>
-      <p
-        className="
-       text-xl text-text-secondary max-w-xl mb-10 leading-relaxed italic"
-      >
-        QuestMind is an AI Game Master that narrates your adventure, tracks your
-        character, and adapts to every choice you make.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Link
-          href={ROUTES.signUp}
-          className="px-8 py-3 bg-accent text-accent-fg font-bold tracking-widest text-sm hover:bg-accent-hover transition-colors"
-        >
-          BEGIN YOUR QUEST
-        </Link>
+    <section
+      className="relative min-h-screen flex flex-col items-center text-center px-6 pt-24 pb-20"
+      style={{
+        backgroundImage: 'url("/images/fantasy/treigthe/fantasy-hero.jpg")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/70" />
 
-        <a
-          href="#demo"
-          className="px-8 py-3 border border-border text-text-secondary text-sm tracking-widest hover:border-accent hover:text-accent transition-all"
+      {/* Hero text */}
+      <div className="relative flex flex-col items-center justify-center z-10 text-center">
+        <p className="text-xs tracking-[0.4em] text-accent mb-6 uppercase border border-accent px-4 py-2">
+          AI-Powered Tabletop RPG
+        </p>
+        <h1 className="text-5xl md:text-7xl font-bold tracking-wide leading-tight mb-6 max-w-4xl">
+          Your Story, <span className="text-accent">Told by AI</span>
+        </h1>
+        <p
+          className="
+       text-xl text-text-secondary max-w-xl mb-10 leading-relaxed italic"
         >
-          SEE IT IN ACTION
-        </a>
+          QuestMind is an AI Game Master that narrates your adventure, tracks
+          your character, and adapts to every choice you make.
+        </p>
+        <div className="flex flex-col justify-center items-center sm:flex-row gap-4">
+          <Link
+            href={ROUTES.signUp}
+            className="px-8 py-3 bg-accent text-accent-fg font-bold tracking-widest text-sm hover:bg-accent-hover transition-colors"
+          >
+            BEGIN YOUR QUEST
+          </Link>
+
+          <a
+            href="#demo"
+            className="px-8 py-3 border border-border text-text-secondary text-sm tracking-widest hover:border-accent hover:text-accent transition-all"
+          >
+            SEE IT IN ACTION
+          </a>
+        </div>
       </div>
     </section>
   )

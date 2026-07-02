@@ -3,7 +3,7 @@ import { getActiveSession } from '@/features/session/queries/get-active-session'
 import { getAvailableCharacters } from '@/features/session/queries/get-available-characters'
 import { getWorldLore } from '@/features/lore/queries/get-world-lore'
 import CampaignListClient from './campaign-list-client'
-import type { Genre } from '@/features/character/constants'
+import type { Genre } from '@/features/character/constants/TO-DELETE-constants'
 
 export default async function CampaignListServer() {
   const campaigns = await getCampaigns()

@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { IconTrash } from '@tabler/icons-react'
 import { genreFont, genreBg, genreIcon } from '@/lib/genre-config'
-import type { Genre } from '@/features/character/constants/constants'
+import type { Genre } from '@/features/character/constants/TO-DELETE-constants'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
 import ButtonIcon from './button-icon'
 

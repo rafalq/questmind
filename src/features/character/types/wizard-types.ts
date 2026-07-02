@@ -1,5 +1,5 @@
 import type {
-  Genre,
+  World,
   Race,
   CharacterClass,
   Attribute,
@@ -7,10 +7,10 @@ import type {
 
 export type FormData = {
   name: string
-  genre: Genre | null
+  world: World | null
   race: Race | null
+  gender: string | null
   characterClass: CharacterClass | null
-  backgroundStory: string
   attributes: Record<Attribute, number>
 }
 
@@ -32,4 +32,19 @@ export const ATTRIBUTES: Attribute[] = [
   'perception',
 ]
 
-export const STEPS = ['Basics', 'Race', 'Class', 'Attributes', 'Story']
+export type StepId =
+  | 'world'
+  | 'race'
+  | 'sex'
+  | 'class'
+  | 'attributes'
+  | 'summary'
+
+export const ALL_STEPS: { id: StepId; label: string }[] = [
+  { id: 'world', label: 'World' },
+  { id: 'race', label: 'Race' },
+  { id: 'sex', label: 'Sex' },
+  { id: 'class', label: 'Class' },
+  { id: 'attributes', label: 'Attributes' },
+  { id: 'summary', label: 'Summary' },
+]

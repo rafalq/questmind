@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAction } from 'next-safe-action/hooks'
-import { toast } from 'sonner'
-import { createSession } from '@/features/session/actions/create-session'
-import { ROUTES } from '@/constants/routes'
 import Button from '@/components/ui/button'
-import { IconPlayerPlay } from '@tabler/icons-react'
+import ButtonPlayResume from '@/components/ui/button-play-resume'
+import { ROUTES } from '@/constants/routes'
+import { createSession } from '@/features/session/actions/create-session'
+import { useAction } from 'next-safe-action/hooks'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 type Character = {
   id: string
@@ -61,14 +61,12 @@ export default function PlayButton({
 
   return (
     <>
-      <Button
-        size="sm"
-        onClick={handlePlay}
-        className="flex items-center justify-center gap-2"
-      >
-        <IconPlayerPlay stroke={2} size={14} />
-        {activeSessionId ? 'Resume' : 'Play'}
-      </Button>
+      <div className="flex justify-end-safe">
+        <ButtonPlayResume
+          onClick={handlePlay}
+          isActiveSession={!!activeSessionId}
+        />
+      </div>
 
       {showModal && (
         <div

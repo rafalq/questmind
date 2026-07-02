@@ -1,9 +1,7 @@
 import ButtonLink from '@/components/ui/button-link'
 import { ROUTES } from '@/constants/routes'
-import CampaignListClient from '@/features/campaign/components/campaign-list-client'
 import CampaignListServer from '@/features/campaign/components/campaign-list-server'
-import { getCampaigns } from '@/features/campaign/queries/get-campaigns'
-import CharacterList from '@/features/character/components/character-list'
+import CharacterList from '@/features/character/components/display/character-list'
 import { Suspense } from 'react'
 
 export default function DashboardPage() {

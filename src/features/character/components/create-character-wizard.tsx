@@ -1,40 +1,78 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAction } from 'next-safe-action/hooks'
-import { toast } from 'sonner'
-import { createCharacter } from '@/features/character/actions/create-character'
-import { ROUTES } from '@/constants/routes'
-import { POINT_BUY_TOTAL } from '@/features/character/constants'
-import { type FormData, DEFAULT_ATTRIBUTES, STEPS } from '../types/wizard-types'
-import WizardProgressBar from './wizard-progress-bar'
-import StepBasics from './step-basics'
-import StepRace from './step-race'
-import StepClass from './step-class'
-import StepAttributes from './step-attributes'
-import StepStory from './step-story'
 import Button from '@/components/ui/button'
+import { ROUTES } from '@/constants/routes'
+import { createCharacter } from '@/features/character/actions/create-character'
+import { POINT_BUY_TOTAL, RACES_BY_WORLD } from '@/features/character/constants'
+import { useAction } from 'next-safe-action/hooks'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import {
+  type FormData,
+  type StepId,
+  ALL_STEPS,
+  DEFAULT_ATTRIBUTES,
+} from '../types/wizard-types'
+import StepAttributes from './steps/attributes'
+import StepClass from './steps/class'
+import StepRace from './steps/race'
+import StepSex from './steps/sex'
+import StepSummary from './steps/summary'
+import StepWorld from './steps/world'
+import WizardProgressBar from './wizard-progress-bar'
 
 const INITIAL_DATA: FormData = {
   name: '',
-  genre: null,
+  world: null,
   race: null,
+  gender: null,
   characterClass: null,
-  backgroundStory: '',
   attributes: DEFAULT_ATTRIBUTES,
+}
+
+const STEP_COMPONENTS: Record<
+  StepId,
+  React.ComponentType<{
+    data: FormData
+    onChange: (patch: Partial<FormData>) => void
+  }>
+> = {
+  world: StepWorld,
+  race: StepRace,
+  sex: StepSex,
+  class: StepClass,
+  attributes: StepAttributes,
+  summary: StepSummary,
 }
 
 export default function CreateCharacterWizard() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
+  const [stepIndex, setStepIndex] = useState(0)
   const [data, setData] = useState<FormData>(INITIAL_DATA)
+
+  // The "sex" step only exists for races that have one — genderless races
+  // (e.g. demigod) skip straight from Race to Class.
+  const activeSteps = useMemo(() => {
+    const selectedRace = data.world
+      ? RACES_BY_WORLD[data.world].find((r) => r.value === data.race)
+      : undefined
+
+    if (selectedRace?.genderless) {
+      return ALL_STEPS.filter((s) => s.id !== 'sex')
+    }
+    return ALL_STEPS
+  }, [data.world, data.race])
+
+  const currentStep =
+    activeSteps[stepIndex] ?? activeSteps[activeSteps.length - 1]
+  const StepComponent = STEP_COMPONENTS[currentStep.id]
 
   const { execute, isPending } = useAction(createCharacter, {
     onSuccess: () => {
       toast.success('Character created!')
       setData(INITIAL_DATA)
-      setStep(1)
+      setStepIndex(0)
       router.push(ROUTES.dashboard)
     },
     onError: ({ error }) => {
@@ -48,55 +86,73 @@ export default function CreateCharacterWizard() {
 
   const handleReset = () => {
     setData(INITIAL_DATA)
-    setStep(1)
+    setStepIndex(0)
+  }
+
+  // Clamp stepIndex if the active steps array just shrank (e.g. player
+  // picked a genderless race while sitting on a later step index).
+  const goNext = () => {
+    setStepIndex((i) => Math.min(i + 1, activeSteps.length - 1))
+  }
+  const goBack = () => {
+    setStepIndex((i) => Math.max(i - 1, 0))
   }
 
   const canProceed = () => {
-    if (step === 1) return data.name.trim().length > 0 && data.genre !== null
-    if (step === 2) return data.race !== null
-    if (step === 3) return data.characterClass !== null
-    if (step === 4) {
-      const total = Object.values(data.attributes).reduce((s, v) => s + v, 0)
-      return total === POINT_BUY_TOTAL
+    switch (currentStep.id) {
+      case 'world':
+        return data.world !== null
+      case 'race':
+        return data.race !== null
+      case 'sex':
+        return data.gender !== null
+      case 'class':
+        return data.characterClass !== null
+      case 'attributes': {
+        const total = Object.values(data.attributes).reduce((s, v) => s + v, 0)
+        return total === POINT_BUY_TOTAL
+      }
+      case 'summary':
+        return data.name.trim().length > 0
+      default:
+        return true
     }
-    return true
   }
 
   const handleSubmit = () => {
-    if (!data.genre || !data.race || !data.characterClass) return
+    if (!data.world || !data.race || !data.characterClass) return
+
     execute({
       name: data.name,
-      genre: data.genre,
+      world: data.world,
       race: data.race,
       characterClass: data.characterClass,
-      backgroundStory: data.backgroundStory || undefined,
+      gender: data.gender ?? undefined,
       attributes: data.attributes,
     })
   }
 
+  const isLastStep = stepIndex === activeSteps.length - 1
+
   return (
     <div>
-      <WizardProgressBar step={step} />
+      <WizardProgressBar steps={activeSteps} currentStepId={currentStep.id} />
 
       <div className="min-h-100">
-        {step === 1 && <StepBasics data={data} onChange={onChange} />}
-        {step === 2 && <StepRace data={data} onChange={onChange} />}
-        {step === 3 && <StepClass data={data} onChange={onChange} />}
-        {step === 4 && <StepAttributes data={data} onChange={onChange} />}
-        {step === 5 && <StepStory data={data} onChange={onChange} />}
+        <StepComponent data={data} onChange={onChange} />
       </div>
 
       <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
-            onClick={() => setStep((s) => s - 1)}
-            disabled={step === 1}
+            onClick={goBack}
+            disabled={stepIndex === 0}
             className="disabled:opacity-0"
           >
             ← Back
           </Button>
-          {step > 1 && (
+          {stepIndex > 0 && (
             <Button
               variant="danger"
               size="sm"
@@ -108,11 +164,8 @@ export default function CreateCharacterWizard() {
           )}
         </div>
 
-        {step < STEPS.length ? (
-          <Button
-            onClick={() => setStep((s) => s + 1)}
-            disabled={!canProceed()}
-          >
+        {!isLastStep ? (
+          <Button onClick={goNext} disabled={!canProceed()}>
             Next →
           </Button>
         ) : (
@@ -121,6 +174,7 @@ export default function CreateCharacterWizard() {
             loading={isPending}
             loadingText="Creating..."
             onClick={handleSubmit}
+            disabled={!canProceed()}
           >
             Create Character
           </Button>
