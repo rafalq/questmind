@@ -10,8 +10,12 @@ import {
   ATTRIBUTE_MAX,
   POINT_BUY_TOTAL,
   calculateAttributeTotal,
-  RACES_BY_GENRE,
-  CLASSES_BY_GENRE,
+  RACES_BY_WORLD,
+  CLASSES_BY_WORLD,
+  WORLD_GENDER_OPTIONS,
+  GENRE_BY_WORLD,
+  WORLDS,
+  World,
 } from '@/features/character/constants'
 
 const ATTRIBUTES = [
@@ -32,12 +36,17 @@ const attributesSchema = z.object({
   perception: z.number().int().min(ATTRIBUTE_MIN).max(ATTRIBUTE_MAX),
 })
 
+// Built from WORLDS so a future second world extends this automatically.
+// Cast to World (not string) so z.enum infers the literal union, and
+// parsedInput.world stays type-safe for indexing RACES_BY_WORLD etc.
+const WORLD_VALUES = WORLDS.map((w) => w.value) as [World, ...World[]]
+
 const schema = z.object({
   name: z.string().min(1).max(60),
-  genre: z.enum(['fantasy', 'sci-fi', 'cyberpunk']),
+  world: z.enum(WORLD_VALUES),
   race: z.string().min(1),
+  gender: z.string().optional(),
   characterClass: z.string().min(1),
-  backgroundStory: z.string().max(1000).optional(),
   attributes: attributesSchema,
 })
 
@@ -45,7 +54,7 @@ export const createCharacter = authActionClient
   .inputSchema(schema)
   .metadata({ actionName: 'createCharacter' })
   .action(async ({ parsedInput, ctx }) => {
-    const { name, genre, race, characterClass, backgroundStory, attributes } =
+    const { name, world, race, gender, characterClass, attributes } =
       parsedInput
 
     // Walidacja sumy punktów
@@ -56,14 +65,30 @@ export const createCharacter = authActionClient
       )
     }
 
-    // Pobierz modyfikatory rasy i klasy
-    const raceDef = RACES_BY_GENRE[genre].find((r) => r.value === race)
-    const classDef = CLASSES_BY_GENRE[genre].find(
+    // genre is derived server-side from world — never trust a client-supplied genre
+    const genre = GENRE_BY_WORLD[world]
+
+    const raceDef = RACES_BY_WORLD[world]?.find((r) => r.value === race)
+    const classDef = CLASSES_BY_WORLD[world]?.find(
       (c) => c.value === characterClass
     )
 
     if (!raceDef || !classDef) {
-      throw new Error('Invalid race or class for selected genre.')
+      throw new Error('Invalid race or class for selected world.')
+    }
+
+    // Genderless races (e.g. demigod) must not carry a gender; every other
+    // race must specify one that's valid for this world.
+    let genderDef = null
+    if (raceDef.genderless) {
+      if (gender) {
+        throw new Error('This race does not have a sex.')
+      }
+    } else {
+      genderDef = WORLD_GENDER_OPTIONS[world]?.find((g) => g.id === gender)
+      if (!genderDef) {
+        throw new Error('A valid sex must be selected for this race.')
+      }
     }
 
     // Wstaw postać
@@ -72,21 +97,22 @@ export const createCharacter = authActionClient
       .values({
         userId: ctx.userId,
         name,
-        genre: genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
-        race: race as any,
-        characterClass: characterClass as any,
-        backgroundStory: backgroundStory ?? null,
+        genre,
+        world,
+        race,
+        gender: gender ?? null,
+        characterClass,
         avatarUrl: null,
       })
       .returning()
 
-    // Wstaw atrybuty
+    // Wstaw atrybuty — race, class, and gender modifiers all combined
     const attributeRows = ATTRIBUTES.map((attr) => ({
       characterId: character.id,
       attribute: attr,
       baseValue: calculateAttributeTotal(
         attributes[attr],
-        raceDef.modifiers[attr] ?? 0,
+        (raceDef.modifiers[attr] ?? 0) + (genderDef?.statModifiers[attr] ?? 0),
         classDef.modifiers[attr] ?? 0
       ),
       currentXp: 0,
