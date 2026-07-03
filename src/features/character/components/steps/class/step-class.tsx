@@ -1,4 +1,3 @@
-// steps/class/step-class.tsx
 import { CLASSES_BY_WORLD } from '@/features/character/constants'
 import ClassCard from './class-card'
 import type { FormData } from '@/features/character/types/wizard-types'
@@ -11,7 +10,7 @@ export default function StepClass({
   data: FormData
   onChange: (patch: Partial<FormData>) => void
 }) {
-  if (!data.world) return null
+  if (!data.world || !data.race) return null
   const classes = CLASSES_BY_WORLD[data.world]
 
   return (
@@ -24,6 +23,8 @@ export default function StepClass({
         <ClassCard
           key={cls.value}
           cls={cls}
+          race={data.race!}
+          gender={data.gender}
           selected={data.characterClass === cls.value}
           onSelect={() =>
             onChange({ characterClass: cls.value as CharacterClass })

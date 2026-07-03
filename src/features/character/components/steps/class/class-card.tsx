@@ -1,13 +1,22 @@
 // steps/class/class-card.tsx
+import ClassPortrait from '../class-portrait'
 import ModifierBadge from '@/features/character/components/steps/modifier-badge'
-import type { ClassDefinition } from '@/features/character/constants'
+import type {
+  ClassDefinition,
+  CharacterClass,
+  Race,
+} from '@/features/character/constants'
 
 export default function ClassCard({
   cls,
+  race,
+  gender,
   selected,
   onSelect,
 }: {
-  cls: ClassDefinition
+  cls: ClassDefinition<CharacterClass>
+  race: Race
+  gender: string | null
   selected: boolean
   onSelect: () => void
 }) {
@@ -21,16 +30,16 @@ export default function ClassCard({
           : 'border-border hover:border-text-muted'
       }`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p
-            className={`font-semibold ${selected ? 'text-accent' : 'text-text-primary'}`}
-          >
-            {cls.label}
-          </p>
-          <p className="text-text-muted text-sm mt-1">{cls.description}</p>
-        </div>
-        <div className="flex flex-col gap-1 shrink-0">
+      <ClassPortrait race={race} gender={gender} characterClass={cls.value} />
+
+      <div className="flex flex-col gap-2 justify-center items-center">
+        <p
+          className={`font-semibold ${selected ? 'text-accent' : 'text-text-primary'}`}
+        >
+          {cls.label}
+        </p>
+        <p className="text-text-muted text-sm">{cls.description}</p>
+        <div className="flex flex-wrap gap-2 mt-1">
           {Object.entries(cls.modifiers).map(([attr, val]) => (
             <ModifierBadge key={attr} attr={attr} val={val ?? 0} />
           ))}
