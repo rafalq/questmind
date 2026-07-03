@@ -48,7 +48,8 @@ export const TREIGTHE_CLASS_ICONS: Record<TreigtheClass, typeof IconSword> = {
 // RACES
 // ============================================================
 
-const TREIGTHE_RACE_PORTAITS_BASE_URL = '/images/fantasy/treigthe/races/'
+const TREIGTHE_RACE_PORTAITS_BASE_URL =
+  '/images/fantasy/treigthe/characters/races/'
 
 export const TREIGTHE_RACES: RaceDefinition<TreigtheRace>[] = [
   {
@@ -92,6 +93,10 @@ export const TREIGTHE_RACES: RaceDefinition<TreigtheRace>[] = [
 // ============================================================
 // CLASSES
 // ============================================================
+
+// features/character/constants/portraits.ts
+export const TREIGTHE_CLASS_PORTAITS_BASE_URL =
+  '/images/fantasy/treigthe/characters/classes/'
 
 export const TREIGTHE_CLASSES: ClassDefinition<TreigtheClass>[] = [
   {
