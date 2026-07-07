@@ -16,6 +16,7 @@ const rajdhani = Rajdhani({
   variable: '--font-rajdhani',
   weight: ['400', '500', '600', '700'],
   display: 'swap',
+  fallback: ['sans-serif'],
 })
 
 const imFellEnglish = IM_Fell_English({
@@ -23,12 +24,14 @@ const imFellEnglish = IM_Fell_English({
   variable: '--font-im-fell',
   weight: '400',
   display: 'swap',
+  fallback: ['serif'],
 })
 
 const exo2 = Exo_2({
   subsets: ['latin'],
   variable: '--font-exo2',
   display: 'swap',
+  fallback: ['sans-serif'],
 })
 
 const shareTechMono = Share_Tech_Mono({
@@ -36,6 +39,7 @@ const shareTechMono = Share_Tech_Mono({
   variable: '--font-share-tech-mono',
   weight: '400',
   display: 'swap',
+  fallback: ['monospace'],
 })
 
 export const metadata: Metadata = {
