@@ -6,7 +6,7 @@ import {
 } from '@/features/character/constants'
 import type { FormData } from '@/features/character/types/wizard-types'
 import NameInput from './name-input'
-import CharacterPortrait from './character-portrait'
+import CharacterPortrait from '@/features/character/components/steps/class-portrait'
 import SummaryPanel from './summary-panel'
 
 export default function StepSummary({
