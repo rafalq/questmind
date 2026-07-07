@@ -17,7 +17,9 @@ export default function ButtonPlayResume({
     <Button
       size="sm"
       onClick={onClick}
-      className={className || 'flex items-center justify-center gap-2'}
+      className={
+        className || 'flex items-center justify-center gap-2 cursor-pointer'
+      }
     >
       <IconPlayerPlay stroke={2} size={14} />
       {isActiveSession ? 'Resume' : 'Play'}
