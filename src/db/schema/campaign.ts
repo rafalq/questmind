@@ -8,6 +8,7 @@ import { genreEnum } from './enums'
 export const campaignsTable = pgTable('campaigns', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: text('user_id').notNull(),
+  language: text('language').notNull().default('en'),
   name: text('name').notNull(),
   // User-defined save name — not a narrative title.
   // e.g. "Tuesday night", "The dark path"
