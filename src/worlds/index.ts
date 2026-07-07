@@ -1,13 +1,14 @@
-import { z } from "zod";
+import { z } from 'zod'
+
 import {
   WorldDefinitionSchema,
   type Gender,
   type Genre,
-  type WorldDefinition,
-} from "./schema";
-import { treigthe } from "./treigthe/definition";
-import { drift } from "./drift/definition";
-import { neonWarszawa } from "./neon-warszawa/definition";
+  type WorldDefinitionInput,
+} from './schema'
+import { treigthe } from './treigthe/definition'
+import { drift } from './drift/definition'
+import { neonWarszawa } from './neon-warszawa/definition'
 
 /**
  * World registry — single source of truth for every world in QuestMind.
@@ -19,61 +20,60 @@ import { neonWarszawa } from "./neon-warszawa/definition";
  * readable error at build/dev time instead of breaking the wizard at runtime.
  */
 
-const ALL_WORLDS = [treigthe, drift, neonWarszawa];
+const ALL_WORLDS = [treigthe, drift, neonWarszawa]
 
 const RegistrySchema = z
   .array(WorldDefinitionSchema)
   .min(1)
-  .refine(
-    (ws) => new Set(ws.map((w) => w.value)).size === ws.length,
-    { message: "Duplicate world values in registry" },
-  );
+  .refine((ws) => new Set(ws.map((w) => w.value)).size === ws.length, {
+    message: 'Duplicate world values in registry',
+  })
 
-const result = RegistrySchema.safeParse(ALL_WORLDS);
+const result = RegistrySchema.safeParse(ALL_WORLDS)
 
 if (!result.success) {
   const issues = result.error.issues
-    .map((i) => `  - [${i.path.join(".")}] ${i.message}`)
-    .join("\n");
-  throw new Error(`Invalid world definitions in registry:\n${issues}`);
+    .map((i) => `  - [${i.path.join('.')}] ${i.message}`)
+    .join('\n')
+  throw new Error(`Invalid world definitions in registry:\n${issues}`)
 }
 
-export const WORLDS: readonly WorldDefinition[] = result.data;
+export const WORLDS: readonly WorldDefinitionInput[] = result.data
 
 /** Worlds selectable in the wizard (stubs filtered out). */
-export const ENABLED_WORLDS = WORLDS.filter((w) => w.enabled);
+export const ENABLED_WORLDS = WORLDS.filter((w) => w.enabled)
 
 // ---------------------------------------------------------------------------
 // Lookups
 // ---------------------------------------------------------------------------
 
-const WORLD_BY_VALUE = new Map(WORLDS.map((w) => [w.value, w]));
+const WORLD_BY_VALUE = new Map(WORLDS.map((w) => [w.value, w]))
 
-export function getWorld(worldValue: string): WorldDefinition {
-  const world = WORLD_BY_VALUE.get(worldValue);
-  if (!world) throw new Error(`Unknown world: "${worldValue}"`);
-  return world;
+export function getWorld(worldValue: string): WorldDefinitionInput {
+  const world = WORLD_BY_VALUE.get(worldValue)
+  if (!world) throw new Error(`Unknown world: "${worldValue}"`)
+  return world
 }
 
 export function getRace(worldValue: string, raceValue: string) {
-  const race = getWorld(worldValue).races.find((r) => r.value === raceValue);
+  const race = getWorld(worldValue).races.find((r) => r.value === raceValue)
   if (!race) {
-    throw new Error(`Unknown race "${raceValue}" in world "${worldValue}"`);
+    throw new Error(`Unknown race "${raceValue}" in world "${worldValue}"`)
   }
-  return race;
+  return race
 }
 
 export function getClass(worldValue: string, classValue: string) {
-  const cls = getWorld(worldValue).classes.find((c) => c.value === classValue);
+  const cls = getWorld(worldValue).classes.find((c) => c.value === classValue)
   if (!cls) {
-    throw new Error(`Unknown class "${classValue}" in world "${worldValue}"`);
+    throw new Error(`Unknown class "${classValue}" in world "${worldValue}"`)
   }
-  return cls;
+  return cls
 }
 
 /** Server-side genre derivation — drop-in replacement for GENRE_BY_WORLD. */
 export function getGenre(worldValue: string): Genre {
-  return getWorld(worldValue).genre;
+  return getWorld(worldValue).genre
 }
 
 // ---------------------------------------------------------------------------
@@ -94,14 +94,14 @@ export function buildClassPortraitUrl(
   worldValue: string,
   raceValue: string,
   gender: Gender | null,
-  classValue: string,
+  classValue: string
 ): string {
-  const world = getWorld(worldValue);
-  const race = getRace(worldValue, raceValue);
+  const world = getWorld(worldValue)
+  const race = getRace(worldValue, raceValue)
   const segments = race.genderless
     ? [raceValue, classValue]
-    : [raceValue, gender ?? "male", classValue];
-  return `${world.classPortraitsBaseUrl}${segments.join("-")}.jpg`;
+    : [raceValue, gender ?? 'male', classValue]
+  return `${world.classPortraitsBaseUrl}${segments.join('-')}.jpg`
 }
 
 // ---------------------------------------------------------------------------
@@ -112,11 +112,11 @@ export const CharacterInputSchema = z.object({
   world: z.string().min(1),
   race: z.string().min(1),
   characterClass: z.string().min(1),
-  gender: z.enum(["male", "female"]).nullable(),
+  gender: z.enum(['male', 'female']).nullable(),
   name: z.string().min(1).max(60),
-});
+})
 
-export type CharacterInput = z.infer<typeof CharacterInputSchema>;
+export type CharacterInput = z.infer<typeof CharacterInputSchema>
 
 /**
  * Cross-field validation Zod can't express cleanly: race/class must belong
@@ -124,18 +124,21 @@ export type CharacterInput = z.infer<typeof CharacterInputSchema>;
  * Call right after parsing input in the createCharacter server action.
  */
 export function assertValidCombination(input: CharacterInput): void {
-  const world = getWorld(input.world);
+  const world = getWorld(input.world)
   if (!world.enabled) {
-    throw new Error(`World "${world.value}" is not playable yet`);
+    throw new Error(`World "${world.value}" is not playable yet`)
   }
 
-  const race = getRace(input.world, input.race);
-  getClass(input.world, input.characterClass); // throws if invalid
+  const race = getRace(input.world, input.race)
+  getClass(input.world, input.characterClass) // throws if invalid
 
   if (race.genderless && input.gender !== null) {
-    throw new Error(`Race "${race.value}" is genderless — gender must be null`);
+    throw new Error(`Race "${race.value}" is genderless — gender must be null`)
   }
   if (!race.genderless && input.gender === null) {
-    throw new Error(`Race "${race.value}" requires a gender`);
+    throw new Error(`Race "${race.value}" requires a gender`)
   }
 }
+
+export * from './campaign-brief'
+export * from './schema'
