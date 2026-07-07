@@ -129,6 +129,15 @@ export const ClassDefinitionSchema = z.object({
   label: z.string().min(1),
   description: z.string().min(1),
   modifiers: ModifiersSchema,
+  startingEquipment: z.array(z.string()).default([]),
+  abilities: z
+    .array(
+      z.object({
+        name: z.string(), // "Blood Casting"
+        description: z.string(), // short: what it does and its cost
+      })
+    )
+    .default([]),
 })
 
 export type ClassDefinition = z.infer<typeof ClassDefinitionSchema>
@@ -205,5 +214,6 @@ export const WorldDefinitionSchema = z
     { message: 'Duplicate class values within world' }
   )
 
+export type WorldDefinition = z.infer<typeof WorldDefinitionSchema>
 /** Input shape for authoring definitions — fields with defaults are optional. */
 export type WorldDefinitionInput = z.input<typeof WorldDefinitionSchema>

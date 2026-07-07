@@ -4,7 +4,7 @@ import {
   WorldDefinitionSchema,
   type Gender,
   type Genre,
-  type WorldDefinitionInput,
+  type WorldDefinition,
 } from './schema'
 import { treigthe } from './treigthe/definition'
 import { drift } from './drift/definition'
@@ -38,7 +38,7 @@ if (!result.success) {
   throw new Error(`Invalid world definitions in registry:\n${issues}`)
 }
 
-export const WORLDS: readonly WorldDefinitionInput[] = result.data
+export const WORLDS: readonly WorldDefinition[] = result.data
 
 /** Worlds selectable in the wizard (stubs filtered out). */
 export const ENABLED_WORLDS = WORLDS.filter((w) => w.enabled)
@@ -49,7 +49,7 @@ export const ENABLED_WORLDS = WORLDS.filter((w) => w.enabled)
 
 const WORLD_BY_VALUE = new Map(WORLDS.map((w) => [w.value, w]))
 
-export function getWorld(worldValue: string): WorldDefinitionInput {
+export function getWorld(worldValue: string): WorldDefinition {
   const world = WORLD_BY_VALUE.get(worldValue)
   if (!world) throw new Error(`Unknown world: "${worldValue}"`)
   return world
