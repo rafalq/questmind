@@ -50,8 +50,8 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <Divider />
       <Features />
+      <Divider />
       <Demo />
       <CTA />
     </>
@@ -150,7 +150,7 @@ function Demo() {
   return (
     <section
       id="demo"
-      className="px-8 md:px-24 pb-24 flex flex-col justify-center items-center"
+      className="px-8 md:px-24 pb-24 pt-12 flex flex-col justify-center items-center"
     >
       <p className="text-xs tracking-[0.4em] text-accent mb-3 uppercase">
         Live Session Demo

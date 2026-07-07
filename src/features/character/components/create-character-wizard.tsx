@@ -21,6 +21,7 @@ import StepSex from './steps/sex'
 import StepSummary from './steps/summary'
 import StepWorld from './steps/world'
 import WizardProgressBar from './wizard-progress-bar'
+import { IconRefresh } from '@tabler/icons-react'
 
 const INITIAL_DATA: FormData = {
   name: '',
@@ -158,7 +159,9 @@ export default function CreateCharacterWizard() {
               size="sm"
               onClick={handleReset}
               disabled={isPending}
+              className="flex items-center gap-2"
             >
+              <IconRefresh stroke={2} size={14} />
               Reset
             </Button>
           )}
