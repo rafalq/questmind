@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import MessageBubble from './message-bubble'
 import Button from '@/components/ui/button'
 import { genreFont, genreBg } from '@/lib/genre-config'
-import { Genre } from '@/features/character/constants/TO-DELETE-constants'
+import { Genre } from '@/features/character/constants/'
 import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
 
 type UIMessage = {

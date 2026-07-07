@@ -1,5 +1,5 @@
 import { genreFont } from '@/lib/genre-config'
-import type { Genre } from '@/features/character/constants/TO-DELETE-constants'
+import type { Genre } from '@/features/character/constants/'
 import { IconEye, IconUser } from '@tabler/icons-react'
 
 type Props = {

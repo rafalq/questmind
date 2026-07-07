@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { genreFont, genreBg, genreIcon } from '@/lib/genre-config'
-import type { Genre } from '@/features/character/constants/TO-DELETE-constants'
+import type { Genre } from '@/features/character/constants/'
 import {
   IconX,
   IconHeart,

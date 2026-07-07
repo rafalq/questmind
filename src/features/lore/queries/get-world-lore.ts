@@ -1,7 +1,7 @@
 import { db } from '@/db'
 import { worldsTable, regionsTable, worldEventsTable } from '@/db/schema/lore'
 import { eq, and } from 'drizzle-orm'
-import type { Genre } from '@/features/character/constants/TO-DELETE-constants'
+import type { Genre } from '@/features/character/constants/'
 
 export type WorldLore = {
   world: {
