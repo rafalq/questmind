@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt'
+import { SNAPSHOT_DELIMITER } from './stream-protocol'
 
 const client = new Anthropic()
 
@@ -58,12 +59,21 @@ export function streamGameResponse({
           const separatorIndex = fullText.indexOf(SEPARATOR)
 
           if (separatorIndex === -1) {
-            // Separator not yet seen — stream the new chunk directly.
-            controller.enqueue(encoder.encode(chunk.delta.text))
-            sentUpTo = fullText.length
+            // Separator not yet complete in the buffer. Hold back the last
+            // (SEPARATOR.length - 1) chars — they might be the beginning of a
+            // separator that only finishes in a later chunk. Without this, a
+            // partial "---JSON" leaks into the narrative before the closing
+            // "---" arrives, because indexOf still returns -1 mid-separator.
+            const safeUpTo = fullText.length - (SEPARATOR.length - 1)
+            if (safeUpTo > sentUpTo) {
+              controller.enqueue(
+                encoder.encode(fullText.slice(sentUpTo, safeUpTo))
+              )
+              sentUpTo = safeUpTo
+            }
           } else if (sentUpTo < separatorIndex) {
-            // Separator appeared in this chunk or a previous one but we have
-            // unsent narrative before it — flush that remainder now.
+            // Separator is now complete — flush any unsent narrative that
+            // sits before it (including the chars we were holding back).
             const remaining = fullText.slice(sentUpTo, separatorIndex)
             if (remaining) {
               controller.enqueue(encoder.encode(remaining))
@@ -109,6 +119,14 @@ export function streamGameResponse({
           .set({ lastPlayedAt: new Date() })
           .where(eq(campaignsTable.id, context.campaign.id)),
       ])
+
+      // Send the parsed snapshot to the client so it can apply the delta
+      // immediately — no separate refetch round-trip.
+      if (snapshot) {
+        controller.enqueue(
+          encoder.encode(SNAPSHOT_DELIMITER + JSON.stringify(snapshot))
+        )
+      }
 
       controller.close()
     },

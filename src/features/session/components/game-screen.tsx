@@ -9,6 +9,7 @@ import {
 import { type GameSnapshot } from '@/db/schema/session'
 import ChatPanel from './chat-panel'
 import StatsPanel from './stats-panel'
+import { SNAPSHOT_DELIMITER } from '@/features/session/lib/stream-protocol'
 
 type DbMessage = typeof messagesTable.$inferSelect
 type Campaign = typeof campaignsTable.$inferSelect
@@ -66,7 +67,7 @@ export default function GameScreen({
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
-      let assistantText = ''
+      let raw = ''
 
       // Add empty assistant message to stream into
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
@@ -75,26 +76,33 @@ export default function GameScreen({
         const { done, value } = await reader.read()
         if (done) break
 
-        assistantText += decoder.decode(value, { stream: true })
+        raw += decoder.decode(value, { stream: true })
 
-        // Update the last assistant message in place
+        // The server appends the game-state snapshot after SNAPSHOT_DELIMITER.
+        // Never render past it — narrative only, up to the delimiter.
+        const delimIdx = raw.indexOf(SNAPSHOT_DELIMITER)
+        const narrative = delimIdx === -1 ? raw : raw.slice(0, delimIdx)
+
         setMessages((prev) => {
           const updated = [...prev]
           updated[updated.length - 1] = {
             role: 'assistant',
-            content: assistantText,
+            content: narrative,
           }
           return updated
         })
       }
 
-      // Fetch the latest snapshot from the last saved message
-      const snapshotRes = await fetch(
-        `/api/game/snapshot?sessionId=${sessionId}`
-      )
-      if (snapshotRes.ok) {
-        const { snapshot: newSnapshot } = await snapshotRes.json()
-        if (newSnapshot) setSnapshot(newSnapshot)
+      // Apply the game-state snapshot straight away — no refetch, no cache.
+      // Panel reflects the delta in the same second as the narrative (FR-005).
+      const delimIdx = raw.indexOf(SNAPSHOT_DELIMITER)
+      if (delimIdx !== -1) {
+        const jsonStr = raw.slice(delimIdx + SNAPSHOT_DELIMITER.length).trim()
+        try {
+          setSnapshot(JSON.parse(jsonStr) as GameSnapshot)
+        } catch {
+          console.error('Failed to parse streamed snapshot')
+        }
       }
     } catch {
       setMessages((prev) => [
