@@ -3,7 +3,8 @@
 import Button from '@/components/ui/button'
 import { ROUTES } from '@/constants/routes'
 import { createCharacter } from '@/features/character/actions/create-character'
-import { POINT_BUY_TOTAL, RACES_BY_WORLD } from '@/features/character/constants'
+import { POINT_BUY_TOTAL } from '@/features/character/constants'
+import { getWorld } from '@/worlds'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
@@ -56,7 +57,7 @@ export default function CreateCharacterWizard() {
   // (e.g. demigod) skip straight from Race to Class.
   const activeSteps = useMemo(() => {
     const selectedRace = data.world
-      ? RACES_BY_WORLD[data.world].find((r) => r.value === data.race)
+      ? getWorld(data.world).races.find((r) => r.value === data.race)
       : undefined
 
     if (selectedRace?.genderless) {

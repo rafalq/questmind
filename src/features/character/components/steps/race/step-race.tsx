@@ -1,4 +1,4 @@
-import { RACES_BY_WORLD } from '@/features/character/constants'
+import { getWorld } from '@/worlds'
 import RaceCard from './race-card'
 import type { FormData } from '../../../types/wizard-types'
 
@@ -10,7 +10,7 @@ export default function StepRace({
   onChange: (patch: Partial<FormData>) => void
 }) {
   if (!data.world) return null
-  const races = RACES_BY_WORLD[data.world]
+  const races = getWorld(data.world).races
 
   return (
     <div className="flex flex-col gap-4">

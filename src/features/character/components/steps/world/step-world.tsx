@@ -1,4 +1,4 @@
-import { WORLDS } from '@/features/character/constants'
+import { ENABLED_WORLDS } from '@/worlds'
 import type { FormData } from '../../../types/wizard-types'
 
 export default function StepWorld({
@@ -13,7 +13,7 @@ export default function StepWorld({
       <p className="text-text-muted text-sm">
         Choose the world your story unfolds in.
       </p>
-      {WORLDS.map((world) => (
+      {ENABLED_WORLDS.map((world) => (
         <button
           key={world.value}
           type="button"
@@ -35,12 +35,10 @@ export default function StepWorld({
             className={`font-semibold ${data.world === world.value ? 'text-accent' : 'text-text-primary'}`}
           >
             {world.name}
-            {world.subtitle && (
-              <span className="text-text-muted font-normal">
-                {' — '}
-                {world.subtitle}
-              </span>
-            )}
+            <span className="text-text-muted font-normal">
+              {' — '}
+              {world.subtitle}
+            </span>
           </p>
           <p className="text-text-muted text-sm mt-1">{world.description}</p>
         </button>

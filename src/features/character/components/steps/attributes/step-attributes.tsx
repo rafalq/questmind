@@ -1,6 +1,5 @@
 // steps/attributes/step-attributes.tsx
 import {
-  RACES_BY_WORLD,
   CLASSES_BY_WORLD,
   ATTRIBUTE_LABELS_BY_WORLD,
   WORLD_GENDER_OPTIONS,
@@ -11,6 +10,7 @@ import {
   calculateMaxHp,
   type Attribute,
 } from '@/features/character/constants'
+import { getWorld } from '@/worlds'
 import {
   ATTRIBUTES,
   type FormData,
@@ -28,14 +28,13 @@ export default function StepAttributes({
 }) {
   if (!data.world || !data.race || !data.characterClass) return null
 
-  const raceDef = RACES_BY_WORLD[data.world].find((r) => r.value === data.race)
-  const classDef = CLASSES_BY_WORLD[data.world].find(
-    (c) => c.value === data.characterClass
-  )
+  const world = getWorld(data.world)
+  const raceDef = world.races.find((r) => r.value === data.race)
+  const classDef = world.classes.find((c) => c.value === data.characterClass)
   const genderDef = data.gender
-    ? WORLD_GENDER_OPTIONS[data.world].find((g) => g.id === data.gender)
+    ? world.genderOptions.find((g) => g.id === data.gender)
     : null
-  const labels = ATTRIBUTE_LABELS_BY_WORLD[data.world]
+  const labels = world.attributeLabels
 
   const totalSpent = Object.values(data.attributes).reduce((s, v) => s + v, 0)
   const remaining = POINT_BUY_TOTAL - totalSpent

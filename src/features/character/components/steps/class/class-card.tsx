@@ -1,21 +1,19 @@
 // steps/class/class-card.tsx
-import ClassPortrait from '../class-portrait'
 import ModifierBadge from '@/features/character/components/steps/modifier-badge'
-import type {
-  ClassDefinition,
-  CharacterClass,
-  Race,
-} from '@/features/character/constants'
+import type { ClassDefinition } from '@/worlds'
+import ClassPortrait from '../class-portrait'
 
 export default function ClassCard({
   cls,
+  world,
   race,
   gender,
   selected,
   onSelect,
 }: {
-  cls: ClassDefinition<CharacterClass>
-  race: Race
+  cls: ClassDefinition
+  world: string
+  race: string
   gender: string | null
   selected: boolean
   onSelect: () => void
@@ -30,7 +28,12 @@ export default function ClassCard({
           : 'border-border hover:border-text-muted'
       }`}
     >
-      <ClassPortrait race={race} gender={gender} characterClass={cls.value} />
+      <ClassPortrait
+        world={world}
+        race={race}
+        gender={gender}
+        characterClass={cls.value}
+      />
 
       <div className="flex flex-col gap-2 justify-center items-center">
         <p

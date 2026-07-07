@@ -10,13 +10,8 @@ import {
   ATTRIBUTE_MAX,
   POINT_BUY_TOTAL,
   calculateAttributeTotal,
-  RACES_BY_WORLD,
-  CLASSES_BY_WORLD,
-  WORLD_GENDER_OPTIONS,
-  GENRE_BY_WORLD,
-  WORLDS,
-  World,
 } from '@/features/character/constants'
+import { getWorld, getGenre } from '@/worlds'
 
 const ATTRIBUTES = [
   'strength',
@@ -36,14 +31,9 @@ const attributesSchema = z.object({
   perception: z.number().int().min(ATTRIBUTE_MIN).max(ATTRIBUTE_MAX),
 })
 
-// Built from WORLDS so a future second world extends this automatically.
-// Cast to World (not string) so z.enum infers the literal union, and
-// parsedInput.world stays type-safe for indexing RACES_BY_WORLD etc.
-const WORLD_VALUES = WORLDS.map((w) => w.value) as [World, ...World[]]
-
 const schema = z.object({
   name: z.string().min(1).max(60),
-  world: z.enum(WORLD_VALUES),
+  world: z.string().min(1),
   race: z.string().min(1),
   gender: z.string().optional(),
   characterClass: z.string().min(1),
@@ -65,13 +55,18 @@ export const createCharacter = authActionClient
       )
     }
 
-    // genre is derived server-side from world — never trust a client-supplied genre
-    const genre = GENRE_BY_WORLD[world]
+    // Registry lookup: throws a readable error for an unknown world,
+    // and blocks stub worlds that aren't playable yet.
+    const worldDef = getWorld(world)
+    if (!worldDef.enabled) {
+      throw new Error('This world is not playable yet.')
+    }
 
-    const raceDef = RACES_BY_WORLD[world]?.find((r) => r.value === race)
-    const classDef = CLASSES_BY_WORLD[world]?.find(
-      (c) => c.value === characterClass
-    )
+    // genre is derived server-side from world — never trust a client-supplied genre
+    const genre = getGenre(world)
+
+    const raceDef = worldDef.races.find((r) => r.value === race)
+    const classDef = worldDef.classes.find((c) => c.value === characterClass)
 
     if (!raceDef || !classDef) {
       throw new Error('Invalid race or class for selected world.')
@@ -85,7 +80,7 @@ export const createCharacter = authActionClient
         throw new Error('This race does not have a sex.')
       }
     } else {
-      genderDef = WORLD_GENDER_OPTIONS[world]?.find((g) => g.id === gender)
+      genderDef = worldDef.genderOptions.find((g) => g.id === gender)
       if (!genderDef) {
         throw new Error('A valid sex must be selected for this race.')
       }

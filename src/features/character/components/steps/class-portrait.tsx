@@ -2,21 +2,27 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { buildPortraitUrl } from '@/features/character/lib/build-portrait-url'
+import { buildClassPortraitUrl } from '@/worlds'
 import ClassIconBadge from '@/features/character/components/class-icon-badge'
-import type { Race, CharacterClass } from '@/features/character/constants'
 
 export default function ClassPortrait({
+  world,
   race,
   gender,
   characterClass,
 }: {
-  race: Race
+  world: string
+  race: string
   gender: string | null
-  characterClass: CharacterClass
+  characterClass: string
 }) {
   const [failed, setFailed] = useState(false)
-  const portraitUrl = buildPortraitUrl(race, gender, characterClass)
+  const portraitUrl = buildClassPortraitUrl(
+    world,
+    race,
+    gender as 'male' | 'female' | null,
+    characterClass
+  )
 
   if (failed) {
     return (

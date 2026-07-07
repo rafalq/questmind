@@ -7,10 +7,10 @@ import type {
 
 export type FormData = {
   name: string
-  world: World | null
-  race: Race | null
-  gender: string | null
-  characterClass: CharacterClass | null
+  world: string | null
+  race: string | null
+  gender: 'male' | 'female' | null
+  characterClass: string | null
   attributes: Record<Attribute, number>
 }
 

@@ -1,14 +1,21 @@
 import { TREIGTHE_CLASS_ICONS } from '@/features/character/constants/fantasy/treigthe'
-import type { CharacterClass } from '@/features/character/constants'
+import { IconHelp } from '@tabler/icons-react'
+
+// Widened view over the per-world icon maps. Add future worlds by
+// spreading their maps here (e.g. ...DRIFT_CLASS_ICONS); IconHelp
+// covers classes that don't have an icon yet.
+const CLASS_ICONS: Record<string, typeof IconHelp> = {
+  ...TREIGTHE_CLASS_ICONS,
+}
 
 export default function ClassIconBadge({
   characterClass,
   size = 64,
 }: {
-  characterClass: CharacterClass
+  characterClass: string
   size?: number
 }) {
-  const Icon = TREIGTHE_CLASS_ICONS[characterClass]
+  const Icon = CLASS_ICONS[characterClass] ?? IconHelp
 
   return (
     <div

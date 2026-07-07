@@ -1,4 +1,4 @@
-import { WORLD_GENDER_OPTIONS } from '@/features/character/constants'
+import { getWorld } from '@/worlds'
 import type { FormData } from '../../../types/wizard-types'
 
 function ModifierBadge({ attr, val }: { attr: string; val: number }) {
@@ -24,7 +24,7 @@ export default function StepSex({
   onChange: (patch: Partial<FormData>) => void
 }) {
   if (!data.world) return null
-  const options = WORLD_GENDER_OPTIONS[data.world]
+  const options = getWorld(data.world).genderOptions
 
   return (
     <div className="flex flex-col gap-4">

@@ -1,7 +1,6 @@
-import { CLASSES_BY_WORLD } from '@/features/character/constants'
+import { getWorld } from '@/worlds'
 import ClassCard from './class-card'
 import type { FormData } from '@/features/character/types/wizard-types'
-import type { CharacterClass } from '@/features/character/constants'
 
 export default function StepClass({
   data,
@@ -11,7 +10,11 @@ export default function StepClass({
   onChange: (patch: Partial<FormData>) => void
 }) {
   if (!data.world || !data.race) return null
-  const classes = CLASSES_BY_WORLD[data.world]
+
+  // Consts keep the narrowed types inside the map callback below
+  const world = data.world
+  const race = data.race
+  const classes = getWorld(world).classes
 
   return (
     <div className="flex flex-col gap-4">
@@ -23,12 +26,11 @@ export default function StepClass({
         <ClassCard
           key={cls.value}
           cls={cls}
-          race={data.race!}
+          world={world}
+          race={race}
           gender={data.gender}
           selected={data.characterClass === cls.value}
-          onSelect={() =>
-            onChange({ characterClass: cls.value as CharacterClass })
-          }
+          onSelect={() => onChange({ characterClass: cls.value })}
         />
       ))}
     </div>
