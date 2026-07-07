@@ -12,6 +12,7 @@ import { deleteCharacter } from '@/features/character/actions/delete-character'
 import CharacterDetailModal, {
   type CharacterDetail,
 } from './character-detail-modal'
+import Tooltip from '@/components/ui/tooltip'
 
 type Props = {
   character: CharacterDetail
@@ -34,12 +35,13 @@ export default function CharacterCard({ character }: Props) {
     >
       <div className="flex items-center gap-1">
         {character.isAlive ? (
-          <div className="flex items-center justify-start gap-1">
-            <span>Campaign:</span>
-            <span className="font-medium italic">
-              {character.activeCampaign?.campaignName}
-            </span>
-          </div>
+          character.activeCampaign && (
+            <div className="flex items-center justify-start gap-1">
+              <Tooltip content="Active campaign" position="top">
+                {character.activeCampaign?.campaignName}
+              </Tooltip>
+            </div>
+          )
         ) : (
           <IconSkull stroke={2} size={12} color="red" />
         )}
