@@ -47,7 +47,6 @@ export const charactersTable = pgTable('characters', {
   race: text('race').notNull(), // validated against RACE_OPTIONS[world] in Zod
   characterClass: text('character_class').notNull(), // validated against RACE_CLASS_OPTIONS[world][race]
   gender: text('gender'), // nullable — some races (e.g. demigod) skip this step entirely
-  backgroundStory: text('background_story'), // kept for schema stability; no longer collected in the wizard
   avatarUrl: text('avatar_url'),
   level: integer('level').default(1).notNull(),
   characterXp: integer('character_xp').default(0).notNull(),
