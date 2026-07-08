@@ -1,5 +1,5 @@
 import { genreFont } from '@/lib/genre-config'
-import type { Genre } from '@/features/character/constants/'
+import type { Genre } from '@/worlds/'
 import { IconEye, IconUser } from '@tabler/icons-react'
 
 type Props = {
@@ -35,6 +35,11 @@ export default function MessageBubble({
               : 'bg-accent text-accent-fg'
         }`}
       >
+        {isNarration && (
+          <p className="text-accent font-semibold tracking-widest uppercase mb-3">
+            ✦ Prologue ✦
+          </p>
+        )}
         {!isNarration && isAssistant && (
           <div className="text-xs text-text-muted mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
             <IconEye size={16} /> Game Master
