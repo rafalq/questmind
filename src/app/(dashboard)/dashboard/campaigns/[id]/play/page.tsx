@@ -20,8 +20,13 @@ export default async function PlayPage({ params, searchParams }: Props) {
 
   const { session, campaign, character, messages } = data
 
-  // Generate opening or recap if not already present
-  const hasOpening = messages.length > 0 && messages[0].role === 'assistant'
+  /// A real opening is an assistant message WITH narrative content.
+  // The initial-snapshot message createSession seeds is role:'assistant'
+  // but content:'' — it must not count as an opening, or generateOpening
+  // never fires and the intro is missing.
+  const hasOpening = messages.some(
+    (m) => m.role === 'assistant' && m.content !== ''
+  )
 
   if (!hasOpening) {
     const history = messages.map((m) => ({

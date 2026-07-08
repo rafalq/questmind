@@ -36,10 +36,15 @@ export default function GameScreen({
 }: Props) {
   // Convert DB messages to UI messages
   const [messages, setMessages] = useState<UIMessage[]>(
-    initialMessages.map((m) => ({
-      role: m.role as 'user' | 'assistant',
-      content: m.content,
-    }))
+    initialMessages
+      // Drop the technical initial-snapshot message (assistant, empty content).
+      // It carries the starting HP snapshot (read separately into lastSnapshot
+      // below) but must not render as an empty chat bubble.
+      .filter((m) => !(m.role === 'assistant' && m.content === ''))
+      .map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      }))
   )
 
   // Use the last snapshot from history as initial state

@@ -35,7 +35,11 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     lastSnapshot,
   } = input
 
-  const isNewSession = history.length === 0
+  // New session = the player hasn't acted yet. We can't use history.length,
+  // because session creation now seeds one technical assistant message
+  // (the initial HP snapshot) — so length is never 0. A user message is the
+  // real signal that play has begun.
+  const isNewSession = !history.some((m) => m.role === 'user')
 
   const prompt = isNewSession
     ? buildIntroPrompt(
@@ -83,6 +87,9 @@ function buildIntroPrompt(
   return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre} campaign called "${campaignName}". 
 The player's character is ${characterName}, a ${characterRace} ${characterClass}.
 Write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
+Write plain prose only. No markdown whatsoever: no asterisks, no hash symbols,
+no headers, no bold or italic markers, no title or heading line. Begin directly
+with the opening prose.
 Do not ask the player what they want to do. Do not include any JSON. Keep it under 200 words.`
 }
 
@@ -94,12 +101,12 @@ function buildRecapPrompt(
   lastSnapshot: GameSnapshot | null
 ): string {
   const historyText = history
+    .filter((m) => m.content !== '') // skip the technical initial-snapshot message
     .map(
       (m) =>
         `${m.role === 'user' ? characterName : 'Game Master'}: ${m.content}`
     )
     .join('\n')
-
   const stateText = lastSnapshot
     ? `Current state — HP: ${lastSnapshot.hp}/${lastSnapshot.maxHp}, Inventory: ${lastSnapshot.inventory.join(', ') || 'nothing'}, Active quests: ${
         lastSnapshot.quests
@@ -111,6 +118,9 @@ function buildRecapPrompt(
 
   return `You are QuestMind, an AI Game Master running a ${genre} campaign called "${campaignName}".
 The player is returning after a break. Write a short recap of what happened so far — like a "previously on..." summary.
+Write plain prose only. No markdown whatsoever: no asterisks, no hash symbols,
+no headers, no bold or italic markers, no title or heading line. Begin directly
+with the opening prose.
 Keep it under 150 words, past tense, atmospheric. Remind them where they are and what's at stake.
 ${stateText}
 
