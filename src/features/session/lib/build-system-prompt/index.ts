@@ -7,7 +7,9 @@ export interface PlayerContext {
   characterName: string
   race: string
   characterClass: string
-  backstory: string
+  // backstory removed — free-text player input dropped from the wizard;
+  // it added no world-consistent signal to tier access.
+  // backstory: string
 }
 
 export interface BuildPromptOptions {

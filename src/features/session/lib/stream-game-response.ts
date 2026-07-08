@@ -4,7 +4,7 @@ import { campaignsTable, messagesTable } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
-import { buildSystemPrompt, SEPARATOR } from './build-system-prompt'
+import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
 import { SNAPSHOT_DELIMITER } from './stream-protocol'
 
 const client = new Anthropic()
@@ -22,21 +22,24 @@ export function streamGameResponse({
 }: StreamInput): Response {
   const { campaign, character, lastSnapshot } = context
 
-  const systemPrompt = buildSystemPrompt(
-    campaign.genre,
-    character.name,
-    character.characterClass,
-    character.race
-  )
-
-  const fullSystem = lastSnapshot
-    ? `${systemPrompt}\n\nCurrent game state:\n${JSON.stringify(lastSnapshot)}`
-    : systemPrompt
-
   const encoder = new TextEncoder()
 
   const readable = new ReadableStream({
     async start(controller) {
+      const systemPrompt = await buildSystemPrompt({
+        genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
+        player: {
+          campaignId: campaign.id,
+          characterName: character.name,
+          race: character.race,
+          characterClass: character.characterClass,
+        },
+      })
+
+      const fullSystem = lastSnapshot
+        ? `${systemPrompt}\n\nCurrent game state:\n${JSON.stringify(lastSnapshot)}`
+        : systemPrompt
+
       let fullText = ''
       // Track how many characters of narrative we have already sent
       // so we can flush the remainder when the separator is found mid-chunk.

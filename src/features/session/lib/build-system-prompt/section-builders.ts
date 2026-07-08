@@ -114,11 +114,10 @@ export function buildPlayerBlock(player: PlayerContext): string {
 Name: ${player.characterName}
 Race: ${player.race}
 Class: ${player.characterClass}
-Backstory: ${player.backstory}
 
 Tier access rules:
 - Reveal tier_1 lore relevant to the ${player.race} race.
 - Reveal tier_2 lore relevant to the ${player.characterClass} class.
-- Use the backstory above to judge tier_3 access case by case.
+- Judge tier_3 access case by case from what the player does in the session.
 - Never reveal tier_secret content directly.`
 }
