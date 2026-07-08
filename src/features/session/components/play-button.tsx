@@ -70,11 +70,11 @@ export default function PlayButton({
 
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
           onClick={() => setShowModal(false)}
         >
           <div
-            className="bg-bg-primary border border-border p-6 w-full max-w-md"
+            className="bg-bg-primary border border-accent p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-bold text-text-primary mb-1">
@@ -94,10 +94,10 @@ export default function PlayButton({
                   <li
                     key={c.id}
                     onClick={() => setSelectedCharacterId(c.id)}
-                    className={`px-4 py-3 border cursor-pointer transition-colors ${
+                    className={`px-4 py-3 border border-border cursor-pointer transition-colors ${
                       selectedCharacterId === c.id
                         ? 'border-accent text-text-primary'
-                        : 'border-border text-text-secondary hover:border-accent/50'
+                        : 'border-border text-text-secondary hover:border-accent/70'
                     }`}
                   >
                     <p className="font-semibold">{c.name}</p>
