@@ -23,6 +23,13 @@ export type GameSnapshot = {
   inventory: string[]
   quests: { id: string; title: string; status: 'active' | 'completed' }[]
   sceneTag: string
+  // ── Dynamic RAG hooks (populated by the model, consumed in later steps) ──
+  // npcMet:   NPC names met for the first time this turn → appended to
+  //           campaignLoreState.metNpcIds for cross-campaign continuity.
+  // location: new location slug if the player moved this turn, else null →
+  //           updates campaignLoreState.currentLocationSlug + scene image.
+  npcMet?: string[]
+  location?: string | null
 }
 
 export const sessionsTable = pgTable('sessions', {
