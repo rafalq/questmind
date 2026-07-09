@@ -1,6 +1,6 @@
 // src/features/game/lib/build-system-prompt/index.ts
 // Main entry point — composes lore sections into the final system prompt.
-// Import from here: import { buildSystemPrompt, SEPARATOR } from "@/features/game/lib/build-system-prompt"
+import { buildLanguageSection } from './language-section'
 
 export interface PlayerContext {
   campaignId: string
@@ -15,6 +15,7 @@ export interface PlayerContext {
 export interface BuildPromptOptions {
   genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
   player: PlayerContext
+  language: string
   sessionSummary?: string // from tiktoken summarisation (FR-006)
 }
 
@@ -38,10 +39,11 @@ import { GAME_MASTER_INSTRUCTIONS } from './game-master-instructions'
 export async function buildSystemPrompt(
   options: BuildPromptOptions
 ): Promise<string> {
-  const { player, sessionSummary } = options
+  const { player, sessionSummary, language } = options
   const lore = await resolveLore(options)
   const secretBlock = buildSecretBlock(lore.secretLore, lore.droppedSecretHints)
   const playerBlock = buildPlayerBlock(player)
+  const languageBlock = buildLanguageSection(language)
   const continuityBlock = sessionSummary
     ? `## SESSION HISTORY\n${sessionSummary}`
     : ''
@@ -54,6 +56,7 @@ export async function buildSystemPrompt(
     playerBlock,
     secretBlock,
     continuityBlock,
+    languageBlock,
     GAME_MASTER_INSTRUCTIONS,
   ]
     .filter(Boolean)

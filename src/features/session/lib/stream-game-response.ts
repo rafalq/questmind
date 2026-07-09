@@ -6,6 +6,7 @@ import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
 import { SNAPSHOT_DELIMITER } from './stream-protocol'
+import { getLanguage } from '@/features/campaign/constants/languages'
 
 const client = new Anthropic()
 
@@ -34,20 +35,35 @@ export function streamGameResponse({
           race: character.race,
           characterClass: character.characterClass,
         },
+        language: campaign.language,
       })
 
-      const fullSystem = lastSnapshot
+      // Base prompt + optional current-state blob (both English).
+      const baseSystem = lastSnapshot
         ? `${systemPrompt}\n\nCurrent game state:\n${JSON.stringify(lastSnapshot)}`
         : systemPrompt
 
+      // Terminal language directive — the LAST thing the model reads before
+      // generating. The `## Language` block inside the builder explains the
+      // full rule, but it sits before ~2k tokens of English lore, GM
+      // instructions and the state blob above, so recency pulls the model
+      // back into English. Repeating the imperative at the very end (after
+      // the state blob) is what actually holds the narration language.
+      // English needs nothing — it's the default and the JSON is English too.
+      const fullSystem =
+        campaign.language === 'en'
+          ? baseSystem
+          : `${baseSystem}\n\n---\n\nOUTPUT LANGUAGE: Write every word of narrative, dialogue and description in ${getLanguage(campaign.language).promptName}. This overrides the language of any lore or state text above. Only the machine-readable block after "${SEPARATOR}" stays in English — English keys, English values.`
+
       let fullText = ''
+
       // Track how many characters of narrative we have already sent
       // so we can flush the remainder when the separator is found mid-chunk.
       let sentUpTo = 0
 
-      const stream = await client.messages.stream({
+      const stream = client.messages.stream({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
+        max_tokens: 2048,
         system: fullSystem,
         messages: claudeMessages,
       })
