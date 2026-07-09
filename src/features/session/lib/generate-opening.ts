@@ -74,7 +74,10 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 400,
+    // 700, not 400 — the prompt caps prose at ~200 words, but token-heavy
+    // languages (e.g. Polish) overrun a 400-token ceiling and get cut
+    // mid-sentence before the opening finishes.
+    max_tokens: 700,
     messages: [{ role: 'user', content: prompt }],
   })
 
@@ -102,11 +105,9 @@ function buildIntroPrompt(
 ): string {
   return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre} campaign called "${campaignName}". 
 The player's character is ${characterName}, a ${characterRace} ${characterClass}.
-Write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
-Write plain prose only. No markdown whatsoever: no asterisks, no hash symbols,
-no headers, no bold or italic markers, no title or heading line. Begin directly
-with the opening prose.
-Do not ask the player what they want to do. Do not include any JSON. Keep it under 200 words.
+Begin with a single short evocative title line using "# " (one line only), then write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
+Formatting: use only plain prose, plus that one "# " title line and *italic* for occasional emphasis. Do not use bold, headers beyond the single title, lists, tables, links, or any other markdown.
+Do not ask the player what they want to do. Do not include any JSON. Keep the prose under 200 words.
 ${languageLine(language)}`
 }
 
