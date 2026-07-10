@@ -7,6 +7,7 @@ import PlayButton from '@/features/session/components/play-button'
 import { useAction } from 'next-safe-action/hooks'
 import { toast } from 'sonner'
 import { deleteCampaign } from '../actions/delete-campaign'
+import CampaignEditableTitle from './campaign-editable-title'
 
 type Campaign = {
   id: string
@@ -53,7 +54,9 @@ export default function CampaignCard({
   return (
     <GenreCard
       genre={campaign.genre}
-      title={campaign.name}
+      title={
+        <CampaignEditableTitle campaignId={campaign.id} name={campaign.name} />
+      }
       subtitle={
         lore ? <WorldLoreModal genre={campaign.genre} lore={lore} /> : undefined
       }

@@ -9,7 +9,7 @@ import ButtonIcon from './button-icon'
 
 type GenreCardProps = {
   genre: Genre
-  title: string
+  title: React.ReactNode
   subtitle?: React.ReactNode
   description?: string
   badge?: React.ReactNode
