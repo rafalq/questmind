@@ -7,6 +7,7 @@ export interface PlayerContext {
   characterName: string
   race: string
   characterClass: string
+  gender: string | null
   // backstory removed — free-text player input dropped from the wizard;
   // it added no world-consistent signal to tier access.
   // backstory: string
@@ -16,7 +17,7 @@ export interface BuildPromptOptions {
   genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
   player: PlayerContext
   language: string
-  sessionSummary?: string // from tiktoken summarisation (FR-006)
+  sessionSummary?: string
 }
 
 // Shape returned by lore-resolver — all optional since a session

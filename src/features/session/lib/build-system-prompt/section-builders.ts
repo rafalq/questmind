@@ -109,11 +109,29 @@ ${secretLore.join('\n\n')}`
 
 // ── Player block ───────────────────────────────────────────────────────────
 
+// Grammatical gender for gendered languages (Polish etc.). Only an explicitly
+// female character takes feminine forms; male, genderless, other, and unset
+// (null) all fall back to masculine — matching the rule that non-binary /
+// genderless beings (e.g. a demigod) use masculine grammar.
+
+const FEMININE_GENDERS = new Set(['female', 'woman', 'f'])
+
+export function genderToGrammar(
+  gender: string | null
+): 'feminine' | 'masculine' {
+  if (gender && FEMININE_GENDERS.has(gender.trim().toLowerCase())) {
+    return 'feminine'
+  }
+  return 'masculine'
+}
+
 export function buildPlayerBlock(player: PlayerContext): string {
+  const grammar = genderToGrammar(player.gender)
   return `## PLAYER CHARACTER
 Name: ${player.characterName}
 Race: ${player.race}
 Class: ${player.characterClass}
+Grammatical gender: ${grammar} — in gendered languages, every verb, adjective and participle referring to ${player.characterName} must take ${grammar} forms.
 
 Tier access rules:
 - Reveal tier_1 lore relevant to the ${player.race} race.

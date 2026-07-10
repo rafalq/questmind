@@ -3,6 +3,7 @@ import { db } from '@/db'
 import { messagesTable } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
 import { getLanguage } from '@/features/campaign/constants/languages'
+import { genderToGrammar } from './build-system-prompt/section-builders'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -21,6 +22,7 @@ type OpeningInput = {
   characterName: string
   characterClass: string
   characterRace: string
+  gender: string | null
   history: Message[]
   lastSnapshot: GameSnapshot | null
 }
@@ -35,6 +37,15 @@ function languageLine(language: string): string {
   return `Write everything in ${getLanguage(language).promptName}. Every word of narrative, dialogue and description must be in ${getLanguage(language).promptName}.`
 }
 
+// Grammatical-gender line for both prompts. Matters most in the intro/recap
+// because they're written in the PAST tense, where Polish verbs and
+// participles inflect for gender ("klęczał" vs "klęczała") — the present-tense
+// gameplay narration mostly doesn't.
+function genderLine(gender: string | null, characterName: string): string {
+  const grammar = genderToGrammar(gender)
+  return `Grammatical gender: ${characterName} is ${grammar}; in gendered languages every verb, adjective and participle referring to ${characterName} must take ${grammar} forms.`
+}
+
 export async function generateOpening(input: OpeningInput): Promise<string> {
   const {
     sessionId,
@@ -44,6 +55,7 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     characterName,
     characterClass,
     characterRace,
+    gender,
     history,
     lastSnapshot,
   } = input
@@ -61,13 +73,15 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
         campaignName,
         characterName,
         characterClass,
-        characterRace
+        characterRace,
+        gender
       )
     : buildRecapPrompt(
         genre,
         language,
         campaignName,
         characterName,
+        gender,
         history,
         lastSnapshot
       )
@@ -101,13 +115,15 @@ function buildIntroPrompt(
   campaignName: string,
   characterName: string,
   characterClass: string,
-  characterRace: string
+  characterRace: string,
+  gender: string | null
 ): string {
   return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre} campaign called "${campaignName}". 
 The player's character is ${characterName}, a ${characterRace} ${characterClass}.
 Begin with a single short evocative title line using "# " (one line only), then write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
 Formatting: use only plain prose, plus that one "# " title line and *italic* for occasional emphasis. Do not use bold, headers beyond the single title, lists, tables, links, or any other markdown.
 Do not ask the player what they want to do. Do not include any JSON. Keep the prose under 200 words.
+${genderLine(gender, characterName)}
 ${languageLine(language)}`
 }
 
@@ -116,6 +132,7 @@ function buildRecapPrompt(
   language: string,
   campaignName: string,
   characterName: string,
+  gender: string | null,
   history: Message[],
   lastSnapshot: GameSnapshot | null
 ): string {
@@ -147,5 +164,6 @@ Session history:
 ${historyText}
 
 Do not include any JSON. Do not ask what the player wants to do.
+${genderLine(gender, characterName)}
 ${languageLine(language)}`
 }

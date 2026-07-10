@@ -45,6 +45,7 @@ export default async function PlayPage({ params, searchParams }: Props) {
       characterName: character.name,
       characterClass: character.characterClass,
       characterRace: character.race,
+      gender: character.gender,
       history,
       lastSnapshot,
     })

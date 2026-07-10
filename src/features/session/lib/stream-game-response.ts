@@ -34,6 +34,7 @@ export function streamGameResponse({
           characterName: character.name,
           race: character.race,
           characterClass: character.characterClass,
+          gender: character.gender,
         },
         language: campaign.language,
       })
