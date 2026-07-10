@@ -19,7 +19,6 @@ type OpeningInput = {
   sessionId: string
   genre: string
   language: string
-  campaignName: string
   characterName: string
   characterClass: string
   characterRace: string
@@ -52,7 +51,6 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     sessionId,
     genre,
     language,
-    campaignName,
     characterName,
     characterClass,
     characterRace,
@@ -71,7 +69,7 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     ? buildIntroPrompt(
         genre,
         language,
-        campaignName,
+
         characterName,
         characterClass,
         characterRace,
@@ -80,7 +78,6 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     : buildRecapPrompt(
         genre,
         language,
-        campaignName,
         characterName,
         gender,
         history,
@@ -113,13 +110,12 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
 function buildIntroPrompt(
   genre: string,
   language: string,
-  campaignName: string,
   characterName: string,
   characterClass: string,
   characterRace: string,
   gender: string | null
 ): string {
-  return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre} campaign called "${campaignName}". 
+  return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre}". 
 The player's character is ${characterName}, a ${characterRace} ${characterClass}.
 Begin with a single short evocative title line using "# " (one line only), then write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
 Formatting: use only plain prose, plus that one "# " title line and *italic* for occasional emphasis. Do not use bold, headers beyond the single title, lists, tables, links, or any other markdown.
@@ -131,7 +127,6 @@ ${languageLine(language)}`
 function buildRecapPrompt(
   genre: string,
   language: string,
-  campaignName: string,
   characterName: string,
   gender: string | null,
   history: Message[],
@@ -153,7 +148,7 @@ function buildRecapPrompt(
       }.`
     : ''
 
-  return `You are QuestMind, an AI Game Master running a ${genre} campaign called "${campaignName}".
+  return `You are QuestMind, an AI Game Master running a ${genre}".
 The player is returning after a break. Write a short recap of what happened so far — like a "previously on..." summary.
 Write plain prose only. No markdown whatsoever: no asterisks, no hash symbols,
 no headers, no bold or italic markers, no title or heading line. Begin directly
