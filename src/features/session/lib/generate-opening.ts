@@ -4,6 +4,7 @@ import { messagesTable } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { genderToGrammar } from './build-system-prompt/section-builders'
+import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -87,11 +88,11 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
       )
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: AI_MODEL,
     // 700, not 400 — the prompt caps prose at ~200 words, but token-heavy
     // languages (e.g. Polish) overrun a 400-token ceiling and get cut
     // mid-sentence before the opening finishes.
-    max_tokens: 700,
+    max_tokens: MAX_TOKENS.opening,
     messages: [{ role: 'user', content: prompt }],
   })
 

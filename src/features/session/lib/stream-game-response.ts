@@ -7,6 +7,7 @@ import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
 import { SNAPSHOT_DELIMITER } from './stream-protocol'
 import { getLanguage } from '@/features/campaign/constants/languages'
+import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
 
 const client = new Anthropic()
 
@@ -63,8 +64,8 @@ export function streamGameResponse({
       let sentUpTo = 0
 
       const stream = client.messages.stream({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2048,
+        model: AI_MODEL,
+        max_tokens: MAX_TOKENS.turn,
         system: fullSystem,
         messages: claudeMessages,
       })
