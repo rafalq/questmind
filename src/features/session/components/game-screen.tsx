@@ -131,10 +131,7 @@ export default function GameScreen({
             {campaign.name}
           </h2>
           <p className="text-sm text-text-muted">
-            {character.name} ·{' '}
-            <span className="capitalize">
-              {character.characterClass.replaceAll('_', ' ')}
-            </span>
+            {character.name} · {character.characterClass.replace('_', ' ')}
           </p>
         </div>
         <ChatPanel
