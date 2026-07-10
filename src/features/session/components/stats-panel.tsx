@@ -40,12 +40,14 @@ export default function StatsPanel({ snapshot, character }: Props) {
         <div className="text-text-muted text-xs inline-flex items-center gap-1">
           <div className="flex items-center gap-1 justify-center">
             <IconUserShield size={10} />
-            {character.race}
+            <span className="capitalize">{character.race}</span>
           </div>{' '}
           ·{' '}
           <div className="flex items-center gap-1 justify-center">
             <IconShield size={10} />
-            {character.characterClass.replace('_', ' ')}
+            <span className="capitalize">
+              {character.characterClass.replaceAll('_', ' ')}
+            </span>
           </div>
         </div>
       </div>
