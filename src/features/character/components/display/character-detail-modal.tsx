@@ -34,7 +34,6 @@ export type CharacterDetail = {
   level: number
   characterXp: number
   isAlive: boolean
-  backstory: string | null
   inventory: string[]
   attributes: Attribute[]
   activeCampaign: ActiveCampaign | null
@@ -219,7 +218,6 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
 
           <AttributeGrid attributes={character.attributes} />
           <InventoryList items={character.inventory} />
-          {character.backstory && <Backstory text={character.backstory} />}
         </div>
       </div>
     </div>

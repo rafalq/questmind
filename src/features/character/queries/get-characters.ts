@@ -61,7 +61,6 @@ export const getCharacters = async () => {
 
       return {
         ...character,
-        backstory: character.backgroundStory,
         attributes,
         activeCampaign: link ?? null,
       }

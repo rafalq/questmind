@@ -39,7 +39,7 @@ export default function Button({
     <button
       disabled={disabled || loading}
       className={`
-        tracking-wider transition-all disabled:cursor-not-allowed
+        tracking-wider transition-all disabled:cursor-not-allowed cursor-pointer
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${className}

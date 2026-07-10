@@ -6,6 +6,8 @@ import {
   campaignsTable,
   characterAttributesTable,
   charactersTable,
+  GameSnapshot,
+  messagesTable,
   sessionsTable,
 } from '@/db/schema'
 import { authActionClient } from '@/lib/safe-action'
@@ -77,12 +79,20 @@ export const createSession = authActionClient
     const endurance = enduranceAttr?.baseValue ?? 0
     const maxHp = BASE_HP + endurance * HP_PER_ENDURANCE
 
-    // Create session and campaign-character link in parallel
-    const [[session]] = await Promise.all([
-      db
-        .insert(sessionsTable)
-        .values({ userId, campaignId, characterId })
-        .returning(),
+    const initialSnapshot: GameSnapshot = {
+      hp: maxHp,
+      maxHp,
+      inventory: [], // TODO: seed from class startingEquipment when ready
+      quests: [],
+      sceneTag: 'default',
+    }
+
+    const [session] = await db
+      .insert(sessionsTable)
+      .values({ userId, campaignId, characterId })
+      .returning()
+
+    await Promise.all([
       db
         .insert(campaignCharactersTable)
         .values({
@@ -92,7 +102,14 @@ export const createSession = authActionClient
           maxHp,
           status: 'active',
         })
-        .onConflictDoNothing(), // safe if record already exists
+        .onConflictDoNothing(),
+      // First snapshot — establishes HP truth for panel AND model from turn one.
+      db.insert(messagesTable).values({
+        sessionId: session.id,
+        role: 'assistant',
+        content: '', // no narrative; opening is generated separately
+        snapshot: initialSnapshot,
+      }),
     ])
 
     return { sessionId: session.id }

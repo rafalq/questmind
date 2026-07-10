@@ -1,5 +1,5 @@
 import { genreFont } from '@/lib/genre-config'
-import type { Genre } from '@/features/character/constants/'
+import type { Genre } from '@/worlds/'
 import { IconEye, IconUser } from '@tabler/icons-react'
 
 type Props = {
@@ -58,15 +58,49 @@ export default function MessageBubble({
   )
 }
 
+// Inline emphasis for a single paragraph. Handles the small allowed set —
+// **bold** / __bold__ and *italic* / _italic_ — non-nested, which is all GM
+// narration ever produces. Bold alternatives are listed before italic so the
+// tokenizer consumes "**x**" whole instead of leaving stray outer asterisks
+// (the bug in the previous single-asterisk regex). Anything that isn't a
+// closed emphasis pair falls through as plain text, so a half-typed "*word"
+// mid-stream renders literally until its closing marker arrives.
+function renderInline(text: string) {
+  const tokenRe = /(\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g
+  const parts = text.split(tokenRe)
+
+  return parts.map((part, j) => {
+    if (!part) return null
+    if (
+      (part.startsWith('**') && part.endsWith('**')) ||
+      (part.startsWith('__') && part.endsWith('__'))
+    ) {
+      return <strong key={j}>{part.slice(2, -2)}</strong>
+    }
+    if (
+      (part.startsWith('*') && part.endsWith('*')) ||
+      (part.startsWith('_') && part.endsWith('_'))
+    ) {
+      return <em key={j}>{part.slice(1, -1)}</em>
+    }
+    return part
+  })
+}
+
+// The contract: GM output uses blank-line paragraph breaks, "# " headings
+// (the opening title), inline emphasis, and a lone "---" scene break. No
+// general markdown parser: tables, blockquotes, links, images and lists never
+// legitimately appear, so parsing them would be dead weight on output we
+// control at both ends.
 function renderContent(content: string) {
-  const paragraphs = content.split(/\n\n+/)
+  const paragraphs = content.split(/\n{2,}/)
 
   return paragraphs.map((para, i) => {
-    const line = para.trim()
+    let line = para.trim()
     if (!line) return null
 
-    // Separator
-    if (line === '---') {
+    // Scene break — a paragraph that is only a horizontal-rule marker.
+    if (line === '---' || line === '***' || line === '___') {
       return (
         <p key={i} className="text-center text-accent my-4 tracking-widest">
           ❧ ❧ ❧
@@ -74,26 +108,23 @@ function renderContent(content: string) {
       )
     }
 
-    // Tytuł
-    if (line.startsWith('# ')) {
+    // Heading — render distinctly (bold, larger, accent) instead of as body
+    // text. Level maps to size: # is the opening title, ## / ### step down.
+    const heading = line.match(/^(#{1,6})\s+(.+)$/)
+    if (heading) {
+      const level = heading[1].length
+      const sizeClass =
+        level === 1 ? 'text-lg' : level === 2 ? 'text-base' : 'text-sm'
       return (
-        <p key={i} className="font-semibold text-accent mb-2">
-          ✦ {line.slice(2)}
+        <p key={i} className={`font-bold text-accent mb-3 ${sizeClass}`}>
+          {renderInline(heading[2])}
         </p>
       )
     }
 
-    // Kursywa (*tekst*)
-    const parts = line.split(/(\*[^*]+\*)/)
     return (
       <p key={i} className="mb-3">
-        {parts.map((part, j) =>
-          part.startsWith('*') && part.endsWith('*') ? (
-            <em key={j}>{part.slice(1, -1)}</em>
-          ) : (
-            part
-          )
-        )}
+        {renderInline(line)}
       </p>
     )
   })
