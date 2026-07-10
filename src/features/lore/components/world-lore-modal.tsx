@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { IconMap, IconX, IconBook } from '@tabler/icons-react'
 import type { WorldLore } from '@/features/lore/queries/get-world-lore'
 import type { Genre } from '@/features/character/constants/'
-import { genreFont, genreBg } from '@/lib/genre-config'
+import { genreFont, genreBg } from '@/lib/genre-theme'
 
 type Props = {
   genre: Genre

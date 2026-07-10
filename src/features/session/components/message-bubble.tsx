@@ -1,4 +1,4 @@
-import { genreFont } from '@/lib/genre-config'
+import { genreFont } from '@/lib/genre-theme'
 import type { Genre } from '@/worlds/'
 import { IconEye, IconUser } from '@tabler/icons-react'
 

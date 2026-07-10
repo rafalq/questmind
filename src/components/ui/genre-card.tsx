@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
-import { IconTrash } from '@tabler/icons-react'
-import { genreFont, genreBg, genreIcon } from '@/lib/genre-config'
-import type { Genre } from '@/features/character/constants/'
 import ConfirmDialog from '@/components/ui/confirm-dialog'
+import type { Genre } from '@/features/character/constants/'
+import { genreBg, genreFont, GenreIcon } from '@/lib/genre-theme'
+import { IconTrash } from '@tabler/icons-react'
+import React, { useState } from 'react'
 import ButtonIcon from './button-icon'
 
 type GenreCardProps = {
@@ -55,7 +55,7 @@ export default function GenreCard({
           style={{ fontFamily: 'var(--font-rajdhani)' }}
         >
           <div className="flex items-center gap-1">
-            {genreIcon[genre]}
+            <GenreIcon genre={genre} />
             {genre}
           </div>
           {badge && <div>{badge}</div>}

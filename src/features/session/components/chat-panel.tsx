@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import MessageBubble from './message-bubble'
 import Button from '@/components/ui/button'
-import { genreFont, genreBg } from '@/lib/genre-config'
+import { genreFont, genreBg } from '@/lib/genre-theme'
 import { Genre } from '@/worlds/'
 import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
 

@@ -1,5 +1,5 @@
 import { IconSword, IconRocket, IconCpu } from '@tabler/icons-react'
-import type { Genre } from '@/worlds/'
+import type { Genre } from '@/worlds'
 
 export const genreFont: Record<Genre, string> = {
   fantasy: 'var(--font-im-fell)',
@@ -13,15 +13,21 @@ export const genreBg: Record<Genre, string> = {
   cyberpunk: '#12081a',
 }
 
-export const genreIcon: Record<Genre, React.FC<{ size?: number }>> = {
+// prywatna mapa — na zewnątrz używaj <GenreIcon>, nie surowej mapy
+const genreIconMap: Record<Genre, React.FC<{ size?: number }>> = {
   fantasy: IconSword,
   'sci-fi': IconRocket,
   cyberpunk: IconCpu,
 }
 
-// helper to get an icon element for a genre
-export const getGenreIcon = (genre: Genre, size = 14) => {
-  const Icon = genreIcon[genre]
+export function GenreIcon({
+  genre,
+  size = 14,
+}: {
+  genre: Genre
+  size?: number
+}) {
+  const Icon = genreIconMap[genre]
   return <Icon size={size} />
 }
 

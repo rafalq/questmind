@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { genreFont, genreBg, genreIcon } from '@/lib/genre-config'
+import { genreFont, genreBg, GenreIcon } from '@/lib/genre-theme'
 import type { Genre } from '@/features/character/constants/'
 import {
   IconX,
@@ -146,7 +146,7 @@ function ModalHeader({
   return (
     <div className="flex items-center justify-between p-6 border-b border-border/50">
       <div className="flex items-center gap-2 text-xs text-text-muted uppercase tracking-widest">
-        {genreIcon[genre]}
+        <GenreIcon genre={genre} />
         {genre}
       </div>
       <button
