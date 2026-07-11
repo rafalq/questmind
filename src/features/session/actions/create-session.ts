@@ -82,7 +82,7 @@ export const createSession = authActionClient
     const initialSnapshot: GameSnapshot = {
       hp: maxHp,
       maxHp,
-      inventory: [], // TODO: seed from class startingEquipment when ready
+      inventory: character.inventory,
       quests: [],
       sceneTag: 'default',
     }
