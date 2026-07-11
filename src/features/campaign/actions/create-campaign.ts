@@ -1,17 +1,20 @@
 'use server'
 
+import { ROUTES } from '@/constants/routes'
 import { db } from '@/db'
 import { campaignsTable } from '@/db/schema'
 import { campaignLoreStateTable } from '@/db/schema/lore'
+import { authActionClient } from '@/lib/safe-action'
 import { getStartingLocationByGenre } from '@/worlds/get-starting-location'
 import { revalidatePath } from 'next/cache'
-import { authActionClient } from '@/lib/safe-action'
 import { z } from 'zod'
+import { LANGUAGE_CODES } from '../constants/languages'
 
 const schema = z.object({
   name: z.string().min(1).max(100),
   genre: z.enum(['fantasy', 'sci-fi', 'cyberpunk']),
   description: z.string().max(500).optional(),
+  language: z.enum(LANGUAGE_CODES),
 })
 
 export const createCampaign = authActionClient
@@ -25,6 +28,7 @@ export const createCampaign = authActionClient
         name: parsedInput.name,
         genre: parsedInput.genre,
         description: parsedInput.description ?? null,
+        language: parsedInput.language,
       })
       .returning({ id: campaignsTable.id })
 
@@ -36,5 +40,5 @@ export const createCampaign = authActionClient
       // activeNpcIds stays [] — populated by the write layer (step 3)
     })
 
-    revalidatePath('/dashboard')
+    revalidatePath(ROUTES.dashboard)
   })
