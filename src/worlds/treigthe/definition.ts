@@ -116,7 +116,7 @@ export const treigthe: WorldDefinitionInput = {
         'fully human — a body caught between, carrying a fraction of power ' +
         'it was never meant to hold. Their kind know no sex, only the slow, ' +
         'uneven weight of incomplete divinity.',
-      modifiers: { mind: 2, perception: 2, endurance: -1 },
+      modifiers: { charisma: 3, strength: 2, endurance: -2 },
       startingEquipment: [
         { name: 'Godsblood Vial', qty: 1 },
         { name: 'Binding Wraps', qty: 1 },
