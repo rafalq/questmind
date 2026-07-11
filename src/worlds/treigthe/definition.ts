@@ -68,7 +68,7 @@ export const treigthe: WorldDefinitionInput = {
         'harder to kill than they should be.',
       modifiers: { strength: 1, endurance: 1 },
       startingEquipment: [
-        { name: 'Patchwork Cloak', qty: 1 },
+        { name: 'Patchwork Cloak', qty: 1, slots: 2 },
         { name: 'Iron Ration', qty: 3 },
         { name: 'Hidden Knife', qty: 1 },
       ],
@@ -85,7 +85,7 @@ export const treigthe: WorldDefinitionInput = {
       modifiers: { mind: 2, perception: 2, endurance: -1 },
       startingEquipment: [
         { name: 'Memory Shard', qty: 1 },
-        { name: 'Fading Cloak', qty: 1 },
+        { name: 'Fading Cloak', qty: 1, slots: 2 },
         { name: 'Ash Vial', qty: 1 },
       ],
       genderless: false,
@@ -102,7 +102,7 @@ export const treigthe: WorldDefinitionInput = {
       startingEquipment: [
         { name: 'Tomb Key', qty: 1 },
         { name: "Warden's Seal", qty: 1 },
-        { name: 'Stone Lamp', qty: 1 },
+        { name: 'Stone Lamp', qty: 1, slots: 2 },
       ],
       genderless: false,
       femalePortraitUrl: `${RACE_PORTRAITS}stonewarden-female.jpg`,
@@ -119,7 +119,7 @@ export const treigthe: WorldDefinitionInput = {
       modifiers: { charisma: 3, strength: 2, endurance: -2 },
       startingEquipment: [
         { name: 'Godsblood Vial', qty: 1 },
-        { name: 'Binding Wraps', qty: 1 },
+        { name: 'Binding Wraps', qty: 1, slots: 2 },
         { name: 'Broken Idol', qty: 1 },
       ],
       genderless: true, // wizard skips the Sex step
@@ -137,8 +137,8 @@ export const treigthe: WorldDefinitionInput = {
         "Survives because others don't.",
       modifiers: { strength: 2, endurance: 2 },
       startingEquipment: [
-        { name: 'Notched Longsword', qty: 1 },
-        { name: 'Boiled Leather Armor', qty: 1 },
+        { name: 'Notched Longsword', qty: 1, slots: 2 },
+        { name: 'Boiled Leather Armor', qty: 1, slots: 3 },
         { name: 'Coin Pouch', qty: 1 },
         { name: 'Whetstone', qty: 1 },
       ],
@@ -166,7 +166,7 @@ export const treigthe: WorldDefinitionInput = {
       modifiers: { agility: 3, perception: 1, strength: -1 },
       startingEquipment: [
         { name: 'Hooked Dagger', qty: 1 },
-        { name: "Smuggler's Cloak", qty: 1 },
+        { name: "Smuggler's Cloak", qty: 1, slots: 2 },
         { name: 'Lockpicks', qty: 1 },
         { name: 'Tunnel Map', qty: 1 },
       ],
@@ -179,8 +179,8 @@ export const treigthe: WorldDefinitionInput = {
         "tolerates them. Most people don't.",
       modifiers: { charisma: 2, mind: 2, agility: -1 },
       startingEquipment: [
-        { name: 'Curse Censer', qty: 1 },
-        { name: 'Rite Book', qty: 1 },
+        { name: 'Curse Censer', qty: 1, slots: 2 },
+        { name: 'Rite Book', qty: 1, slots: 2 },
         { name: 'Bone Rosary', qty: 1 },
         { name: 'Grave Ash', qty: 2 },
       ],

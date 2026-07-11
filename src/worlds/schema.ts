@@ -34,6 +34,12 @@ export type ItemCategory = z.infer<typeof ItemCategorySchema>
 export const ItemDefinitionSchema = z.object({
   description: z.string().min(1),
   category: ItemCategorySchema,
+  /**
+   * Carry weight in abstract slots. Unused at runtime for now — reserved for
+   * the encumbrance system (see docs/future/data-model.md). Authored upfront
+   * so item data doesn't need revisiting when capacity rules land.
+   */
+  slots: z.number().int().positive().default(1),
 })
 
 export type ItemDefinition = z.infer<typeof ItemDefinitionSchema>
@@ -45,6 +51,7 @@ export type ItemDefinition = z.infer<typeof ItemDefinitionSchema>
 export const StartingItemSchema = z.object({
   name: z.string().min(1),
   qty: z.number().int().positive(),
+  slots: z.number().int().positive().default(1),
 })
 
 export type StartingItem = z.infer<typeof StartingItemSchema>
