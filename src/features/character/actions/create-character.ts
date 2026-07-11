@@ -12,6 +12,8 @@ import {
   calculateAttributeTotal,
 } from '@/features/character/constants'
 import { getWorld, getGenre } from '@/worlds'
+import { ROUTES } from '@/constants/routes'
+import { buildStartingInventory } from '@/worlds/starting-equipment'
 
 const ATTRIBUTES = [
   'strength',
@@ -98,6 +100,10 @@ export const createCharacter = authActionClient
         gender: gender ?? null,
         characterClass,
         avatarUrl: null,
+        inventory: buildStartingInventory(
+          raceDef.startingEquipment,
+          classDef.startingEquipment
+        ),
       })
       .returning()
 
@@ -116,7 +122,7 @@ export const createCharacter = authActionClient
 
     await db.insert(characterAttributesTable).values(attributeRows)
 
-    revalidatePath('/dashboard/characters')
+    revalidatePath(ROUTES.dashboard)
 
     return { characterId: character.id }
   })
