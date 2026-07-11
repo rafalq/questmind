@@ -41,7 +41,6 @@ export default async function PlayPage({ params, searchParams }: Props) {
       sessionId,
       genre: campaign.genre,
       language: campaign.language,
-      campaignName: campaign.name,
       characterName: character.name,
       characterClass: character.characterClass,
       characterRace: character.race,
