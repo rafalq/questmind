@@ -187,6 +187,166 @@ export const treigthe: WorldDefinitionInput = {
     },
   ],
 
+  // Item metadata — keyed by the exact name used in startingEquipment above.
+  // Items the GM invents at runtime (loot, /additem) won't be here; the UI falls back.
+  items: {
+    // ── Scarred ──
+    'Patchwork Cloak': {
+      description:
+        'Stitched from three coats, none of them yours. Warm enough. Nobody asks whose they were.',
+      category: 'armor',
+    },
+    'Iron Ration': {
+      description:
+        'Hard bread, salt meat, something dried. Tastes of nothing. Keeps you walking.',
+      category: 'consumable',
+    },
+    'Hidden Knife': {
+      description:
+        'Not a weapon — a reflex. Small enough to forget you are carrying it, until you need it.',
+      category: 'weapon',
+    },
+
+    // ── Duskborn ──
+    'Memory Shard': {
+      description:
+        'A splinter of black glass. Tilted to the light, it still shows a god that breathes.',
+      category: 'relic',
+    },
+    'Fading Cloak': {
+      description:
+        'The weave thins where you touch it. It is going the same way you are, only faster.',
+      category: 'armor',
+    },
+    'Ash Vial': {
+      description:
+        'Grey dust from the night the heavens died. Your people kept it. Nobody remembers why.',
+      category: 'relic',
+    },
+
+    // ── Stonewarden ──
+    'Tomb Key': {
+      description:
+        'Cold iron, worn smooth. It opens something. You have never been told what.',
+      category: 'tool',
+    },
+    "Warden's Seal": {
+      description:
+        'Proof of an office older than the Church. Show it rarely. It is a debt, not a privilege.',
+      category: 'relic',
+    },
+    'Stone Lamp': {
+      description:
+        'Burns without air, deep below. The flame is the wrong colour and you have stopped noticing.',
+      category: 'tool',
+    },
+
+    // ── Fadeborn (demigod) ──
+    'Godsblood Vial': {
+      description:
+        'Your own blood, drawn and stoppered. It has not clotted. It has not stopped moving.',
+      category: 'relic',
+    },
+    'Binding Wraps': {
+      description:
+        'Linen, wound tight. Not for wounds — for holding a body together that would rather come apart.',
+      category: 'armor',
+    },
+    'Broken Idol': {
+      description:
+        'A small carving of your divine parent. The face is gone. You did not break it.',
+      category: 'relic',
+    },
+
+    // ── Graveblade ──
+    'Notched Longsword': {
+      description:
+        'Every notch is a contract that went badly. The blade is honest about what it is for.',
+      category: 'weapon',
+    },
+    'Boiled Leather Armor': {
+      description:
+        'Hardened, scarred, repaired badly. It has already failed once and you are still here.',
+      category: 'armor',
+    },
+    'Coin Pouch': {
+      description:
+        'Light. It is always light. That is why you take the next job.',
+      category: 'misc',
+    },
+    Whetstone: {
+      description:
+        'The one ritual you keep. Drag, turn, drag. It settles the hands before the work.',
+      category: 'tool',
+    },
+
+    // ── Bleeder ──
+    'Bleeding Knife': {
+      description:
+        'Thin, clean, and meant for you. Every spell begins here. The blade never dulls; you do.',
+      category: 'weapon',
+    },
+    'Bloodied Bandages': {
+      description:
+        'Used, dried, folded again. You reuse them. Fresh linen is for people who cast less.',
+      category: 'consumable',
+    },
+    'Echo Focus': {
+      description:
+        'A knot of bone and wire that hums when the magic answers. It is warm. It should not be.',
+      category: 'relic',
+    },
+    'Tally Cord': {
+      description:
+        'One knot for every year, memory or litre already spent. You do not count them out loud.',
+      category: 'misc',
+    },
+
+    // ── Ashwalker ──
+    'Hooked Dagger': {
+      description:
+        'Curved to catch and pull. A tool first, a weapon when the tunnel runs out.',
+      category: 'weapon',
+    },
+    "Smuggler's Cloak": {
+      description:
+        'Dark, unremarkable, deep-pocketed. Designed to make a witness forget they saw anyone.',
+      category: 'armor',
+    },
+    Lockpicks: {
+      description:
+        'Six picks in an oilcloth roll. Two are bent. Those two are the ones that work.',
+      category: 'tool',
+    },
+    'Tunnel Map': {
+      description:
+        'Somebody else drew this, and they died before finishing. The gaps are where the trouble is.',
+      category: 'tool',
+    },
+
+    // ── Last Breath Priest ──
+    'Curse Censer': {
+      description:
+        'Swung at funerals, but never in blessing. What rises from it settles on someone.',
+      category: 'relic',
+    },
+    'Rite Book': {
+      description:
+        'Burial rites in the front. The other rites are in the back, in a hand that is not the scribe\u2019s.',
+      category: 'tool',
+    },
+    'Bone Rosary': {
+      description:
+        'Finger bones, strung and told one by one. Each one belonged to somebody who asked you for help.',
+      category: 'relic',
+    },
+    'Grave Ash': {
+      description:
+        'Scraped from a pyre that burned wrong. It marks doors, thresholds, and the dying.',
+      category: 'consumable',
+    },
+  },
+
   // From portraits.ts — buildClassPortraitUrl in the registry uses this
   classPortraitsBaseUrl: '/images/fantasy/treigthe/characters/classes/',
 
