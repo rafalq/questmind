@@ -69,11 +69,11 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     ? buildIntroPrompt(
         genre,
         language,
-
         characterName,
         characterClass,
         characterRace,
-        gender
+        gender,
+        lastSnapshot
       )
     : buildRecapPrompt(
         genre,
@@ -113,10 +113,18 @@ function buildIntroPrompt(
   characterName: string,
   characterClass: string,
   characterRace: string,
-  gender: string | null
+  gender: string | null,
+  lastSnapshot: GameSnapshot | null
 ): string {
+  // Starting equipment comes from race + class and is seeded into the initial
+  // snapshot at session creation — the GM must not invent or ignore it.
+  const equipmentText =
+    lastSnapshot && lastSnapshot.inventory.length > 0
+      ? `${characterName} carries: ${lastSnapshot.inventory.join(', ')}. Weave one or two of these items naturally into the scene. Do not invent additional possessions.`
+      : ''
+
   return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre}". 
-The player's character is ${characterName}, a ${characterRace} ${characterClass}.
+The player's character is ${characterName}, a ${characterRace} ${characterClass}. ${equipmentText}
 Begin with a single short evocative title line using "# " (one line only), then write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
 Formatting: use only plain prose, plus that one "# " title line and *italic* for occasional emphasis. Do not use bold, headers beyond the single title, lists, tables, links, or any other markdown.
 Do not ask the player what they want to do. Do not include any JSON. Keep the prose under 200 words.
