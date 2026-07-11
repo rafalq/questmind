@@ -8,6 +8,8 @@ import { createCampaign } from '@/features/campaign/actions/create-campaign'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Button from '@/components/ui/button'
+import { LanguageCode, LANGUAGES } from '../constants/languages'
+import { useState } from 'react'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
@@ -17,6 +19,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>
 
 export default function CreateCampaignForm() {
+  const [language, setLanguage] = useState<LanguageCode>('en')
+
   const router = useRouter()
 
   const {
@@ -68,11 +72,28 @@ export default function CreateCampaignForm() {
         )}
       </div>
 
+      <div>
+        <label className="block text-sm tracking-wider text-text-secondary mb-2">
+          Narrative Language
+        </label>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as LanguageCode)}
+          className="w-full px-4 py-3 bg-bg-surface border border-border text-text-primary focus:outline-none focus:border-accent scrollbar-genre"
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <Button
         size="lg"
         loading={isPending}
         loadingText="Creating..."
-        onClick={handleSubmit((data) => execute(data))}
+        onClick={handleSubmit((data) => execute({ ...data, language }))}
       >
         Begin Adventure
       </Button>
