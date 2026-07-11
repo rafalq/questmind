@@ -233,6 +233,12 @@ export const WorldDefinitionSchema = z
     races: z.array(RaceDefinitionSchema).min(1),
     classes: z.array(ClassDefinitionSchema).min(1),
     /**
+     * Item metadata keyed by the exact name used in startingEquipment and
+     * GameSnapshot.inventory. Optional: worlds without item copy still work,
+     * and the UI falls back for unknown entries.
+     */
+    items: z.record(z.string(), ItemDefinitionSchema).default({}),
+    /**
      * Base URL for class portraits following the convention
      * `{race}-{gender}-{class}.jpg` (gender segment omitted for
      * genderless races) — see buildClassPortraitUrl in the registry.
