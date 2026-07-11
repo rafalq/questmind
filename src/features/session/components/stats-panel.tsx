@@ -1,11 +1,25 @@
+'use client'
+
+import { useState } from 'react'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type charactersTable } from '@/db/schema'
+import {
+  buildInventoryDisplay,
+  type InventoryEntry,
+} from '@/features/session/lib/inventory-display'
+import type { ItemCategory } from '@/worlds/schema'
 import {
   IconBackpack,
   IconHeart,
   IconMapSearch,
   IconShield,
   IconUserShield,
+  IconSword,
+  IconShirt,
+  IconFlask,
+  IconTool,
+  IconSparkles,
+  IconPackage,
 } from '@tabler/icons-react'
 
 type Character = typeof charactersTable.$inferSelect
@@ -13,6 +27,15 @@ type Character = typeof charactersTable.$inferSelect
 type Props = {
   snapshot: GameSnapshot | null
   character: Character
+}
+
+const CATEGORY_ICONS: Record<ItemCategory, typeof IconSword> = {
+  weapon: IconSword,
+  armor: IconShirt,
+  consumable: IconFlask,
+  tool: IconTool,
+  relic: IconSparkles,
+  misc: IconPackage,
 }
 
 export default function StatsPanel({ snapshot, character }: Props) {
@@ -71,26 +94,9 @@ export default function StatsPanel({ snapshot, character }: Props) {
       </div>
 
       {/* Inventory */}
-      <div>
-        <h3 className="text-xs text-text-muted uppercase tracking-widest mb-2 flex items-center gap-1">
-          <IconBackpack size={12} /> Inventory
-        </h3>
-        {inventory.length === 0 ? (
-          <p className="text-text-muted text-xs">Nothing yet.</p>
-        ) : (
-          <ul className="space-y-1">
-            {inventory.map((item, i) => (
-              <li
-                key={i}
-                className="text-sm text-text-secondary flex items-center gap-2"
-              >
-                <span className="w-1 h-1 bg-accent rounded-full shrink-0" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <InventorySection
+        entries={buildInventoryDisplay(inventory, character.world)}
+      />
 
       {/* Quests */}
       <div>
@@ -120,6 +126,64 @@ export default function StatsPanel({ snapshot, character }: Props) {
           </ul>
         )}
       </div>
+    </div>
+  )
+}
+
+function InventorySection({ entries }: { entries: InventoryEntry[] }) {
+  // Which item rows are expanded. Click, not hover — the panel must work on
+  // touch at 360px (NFR-004), where hover doesn't exist.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const toggle = (name: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      next.has(name) ? next.delete(name) : next.add(name)
+      return next
+    })
+  }
+
+  return (
+    <div className="flex flex-col min-h-0">
+      <h3 className="text-sm text-text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-1 shrink-0">
+        <IconBackpack size={14} /> Inventory
+      </h3>
+
+      {entries.length === 0 ? (
+        <p className="text-text-muted text-xs">Nothing yet.</p>
+      ) : (
+        <ul className="space-y-1 overflow-y-auto min-h-0 max-h-64 pr-1">
+          {entries.map((entry) => {
+            const Icon = CATEGORY_ICONS[entry.category]
+            const isOpen = expanded.has(entry.name)
+
+            return (
+              <li key={entry.name}>
+                <button
+                  type="button"
+                  onClick={() => toggle(entry.name)}
+                  disabled={!entry.description}
+                  className="w-full flex items-center gap-2 text-left text-sm text-text-secondary hover:text-text-primary disabled:hover:text-text-secondary transition-colors py-0.5"
+                >
+                  <Icon size={13} className="shrink-0 text-text-muted" />
+                  <span className="flex-1">{entry.name}</span>
+                  {entry.qty > 1 && (
+                    <span className="text-xs text-text-muted shrink-0">
+                      ×{entry.qty}
+                    </span>
+                  )}
+                </button>
+
+                {isOpen && entry.description && (
+                  <p className="text-xs text-text-muted pl-[21px] pr-1 pb-1.5 leading-snug">
+                    {entry.description}
+                  </p>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
 }
