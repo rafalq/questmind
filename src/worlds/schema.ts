@@ -11,6 +11,34 @@ import { CampaignBriefSchema } from './campaign-brief'
  */
 
 // ---------------------------------------------------------------------------
+// Items — display metadata for inventory entries
+// ---------------------------------------------------------------------------
+
+export const ITEM_CATEGORIES = [
+  'weapon',
+  'armor',
+  'consumable',
+  'tool',
+  'relic',
+  'misc',
+] as const
+
+export const ItemCategorySchema = z.enum(ITEM_CATEGORIES)
+export type ItemCategory = z.infer<typeof ItemCategorySchema>
+
+/**
+ * Display metadata for an inventory entry, keyed by the item name stored in
+ * GameSnapshot.inventory. Authored per world; items the GM invents at runtime
+ * (loot, /additem) simply won't be found here — the UI must fall back.
+ */
+export const ItemDefinitionSchema = z.object({
+  description: z.string().min(1),
+  category: ItemCategorySchema,
+})
+
+export type ItemDefinition = z.infer<typeof ItemDefinitionSchema>
+
+// ---------------------------------------------------------------------------
 // Starting equipment
 // ---------------------------------------------------------------------------
 
