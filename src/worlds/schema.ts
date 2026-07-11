@@ -11,6 +11,17 @@ import { CampaignBriefSchema } from './campaign-brief'
  */
 
 // ---------------------------------------------------------------------------
+// Starting equipment
+// ---------------------------------------------------------------------------
+
+export const StartingItemSchema = z.object({
+  name: z.string().min(1),
+  qty: z.number().int().positive(),
+})
+
+export type StartingItem = z.infer<typeof StartingItemSchema>
+
+// ---------------------------------------------------------------------------
 // Genres — must match Genre in shared.ts exactly (stored in DB `genre`)
 // ---------------------------------------------------------------------------
 
@@ -88,6 +99,7 @@ export const RaceDefinitionSchema = z
     label: z.string().min(1),
     description: z.string().min(1),
     modifiers: ModifiersSchema,
+    startingEquipment: z.array(StartingItemSchema).default([]),
     /** When true, the Sex step is skipped and portraitUrl is used. */
     genderless: z.boolean().default(false),
     /** Required when genderless is true. */
@@ -129,7 +141,7 @@ export const ClassDefinitionSchema = z.object({
   label: z.string().min(1),
   description: z.string().min(1),
   modifiers: ModifiersSchema,
-  startingEquipment: z.array(z.string()).default([]),
+  startingEquipment: z.array(StartingItemSchema).default([]),
   abilities: z
     .array(
       z.object({
