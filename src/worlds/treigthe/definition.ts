@@ -67,6 +67,11 @@ export const treigthe: WorldDefinitionInput = {
         "Survivors marked by the gods' fall. Adaptable, distrustful, and " +
         'harder to kill than they should be.',
       modifiers: { strength: 1, endurance: 1 },
+      startingEquipment: [
+        { name: 'Patchwork Cloak', qty: 1 },
+        { name: 'Iron Ration', qty: 3 },
+        { name: 'Hidden Knife', qty: 1 },
+      ],
       genderless: false,
       femalePortraitUrl: `${RACE_PORTRAITS}scarred-female.jpg`,
       malePortraitUrl: `${RACE_PORTRAITS}scarred-male.jpg`,
@@ -78,6 +83,11 @@ export const treigthe: WorldDefinitionInput = {
         'Ancient elves slowly fading from the world. They remember the ' +
         'living gods — and the night they died.',
       modifiers: { mind: 2, perception: 2, endurance: -1 },
+      startingEquipment: [
+        { name: 'Memory Shard', qty: 1 },
+        { name: 'Fading Cloak', qty: 1 },
+        { name: 'Ash Vial', qty: 1 },
+      ],
       genderless: false,
       femalePortraitUrl: `${RACE_PORTRAITS}duskborn-female.jpg`,
       malePortraitUrl: `${RACE_PORTRAITS}duskborn-male.jpg`,
@@ -89,6 +99,11 @@ export const treigthe: WorldDefinitionInput = {
         'Dwarf guardians of the god-tombs. Patient, secretive, and bound ' +
         'by duties older than memory.',
       modifiers: { endurance: 3, strength: 1, agility: -1 },
+      startingEquipment: [
+        { name: 'Tomb Key', qty: 1 },
+        { name: "Warden's Seal", qty: 1 },
+        { name: 'Stone Lamp', qty: 1 },
+      ],
       genderless: false,
       femalePortraitUrl: `${RACE_PORTRAITS}stonewarden-female.jpg`,
       malePortraitUrl: `${RACE_PORTRAITS}stonewarden-male.jpg`,
@@ -102,6 +117,11 @@ export const treigthe: WorldDefinitionInput = {
         'it was never meant to hold. Their kind know no sex, only the slow, ' +
         'uneven weight of incomplete divinity.',
       modifiers: { mind: 2, perception: 2, endurance: -1 },
+      startingEquipment: [
+        { name: 'Godsblood Vial', qty: 1 },
+        { name: 'Binding Wraps', qty: 1 },
+        { name: 'Broken Idol', qty: 1 },
+      ],
       genderless: true, // wizard skips the Sex step
       portraitUrl: `${RACE_PORTRAITS}demigod.jpg`,
     },
@@ -116,6 +136,12 @@ export const treigthe: WorldDefinitionInput = {
         'Mercenary with no allegiance and no illusions. Fights for coin. ' +
         "Survives because others don't.",
       modifiers: { strength: 2, endurance: 2 },
+      startingEquipment: [
+        { name: 'Notched Longsword', qty: 1 },
+        { name: 'Boiled Leather Armor', qty: 1 },
+        { name: 'Coin Pouch', qty: 1 },
+        { name: 'Whetstone', qty: 1 },
+      ],
     },
     {
       value: 'bleeder',
@@ -124,6 +150,12 @@ export const treigthe: WorldDefinitionInput = {
         'Echo mage who pays with their body. Every spell costs something ' +
         'real — blood, years, memory.',
       modifiers: { mind: 3, perception: 1, endurance: -1 },
+      startingEquipment: [
+        { name: 'Bleeding Knife', qty: 1 },
+        { name: 'Bloodied Bandages', qty: 3 },
+        { name: 'Echo Focus', qty: 1 },
+        { name: 'Tally Cord', qty: 1 },
+      ],
     },
     {
       value: 'ashwalker',
@@ -132,6 +164,12 @@ export const treigthe: WorldDefinitionInput = {
         'Smuggler, spy, shadow. Moves between worlds without being seen. ' +
         'Knows where the tunnels are.',
       modifiers: { agility: 3, perception: 1, strength: -1 },
+      startingEquipment: [
+        { name: 'Hooked Dagger', qty: 1 },
+        { name: "Smuggler's Cloak", qty: 1 },
+        { name: 'Lockpicks', qty: 1 },
+        { name: 'Tunnel Map', qty: 1 },
+      ],
     },
     {
       value: 'last_breath_priest', // underscores kept — match portrait filenames
@@ -140,6 +178,12 @@ export const treigthe: WorldDefinitionInput = {
         'Priest of the dead gods. Does not heal — curses. The Church ' +
         "tolerates them. Most people don't.",
       modifiers: { charisma: 2, mind: 2, agility: -1 },
+      startingEquipment: [
+        { name: 'Curse Censer', qty: 1 },
+        { name: 'Rite Book', qty: 1 },
+        { name: 'Bone Rosary', qty: 1 },
+        { name: 'Grave Ash', qty: 2 },
+      ],
     },
   ],
 
