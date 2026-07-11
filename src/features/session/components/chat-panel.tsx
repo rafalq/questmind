@@ -94,13 +94,7 @@ export default function ChatPanel({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-6 py-4"
-        style={
-          {
-            scrollbarWidth: 'thin',
-            scrollbarColor: `var(--color-border) transparent`,
-          } as React.CSSProperties
-        }
+        className="flex-1 overflow-y-auto px-6 py-4 scrollbar-subtle"
       >
         {messages.length === 0 && (
           <p className="text-center text-text-muted text-sm mt-12">

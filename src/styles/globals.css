@@ -45,6 +45,28 @@
   }
 }
 
+@layer base {
+  * {
+    scrollbar-color: var(--color-border) transparent;
+    scrollbar-width: thin;
+  }
+
+  /* fallback for Safari / older WebKit — NFR004 */
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 4px;
+  }
+}
+
 body {
   font-family: var(--font-rajdhani), sans-serif;
   color: var(--color-text-primary);
@@ -64,4 +86,9 @@ body {
 
 .scrollbar-genre::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent);
+}
+
+.scrollbar-subtle {
+  scrollbar-color: var(--color-border) transparent;
+  scrollbar-width: thin;
 }

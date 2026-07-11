@@ -173,12 +173,10 @@ export default function WorldLoreModal({ genre, lore }: Props) {
           <ModalBackdrop onClose={() => setIsOpen(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <div
-              className="pointer-events-auto w-full max-w-2xl max-h-[85vh] overflow-y-auto border border-border flex flex-col"
+              className="pointer-events-auto w-full max-w-2xl max-h-[85vh] overflow-y-auto border border-border flex flex-col scrollbar-subtle"
               style={{
                 fontFamily: genreFont[genre],
                 backgroundColor: genreBg[genre],
-                scrollbarWidth: 'thin',
-                scrollbarColor: `var(--color-border) transparent`,
               }}
             >
               <ModalHeader

@@ -61,15 +61,7 @@ export default function CharacterSelectModal({
             {"Only characters matching this campaign's genre are shown."}
           </p>
         </div>
-        <div
-          className="min-h-0 flex-1 overflow-y-auto px-6 py-4"
-          style={
-            {
-              scrollbarWidth: 'thin',
-              scrollbarColor: `var(--color-border) transparent`,
-            } as React.CSSProperties
-          }
-        >
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4 scrollbar-subtle">
           {isEmpty ? (
             <p className="py-8 text-center text-sm text-text-muted">
               No available characters for this genre. Create one first.
