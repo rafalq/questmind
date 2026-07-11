@@ -1,26 +1,25 @@
 'use client'
 
-import { useState } from 'react'
-import { type GameSnapshot } from '@/db/schema/session'
 import { type charactersTable } from '@/db/schema'
+import { type GameSnapshot } from '@/db/schema/session'
 import {
   buildInventoryDisplay,
   type InventoryEntry,
 } from '@/features/session/lib/inventory-display'
 import type { ItemCategory } from '@/worlds/schema'
 import {
-  IconBackpack,
+  IconFlask,
   IconHeart,
   IconMapSearch,
-  IconShield,
-  IconUserShield,
-  IconSword,
-  IconShirt,
-  IconFlask,
-  IconTool,
-  IconSparkles,
   IconPackage,
+  IconShield,
+  IconShirt,
+  IconSparkles,
+  IconSword,
+  IconTool,
+  IconUserShield,
 } from '@tabler/icons-react'
+import { useState } from 'react'
 
 type Character = typeof charactersTable.$inferSelect
 
@@ -146,7 +145,7 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
   return (
     <div className="flex flex-col min-h-0">
       <h3 className="text-sm text-text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-1 shrink-0">
-        <IconBackpack size={14} /> Inventory
+        Inventory
       </h3>
 
       {entries.length === 0 ? (
