@@ -107,7 +107,7 @@ export default function ChatPanel({
             role={m.role}
             content={m.content}
             genre={genre}
-            isNarration={i === 0 && m.role === 'assistant'}
+            isNarration={m.role === 'assistant'}
             isStreaming={
               isStreaming && i === messages.length - 1 && m.role === 'assistant'
             }

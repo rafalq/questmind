@@ -27,13 +27,17 @@ export default function MessageBubble({
       style={{ fontFamily: genreFont[genre] }}
     >
       <div
-        className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${
+        className={
           isNarration
-            ? 'border border-accent/30 text-text-secondary italic bg-bg-elevated w-full max-w-full text-center'
-            : isAssistant
-              ? 'bg-surface border border-border text-text-primary'
-              : 'bg-accent text-accent-fg'
-        }`}
+            ? // Narration is prose, not a chat bubble: left-aligned, measured
+              // at ~65ch so lines stay readable, no border, no box.
+              'w-full max-w-[65ch] text-base leading-loose text-text-secondary'
+            : `max-w-[75%] px-4 py-3 text-sm leading-relaxed ${
+                isAssistant
+                  ? 'bg-surface border border-border text-text-primary'
+                  : 'bg-accent text-accent-fg'
+              }`
+        }
       >
         {!isNarration && isAssistant && (
           <div className="text-xs text-text-muted mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
@@ -114,7 +118,11 @@ function renderContent(content: string) {
     if (heading) {
       const level = heading[1].length
       const sizeClass =
-        level === 1 ? 'text-lg' : level === 2 ? 'text-base' : 'text-sm'
+        level === 1
+          ? 'text-xl text-center'
+          : level === 2
+            ? 'text-base'
+            : 'text-sm'
       return (
         <p key={i} className={`font-bold text-accent mb-3 ${sizeClass}`}>
           {renderInline(heading[2])}
