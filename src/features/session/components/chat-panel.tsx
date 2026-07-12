@@ -177,6 +177,8 @@ export default function ChatPanel({
             loading={isStreaming}
             loadingText="..."
             className="self-end shrink-0 py-4.5 px-8"
+            aria-label="Send action"
+            title="Send (Enter)"
           >
             <IconSend stroke={2} />
           </Button>
