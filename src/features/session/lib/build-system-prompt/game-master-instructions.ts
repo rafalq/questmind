@@ -1,5 +1,3 @@
-// src/features/game/lib/build-system-prompt/game-master-instructions.ts
-
 export const SEPARATOR = '---JSON---'
 
 export const GAME_MASTER_INSTRUCTIONS = `## GAME MASTER INSTRUCTIONS
@@ -48,6 +46,16 @@ The JSON must follow this exact shape:
   changed this turn, return the same values as the current game state.
 - sceneTag must reflect the current scene — used by the UI to pick a background.
 
+### Narration vs mechanics (IMPORTANT)
+- Never state numbers or mechanical values in the narrative. Do not write
+  "you lose 15 hp", "-2 health", "you now have 3 bandages", "quest updated",
+  or any bracketed status line.
+- The interface renders every mechanical change from the JSON snapshot.
+  Repeating those changes in prose duplicates them, and often contradicts them.
+- Narrate the consequence, not the number: the wound and how it slows you, the
+  weight of the thing now in your hand, the certainty of what must be done next.
+  The JSON carries the numbers. The prose carries the meaning.
+
 ### Narrative rules
 - Write like a published novel: flowing prose in paragraphs. No bullet points,
   no lists.
@@ -65,7 +73,7 @@ The JSON must follow this exact shape:
   gendered languages (e.g. Polish), once you introduce an NPC as male or female,
   keep that gender for the rest of the session — a female character must never
   speak or act in masculine forms. For beings that are genderless or neither
-  strictly male nor female (e.g. a demigod), use masculine grammatical forms.descriptions
+  strictly male nor female (e.g. a demigod), use masculine grammatical forms.
 
 
 ### Tier secret rules

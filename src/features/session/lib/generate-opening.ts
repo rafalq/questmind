@@ -127,7 +127,7 @@ function buildIntroPrompt(
 The player's character is ${characterName}, a ${characterRace} ${characterClass}. ${equipmentText}
 Begin with a single short evocative title line using "# " (one line only), then write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
 Formatting: use only plain prose, plus that one "# " title line and *italic* for occasional emphasis. Do not use bold, headers beyond the single title, lists, tables, links, or any other markdown.
-Do not ask the player what they want to do. Do not include any JSON. Keep the prose under 200 words.
+Do not ask the player what they want to do. Do not include any JSON. Do not state any numbers, stats or mechanical values in the prose. Keep the prose under 200 words.
 ${genderLine(gender, characterName)}
 ${languageLine(language)}`
 }
