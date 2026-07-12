@@ -1,6 +1,8 @@
 import { genreFont } from '@/lib/genre-theme'
 import type { Genre } from '@/worlds/'
 import { IconEye, IconUser } from '@tabler/icons-react'
+import { SnapshotChange } from '../lib/snapshot-diff'
+import SnapshotDelta from './snapshot-delta'
 
 type Props = {
   role: 'user' | 'assistant'
@@ -9,6 +11,7 @@ type Props = {
   isNarration?: boolean
   characterName?: string
   genre: Genre
+  changes?: SnapshotChange[]
 }
 
 export default function MessageBubble({
@@ -18,6 +21,7 @@ export default function MessageBubble({
   isNarration,
   characterName,
   genre,
+  changes,
 }: Props) {
   const isAssistant = role === 'assistant'
 
@@ -50,6 +54,7 @@ export default function MessageBubble({
           </div>
         )}
         <div>{renderContent(content)}</div>
+        {changes && changes.length > 0 && <SnapshotDelta changes={changes} />}
         {isStreaming && isAssistant && (
           <span className="inline-flex gap-1 mt-2">
             <span className="w-1 h-1 bg-accent rounded-full animate-bounce [animation-delay:0ms]" />

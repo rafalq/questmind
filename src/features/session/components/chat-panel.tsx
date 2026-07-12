@@ -6,11 +6,8 @@ import Button from '@/components/ui/button'
 import { genreFont, genreBg } from '@/lib/genre-theme'
 import { Genre } from '@/worlds/'
 import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
-
-type UIMessage = {
-  role: 'user' | 'assistant'
-  content: string
-}
+import { diffSnapshots } from '../lib/snapshot-diff'
+import { UIMessage } from '../lib/types'
 
 type Props = {
   messages: UIMessage[]
@@ -101,19 +98,31 @@ export default function ChatPanel({
             Your adventure begins. What do you do?
           </p>
         )}
-        {messages.map((m, i) => (
-          <MessageBubble
-            key={i}
-            role={m.role}
-            content={m.content}
-            genre={genre}
-            isNarration={m.role === 'assistant'}
-            isStreaming={
-              isStreaming && i === messages.length - 1 && m.role === 'assistant'
-            }
-            characterName={m.role === 'user' ? characterName : undefined}
-          />
-        ))}
+        {messages.map((m, i) => {
+          // Previous snapshot = the most recent one before this message.
+          const prevSnapshot =
+            messages
+              .slice(0, i)
+              .reverse()
+              .find((prev) => prev.snapshot)?.snapshot ?? null
+
+          return (
+            <MessageBubble
+              key={i}
+              role={m.role}
+              content={m.content}
+              genre={genre}
+              isNarration={m.role === 'assistant'}
+              isStreaming={
+                isStreaming &&
+                i === messages.length - 1 &&
+                m.role === 'assistant'
+              }
+              characterName={m.role === 'user' ? characterName : undefined}
+              changes={diffSnapshots(prevSnapshot, m.snapshot ?? null)}
+            />
+          )
+        })}
         <div ref={bottomRef} />
       </div>
 
