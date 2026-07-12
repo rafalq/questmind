@@ -18,6 +18,8 @@ type Character = typeof charactersTable.$inferSelect
 type UIMessage = {
   role: 'user' | 'assistant'
   content: string
+  /** Snapshot as of this message. Null for user messages and pre-snapshot history. */
+  snapshot?: GameSnapshot | null
 }
 
 type Props = {
@@ -44,6 +46,7 @@ export default function GameScreen({
       .map((m) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
+        snapshot: m.snapshot as GameSnapshot | null,
       }))
   )
 
@@ -104,7 +107,16 @@ export default function GameScreen({
       if (delimIdx !== -1) {
         const jsonStr = raw.slice(delimIdx + SNAPSHOT_DELIMITER.length).trim()
         try {
-          setSnapshot(JSON.parse(jsonStr) as GameSnapshot)
+          const parsed = JSON.parse(jsonStr) as GameSnapshot
+          setSnapshot(parsed)
+          setMessages((prev) => {
+            const updated = [...prev]
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              snapshot: parsed,
+            }
+            return updated
+          })
         } catch {
           console.error('Failed to parse streamed snapshot')
         }
