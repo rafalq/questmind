@@ -36,7 +36,7 @@ export const ClassDefinitionSchema = z.object({
   startingEquipment: z.array(StartingItemSchema).default([]),
   keyAttribute: AttributeKeySchema, // gates tier progression
   growth: GrowthSchema,
-  abilities: z.array(AbilityDefinitionSchema).min(1),
+  abilities: z.array(AbilityDefinitionSchema),
 })
 
 export type ClassDefinition = z.infer<typeof ClassDefinitionSchema>
