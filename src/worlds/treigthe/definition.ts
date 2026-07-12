@@ -136,6 +136,9 @@ export const treigthe: WorldDefinitionInput = {
         'Mercenary with no allegiance and no illusions. Fights for coin. ' +
         "Survives because others don't.",
       modifiers: { strength: 2, endurance: 2 },
+      keyAttribute: 'strength',
+      growth: { primary: 'strength', secondary: 'endurance' },
+      abilities: [],
       startingEquipment: [
         { name: 'Notched Longsword', qty: 1, slots: 2 },
         { name: 'Boiled Leather Armor', qty: 1, slots: 3 },
@@ -150,6 +153,79 @@ export const treigthe: WorldDefinitionInput = {
         'Echo mage who pays with their body. Every spell costs something ' +
         'real — blood, years, memory.',
       modifiers: { mind: 3, perception: 1, endurance: -1 },
+      keyAttribute: 'mind',
+      growth: { primary: 'mind', secondary: 'endurance' },
+      abilities: [
+        {
+          value: 'bloodcast',
+          name: 'Bloodcast',
+          tier: 1,
+          description:
+            'Open a vein and shape the echo. Crude, reliable, and it ' +
+            'always takes its measure of you.',
+          gmGuidance:
+            'A raw echo-spell striking one target; deduct 5 HP in the ' +
+            'snapshot and describe the blood price openly.',
+          cost: { kind: 'hp', amount: 5 },
+        },
+        {
+          value: 'toll_of_years',
+          name: 'Toll of Years',
+          tier: 1,
+          description:
+            'Some things blood cannot buy. Spend a year, or a face you ' +
+            'loved, and the echo answers louder.',
+          gmGuidance:
+            'A powerful echo paid not in blood but in life or memory; name ' +
+            'in the prose exactly what the character loses, and never let ' +
+            'it return.',
+          cost: {
+            kind: 'narrative',
+            note: 'a year of life, or a specific memory',
+          },
+        },
+        {
+          value: 'crimson_echo',
+          name: 'Crimson Echo',
+          tier: 2,
+          evolvesFrom: 'bloodcast',
+          description:
+            'The echo no longer fades when you do. It spreads, it lingers, ' +
+            'it finds more than one throat.',
+          gmGuidance:
+            'As Bloodcast but it strikes several targets or persists for a ' +
+            'scene; deduct 8 HP in the snapshot.',
+          cost: { kind: 'hp', amount: 8 },
+        },
+        {
+          value: 'the_long_price',
+          name: 'The Long Price',
+          tier: 2,
+          evolvesFrom: 'toll_of_years',
+          description:
+            'You have learned to haggle. The echo takes more, and gives ' +
+            'more, and you can feel exactly how much of you is left.',
+          gmGuidance:
+            'As Toll of Years but scene-altering; the price is heavier and ' +
+            'visible — grey hair, a lost name, a hollowed look.',
+          cost: {
+            kind: 'narrative',
+            note: 'years, or a memory the character will visibly miss',
+          },
+        },
+        {
+          value: 'everything_costs_something',
+          name: 'Everything Costs Something',
+          tier: 3,
+          description:
+            'The last lesson of the echo: nothing is given. Break the ' +
+            'world open — and pay for it forever.',
+          gmGuidance:
+            'A devastating, once-per-session echo; invent a permanent price ' +
+            'the character carries for the rest of the campaign.',
+          cost: { kind: 'narrative', note: 'permanent — chosen by the GM' },
+        },
+      ],
       startingEquipment: [
         { name: 'Bleeding Knife', qty: 1 },
         { name: 'Bloodied Bandages', qty: 3 },
@@ -164,6 +240,9 @@ export const treigthe: WorldDefinitionInput = {
         'Smuggler, spy, shadow. Moves between worlds without being seen. ' +
         'Knows where the tunnels are.',
       modifiers: { agility: 3, perception: 1, strength: -1 },
+      keyAttribute: 'agility',
+      growth: { primary: 'agility', secondary: 'perception' },
+      abilities: [],
       startingEquipment: [
         { name: 'Hooked Dagger', qty: 1 },
         { name: "Smuggler's Cloak", qty: 1, slots: 2 },
@@ -178,6 +257,9 @@ export const treigthe: WorldDefinitionInput = {
         'Priest of the dead gods. Does not heal — curses. The Church ' +
         "tolerates them. Most people don't.",
       modifiers: { charisma: 2, mind: 2, agility: -1 },
+      keyAttribute: 'charisma',
+      growth: { primary: 'charisma', secondary: 'mind' },
+      abilities: [],
       startingEquipment: [
         { name: 'Curse Censer', qty: 1, slots: 2 },
         { name: 'Rite Book', qty: 1, slots: 2 },

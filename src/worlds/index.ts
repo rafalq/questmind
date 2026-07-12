@@ -140,5 +140,4 @@ export function assertValidCombination(input: CharacterInput): void {
   }
 }
 
-export * from './campaign-brief'
 export * from './schema'

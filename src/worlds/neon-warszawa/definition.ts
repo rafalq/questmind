@@ -49,8 +49,11 @@ export const neonWarszawa: WorldDefinitionInput = {
     {
       value: 'todo_class',
       label: 'TODO',
-      description: 'Placeholder class until the cyberpunk schema is finalised.',
+      description: 'Placeholder class until the sci-fi schema is finalised.',
       modifiers: {},
+      keyAttribute: 'mind',
+      growth: { primary: 'mind', secondary: 'endurance' },
+      abilities: [],
     },
   ],
 
