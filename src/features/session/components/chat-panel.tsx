@@ -91,39 +91,43 @@ export default function ChatPanel({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-6 py-4 scrollbar-subtle"
+        className="flex-1 overflow-y-auto px-6 py-8 scrollbar-subtle"
       >
-        {messages.length === 0 && (
-          <p className="text-center text-text-muted text-sm mt-12">
-            Your adventure begins. What do you do?
-          </p>
-        )}
-        {messages.map((m, i) => {
-          // Previous snapshot = the most recent one before this message.
-          const prevSnapshot =
-            messages
-              .slice(0, i)
-              .reverse()
-              .find((prev) => prev.snapshot)?.snapshot ?? null
+        {/* Shared column: narration and player turns sit on the same axis,
+            so collapsing the stats panel adds margin, not sprawl. */}
+        <div className="mx-auto w-full max-w-[68ch]">
+          {messages.length === 0 && (
+            <p className="text-center text-text-muted text-sm mt-12">
+              Your adventure begins. What do you do?
+            </p>
+          )}
+          {messages.map((m, i) => {
+            // Previous snapshot = the most recent one before this message.
+            const prevSnapshot =
+              messages
+                .slice(0, i)
+                .reverse()
+                .find((prev) => prev.snapshot)?.snapshot ?? null
 
-          return (
-            <MessageBubble
-              key={i}
-              role={m.role}
-              content={m.content}
-              genre={genre}
-              isNarration={m.role === 'assistant'}
-              isStreaming={
-                isStreaming &&
-                i === messages.length - 1 &&
-                m.role === 'assistant'
-              }
-              characterName={m.role === 'user' ? characterName : undefined}
-              changes={diffSnapshots(prevSnapshot, m.snapshot ?? null)}
-            />
-          )
-        })}
-        <div ref={bottomRef} />
+            return (
+              <MessageBubble
+                key={i}
+                role={m.role}
+                content={m.content}
+                genre={genre}
+                isNarration={m.role === 'assistant'}
+                isStreaming={
+                  isStreaming &&
+                  i === messages.length - 1 &&
+                  m.role === 'assistant'
+                }
+                characterName={m.role === 'user' ? characterName : undefined}
+                changes={diffSnapshots(prevSnapshot, m.snapshot ?? null)}
+              />
+            )
+          })}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
       {/* Jump to bottom button */}
@@ -143,7 +147,7 @@ export default function ChatPanel({
 
       {/* Input area */}
       <div className="border-t border-border px-6 py-4">
-        <div className="flex gap-3 items-end">
+        <div className="mx-auto w-full max-w-[68ch] flex gap-3 items-end justify-center">
           <textarea
             className="flex-1 bg-bg-surface border border-border text-text-primary placeholder:text-text-muted px-4 py-3 text-sm resize-none focus:outline-none focus:border-accent transition-colors"
             placeholder="What do you do? (Enter to send, Shift+Enter for new line)"

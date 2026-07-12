@@ -33,10 +33,8 @@ export default function MessageBubble({
       <div
         className={
           isNarration
-            ? // Narration is prose, not a chat bubble: left-aligned, measured
-              // at ~65ch so lines stay readable, no border, no box.
-              'w-full max-w-[65ch] text-base leading-loose text-text-secondary'
-            : `max-w-[75%] px-4 py-3 text-sm leading-relaxed ${
+            ? 'w-full text-base leading-loose text-text-secondary'
+            : `max-w-[85%] px-4 py-3 text-sm leading-relaxed ${
                 isAssistant
                   ? 'bg-surface border border-border text-text-primary'
                   : 'bg-accent text-accent-fg'
