@@ -75,3 +75,53 @@ The trigger for considering this was the stats panel becoming visually unwieldy 
 2. Prompt-side advisory limit (option 2) — observe how often the model overruns.
 3. Drop/discard action.
 4. Overloaded state with mechanical consequences, if it still seems worth it.
+
+## Visual layer: scene, NPC, avatar and world imagery
+
+**Status:** partially scaffolded, not consumed. Several fields already exist and are populated every turn; nothing renders them yet.
+
+### 1. Scene illustrations (`sceneTag`) — half built
+
+`GameSnapshot.sceneTag` already exists and the GM emits it on every turn, constrained to a fixed enum (`city_square`, `tavern`, `port`, `forest`, `bog`, `mountain_pass`, `tomb_entrance`, `tomb_interior`, `castle_cliff`, `excavation`, `battle`, `camp_night`, `default`). The system prompt already states it exists "so the UI can pick a background" — but no UI consumes it.
+
+**Why a fixed enum, not free-form:** images are pre-generated (Leonardo.ai) and must resolve to a file that exists. A free-form tag would produce `sceneTag: "a windswept ossuary at dusk"` and a 404. The enum is the contract between what the model may say and what the asset folder contains.
+
+**To finish:**
+
+- Asset set per world: `/images/{genre}/{world}/scenes/{sceneTag}.jpg`
+- Render inside the GM message, not in the panel — the image belongs to the turn that produced it, and should scroll away with it.
+- Render only on _change_: repeating the tavern image for six consecutive tavern turns is noise. Compare against the previous message's snapshot, exactly as `diffSnapshots` already does for hp/inventory/quests.
+- Enum lives per world. Neon Warszawa's scenes are not Tréigthe's; the tag list must move into `WorldDefinitionSchema` rather than staying hardcoded in the shared GM instructions.
+
+### 2. NPC portraits (`npcTag`) — not started
+
+`npc_met: string[]` is already in the JSON contract and the GM populates it, but it carries _names_, not tags — and names are free-form, so they can't resolve to assets.
+
+A parallel `npcTag` (enum, same discipline as `sceneTag`) would let a portrait appear when a significant NPC enters a scene. Likely shape: archetype-based (`priest`, `smuggler`, `warden`, `beggar`, `soldier`) rather than per-character, since generating a unique portrait for every improvised NPC is not tractable.
+
+Open question: archetype portraits risk visual repetition — two different priests, one face. May be better limited to _authored_ NPCs (scenario-defined, where a specific portrait can exist) and omitted entirely for improvised ones.
+
+### 3. Character avatar (`avatarUrl`) — column exists, always null
+
+`charactersTable.avatarUrl` exists and `createCharacter` explicitly writes `null` to it. Meanwhile the portrait convention is already fully working elsewhere: `buildClassPortraitUrl` resolves `{race}-{gender}-{class}.jpg` against `WorldDefinition.classPortraitsBaseUrl`, and the wizard displays it.
+
+So the character _has_ a portrait — it is just derived at render time rather than stored.
+
+**Decision to make:** either
+
+- drop the `avatarUrl` column and keep deriving from race/gender/class (simpler, no dead column), or
+- populate it at creation, which only makes sense if avatars will one day be user-uploaded or per-character generated rather than per-combination.
+
+Until one of those is true, the column is dead weight. It should be shown in the stats panel regardless — the panel currently names the character but shows no face, which is a missed opportunity in a game about identity.
+
+### 4. World card backgrounds — not started
+
+`WorldDefinitionSchema` has no image field. World selection cards (StepWorld, and the New Campaign form) are text-only.
+
+Proposed: `cardImageUrl` on the world definition, rendered as a darkened background behind the card title and subtitle — dark enough that Cinzel stays legible without a scrim hack (target: text contrast ≥ 4.5:1 over the darkened image, not over the raw one).
+
+This matters more than it sounds: the three worlds are the product's core differentiator, and they currently look like three paragraphs. A grimdark Celtic ruin, a drifting hull and a neon-wet Warsaw street sell the choice instantly in a way prose does not.
+
+### Cross-cutting: assets are per world
+
+All four items resolve through the world registry, not through global paths. `classPortraitsBaseUrl` already establishes this pattern — scenes, NPC portraits and card art should follow it rather than introducing a second, parallel convention.
