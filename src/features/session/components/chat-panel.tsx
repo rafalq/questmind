@@ -18,6 +18,7 @@ type Props = {
 }
 
 const SCROLL_THRESHOLD = 100
+const MAX_INPUT_HEIGHT = 200
 
 export default function ChatPanel({
   messages,
@@ -32,6 +33,8 @@ export default function ChatPanel({
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const isAtBottomRef = useRef(true)
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // ── Scroll helpers ───────────────────────────────────────────────────────
 
@@ -58,6 +61,15 @@ export default function ChatPanel({
       scrollToBottom('smooth')
     }
   }, [messages, scrollToBottom])
+
+  // Auto-grow: reset to 'auto' first so the element can shrink back when the
+  // player deletes lines, then match scrollHeight up to a ceiling.
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)}px`
+  }, [input])
 
   // ── Send handlers ────────────────────────────────────────────────────────
 
@@ -147,9 +159,10 @@ export default function ChatPanel({
 
       {/* Input area */}
       <div className="border-t border-border px-6 py-4">
-        <div className="mx-auto w-full max-w-[68ch] flex gap-3 items-end justify-center">
+        <div className="mx-auto w-full max-w-[68ch] flex gap-3 items-stretch">
           <textarea
-            className="flex-1 bg-bg-surface border border-border text-text-primary placeholder:text-text-muted px-4 py-3 text-sm resize-none focus:outline-none focus:border-accent transition-colors"
+            ref={textareaRef}
+            className="flex-1 bg-bg-surface border border-border text-text-primary placeholder:text-text-muted px-4 py-3 text-sm resize-none overflow-y-auto focus:outline-none focus:border-accent transition-colors scrollbar-subtle"
             placeholder="What do you do? (Enter to send, Shift+Enter for new line)"
             rows={2}
             value={input}
@@ -163,6 +176,7 @@ export default function ChatPanel({
             disabled={!input.trim() || isStreaming}
             loading={isStreaming}
             loadingText="..."
+            className="self-end shrink-0 py-4.5 px-8"
           >
             <IconSend stroke={2} />
           </Button>
