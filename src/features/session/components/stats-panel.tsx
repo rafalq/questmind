@@ -37,6 +37,16 @@ const CATEGORY_ICONS: Record<ItemCategory, typeof IconSword> = {
   misc: IconPackage,
 }
 
+// Colour carries the category faster than icon shape does at 13px.
+const CATEGORY_COLORS: Record<ItemCategory, string> = {
+  weapon: 'text-red-400/70',
+  armor: 'text-slate-400/70',
+  consumable: 'text-emerald-400/70',
+  tool: 'text-amber-500/60',
+  relic: 'text-accent',
+  misc: 'text-text-muted',
+}
+
 export default function StatsPanel({ snapshot, character }: Props) {
   const hp = snapshot?.hp ?? 100
   const maxHp = snapshot?.maxHp ?? 100
@@ -52,21 +62,19 @@ export default function StatsPanel({ snapshot, character }: Props) {
         : 'bg-red-600'
 
   return (
-    <div className="p-5 space-y-6">
+    <div className="p-6 divide-y divide-border/40 [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
       {/* Character info */}
       <div>
-        <h3 className="text-xs text-text-muted uppercase tracking-widest mb-1">
+        <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
           Character
         </h3>
         <p className="text-text-primary font-bold">{character.name}</p>
         <div className="text-text-muted text-xs inline-flex items-center gap-1">
           <div className="flex items-center gap-1 justify-center">
-            <IconUserShield size={10} />
             <span className="capitalize">{character.race}</span>
           </div>{' '}
           ·{' '}
           <div className="flex items-center gap-1 justify-center">
-            <IconShield size={10} />
             <span className="capitalize">
               {character.characterClass.replaceAll('_', ' ')}
             </span>
@@ -76,15 +84,19 @@ export default function StatsPanel({ snapshot, character }: Props) {
 
       {/* HP bar */}
       <div>
-        <div className="flex justify-between mb-1">
-          <h3 className="text-xs text-text-muted uppercase tracking-widest flex items-center gap-1 justify-center">
-            <IconHeart stroke={2} size={12} /> HP
+        <div className="flex items-baseline justify-between mb-2">
+          <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest flex items-center gap-1">
+            HP
           </h3>
-          <span className="text-xs text-text-secondary">
-            {hp} / {maxHp}
+          <span className="text-xl font-bold text-text-primary tabular-nums">
+            {hp}
+            <span className="text-sm text-text-muted font-normal">
+              {' '}
+              / {maxHp}
+            </span>
           </span>
         </div>
-        <div className="w-full h-2 bg-surface border border-border">
+        <div className="w-full h-2 bg-bg-base border border-border">
           <div
             className={`h-full transition-all duration-500 ${hpColor}`}
             style={{ width: `${hpPercent}%` }}
@@ -99,8 +111,8 @@ export default function StatsPanel({ snapshot, character }: Props) {
 
       {/* Quests */}
       <div>
-        <h3 className="text-xs text-text-muted uppercase tracking-widest mb-2 flex items-center gap-1">
-          <IconMapSearch size={12} /> Quests
+        <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest flex items-center gap-1 mb-2">
+          Quests
         </h3>
         {quests.length === 0 ? (
           <p className="text-text-muted text-xs">No active quests.</p>
@@ -144,7 +156,7 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
 
   return (
     <div className="flex flex-col min-h-0">
-      <h3 className="text-sm text-text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-1 shrink-0">
+      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-3 flex items-center gap-1 shrink-0 mb-2">
         Inventory
       </h3>
 
@@ -164,7 +176,10 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
                   disabled={!entry.description}
                   className="w-full flex items-center gap-2 text-left text-sm text-text-secondary hover:text-text-primary disabled:hover:text-text-secondary transition-colors py-0.5"
                 >
-                  <Icon size={13} className="shrink-0 text-text-muted" />
+                  <Icon
+                    size={14}
+                    className={`shrink-0 ${CATEGORY_COLORS[entry.category]}`}
+                  />
                   <span className="flex-1">{entry.name}</span>
                   {entry.qty > 1 && (
                     <span className="text-xs text-text-muted shrink-0">
