@@ -17,12 +17,25 @@ export const sessionStatusEnum = pgEnum('session_status', [
 
 export const roleEnum = pgEnum('message_role', ['user', 'assistant'])
 
+export type Tier = 1 | 2 | 3
+
 export type GameSnapshot = {
   hp: number
   maxHp: number
   inventory: string[]
   quests: { id: string; title: string; status: 'active' | 'completed' }[]
   sceneTag: string
+
+  // ── Progression: SERVER-AUTHORITATIVE ──────────────────────────────────
+  // Derived from charactersTable.characterXp, never from the model's reply.
+  // The model receives these (they gate which abilities it may narrate) but
+  // must never set them: overwrite on every snapshot write, or a player can
+  // simply ask the GM for tier 3.
+  // level = levelFromXp(xp); tier = computeTier(level, keyAttributeValue)
+  xp: number
+  level: number
+  tier: Tier
+
   // ── Dynamic RAG hooks (populated by the model, consumed in later steps) ──
   // npcMet:   NPC names met for the first time this turn → appended to
   //           campaignLoreState.metNpcIds for cross-campaign continuity.
