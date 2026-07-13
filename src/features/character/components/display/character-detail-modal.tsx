@@ -1,15 +1,11 @@
 'use client'
 
+import { levelFromXp } from '@/features/character/constants/progression'
+import { genreBg, genreFont, GenreIcon } from '@/lib/genre-theme'
+import { getClassLabel, getRaceLabel } from '@/worlds'
 import { useEffect } from 'react'
-import { genreFont, genreBg, GenreIcon } from '@/lib/genre-theme'
 import type { Genre } from '@/features/character/constants/'
-import {
-  IconX,
-  IconHeart,
-  IconStar,
-  IconPackage,
-  IconBook,
-} from '@tabler/icons-react'
+import { IconHeart, IconPackage, IconStar, IconX } from '@tabler/icons-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -29,9 +25,9 @@ export type CharacterDetail = {
   id: string
   name: string
   genre: Genre
+  world: string
   race: string
   characterClass: string
-  level: number
   characterXp: number
   isAlive: boolean
   inventory: string[]
@@ -127,15 +123,6 @@ function InventoryList({ items }: { items: string[] }) {
   )
 }
 
-function Backstory({ text }: { text: string }) {
-  return (
-    <div>
-      <SectionLabel icon={<IconBook size={13} />} label="Backstory" />
-      <p className="text-sm text-text-secondary leading-relaxed">{text}</p>
-    </div>
-  )
-}
-
 function ModalHeader({
   genre,
   onClose,
@@ -160,12 +147,15 @@ function ModalHeader({
 }
 
 function CharacterSummary({ character }: { character: CharacterDetail }) {
+  const level = levelFromXp(character.characterXp)
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-text-primary">{character.name}</h2>
-      <p className="text-sm text-text-secondary capitalize mt-1">
-        {character.race} · {character.characterClass.replace(/_/g, ' ')} · Level{' '}
-        {character.level}
+      <p className="text-sm text-text-secondary mt-1">
+        {getRaceLabel(character.world, character.race)} ·{' '}
+        {getClassLabel(character.world, character.characterClass)} · Level{' '}
+        {level}
       </p>
       <p className="text-xs text-text-muted mt-0.5">
         {character.characterXp} XP ·{' '}
@@ -187,8 +177,6 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
-
-  console.log('CharacterDetailModal rendered with character:', character)
 
   return (
     <div
