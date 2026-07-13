@@ -3,10 +3,12 @@ import {
   sessionsTable,
   campaignsTable,
   charactersTable,
+  characterAttributesTable,
   messagesTable,
 } from '@/db/schema'
 import { eq, and, asc } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
+import { Attribute } from '@/worlds/schema'
 
 export type SessionContext = {
   session: typeof sessionsTable.$inferSelect
@@ -14,6 +16,7 @@ export type SessionContext = {
   character: typeof charactersTable.$inferSelect
   history: (typeof messagesTable.$inferSelect)[]
   lastSnapshot: GameSnapshot | null
+  baseAttributes: Record<Attribute, number>
 }
 
 export async function validateSession(
@@ -49,5 +52,21 @@ export async function validateSession(
     ([...history].reverse().find((m) => m.snapshot)
       ?.snapshot as GameSnapshot) ?? null
 
-  return { session, campaign, character, history, lastSnapshot }
+  const attributeRows = await db
+    .select()
+    .from(characterAttributesTable)
+    .where(eq(characterAttributesTable.characterId, session.characterId))
+
+  const baseAttributes = Object.fromEntries(
+    attributeRows.map((row) => [row.attribute, row.baseValue])
+  ) as Record<Attribute, number>
+
+  return {
+    session,
+    campaign,
+    character,
+    history,
+    lastSnapshot,
+    baseAttributes,
+  }
 }

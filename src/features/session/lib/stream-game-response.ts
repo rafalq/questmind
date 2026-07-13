@@ -10,6 +10,16 @@ import { getLanguage } from '@/features/campaign/constants/languages'
 import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
 import { getWorld } from '@/worlds'
 import { resolveAbilities } from '@/features/character/lib/progression'
+import { charactersTable } from '@/db/schema'
+import {
+  effectiveAttributes,
+  computeTier,
+} from '@/features/character/lib/progression'
+import {
+  levelFromXp,
+  XP_PER_TURN,
+} from '@/features/character/constants/progression'
+import { calculateMaxHp } from '@/features/character/lib/hp'
 
 const client = new Anthropic()
 
@@ -24,7 +34,7 @@ export function streamGameResponse({
   context,
   claudeMessages,
 }: StreamInput): Response {
-  const { campaign, character, lastSnapshot } = context
+  const { campaign, character, lastSnapshot, baseAttributes } = context
 
   const encoder = new TextEncoder()
 
@@ -140,14 +150,27 @@ export function streamGameResponse({
         )
       }
 
-      // Progression is server-authoritative. The model receives xp/level/tier
-      // (they gate which abilities it may narrate) but has no say over them:
-      // it typically omits them entirely, and a player could otherwise simply
-      // ask the GM for tier 3. Carry the previous values forward verbatim.
-      if (snapshot && lastSnapshot) {
-        snapshot.xp = lastSnapshot.xp
-        snapshot.level = lastSnapshot.level
-        snapshot.tier = lastSnapshot.tier
+      // Progression is server-authoritative and deterministic. XP is awarded
+      // per turn by the server, never by the model: an LLM handing out points
+      // would be untestable and trivially talked up by the player. The model
+      // sees xp/level/tier because they gate which abilities it may narrate,
+      // but anything it sends back for these fields is discarded.
+      if (snapshot && lastSnapshot && classDef) {
+        const xp = lastSnapshot.xp + XP_PER_TURN
+        const level = levelFromXp(xp)
+        const attributes = effectiveAttributes(baseAttributes, classDef, level)
+
+        snapshot.xp = xp
+        snapshot.level = level
+        snapshot.tier = computeTier(level, attributes[classDef.keyAttribute])
+        // maxHp tracks endurance growth, so levelling widens the pool. Without
+        // this a Bleeder's costs would rise while its HP stayed flat.
+        snapshot.maxHp = calculateMaxHp(attributes.endurance)
+
+        await db
+          .update(charactersTable)
+          .set({ characterXp: xp })
+          .where(eq(charactersTable.id, character.id))
       }
 
       // The model reports which ability it narrated, but has no authority over

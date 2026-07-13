@@ -8,6 +8,7 @@ export type SnapshotChange =
   | { kind: 'item-lost'; name: string; qty: number }
   | { kind: 'quest-added'; title: string }
   | { kind: 'quest-completed'; title: string }
+  | { kind: 'level-up'; level: number; tier: number }
 
 /** Counts occurrences in the flat inventory array. */
 function countItems(inventory: string[]): Map<string, number> {
@@ -43,6 +44,11 @@ export function diffSnapshots(
   // HP
   if (next.hp !== prev.hp) {
     changes.push({ kind: 'hp', delta: next.hp - prev.hp })
+  }
+
+  // Level / tier
+  if (next.level > prev.level) {
+    changes.push({ kind: 'level-up', level: next.level, tier: next.tier })
   }
 
   // Inventory — compare counts, so { 3 bandages → 1 bandage } reads as -2.

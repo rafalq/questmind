@@ -6,6 +6,7 @@ import {
   IconMapSearch,
   IconCheck,
   IconBolt,
+  IconStar,
 } from '@tabler/icons-react'
 
 /**
@@ -85,6 +86,15 @@ function ChangeItem({ change }: { change: SnapshotChange }) {
         <span className="flex items-center gap-1 text-accent">
           <IconBolt size={12} />
           {change.name}
+        </span>
+      )
+
+    case 'level-up':
+      return (
+        <span className="flex items-center gap-1 text-accent font-semibold">
+          <IconStar size={12} stroke={2.5} />
+          Level {change.level}
+          {change.tier > 1 && ` · Tier ${change.tier}`}
         </span>
       )
   }
