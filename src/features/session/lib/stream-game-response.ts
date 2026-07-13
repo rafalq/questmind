@@ -36,6 +36,8 @@ export function streamGameResponse({
           race: character.race,
           characterClass: character.characterClass,
           gender: character.gender,
+          world: character.world,
+          tier: lastSnapshot?.tier ?? 1,
         },
         language: campaign.language,
       })
@@ -116,6 +118,27 @@ export function streamGameResponse({
         const jsonStr = fullText.slice(separatorIndex + SEPARATOR.length).trim()
         try {
           snapshot = JSON.parse(jsonStr)
+
+          if (separatorIndex !== -1) {
+            const jsonStr = fullText
+              .slice(separatorIndex + SEPARATOR.length)
+              .trim()
+            try {
+              snapshot = JSON.parse(jsonStr)
+            } catch {
+              console.error('Failed to parse game snapshot:', jsonStr)
+            }
+          }
+
+          // Progression is server-authoritative. The model receives xp/level/tier
+          // (they gate which abilities it may narrate) but has no say over them:
+          // it typically omits them entirely, and a player could otherwise simply
+          // ask the GM for tier 3. Carry the previous values forward verbatim.
+          if (snapshot && lastSnapshot) {
+            snapshot.xp = lastSnapshot.xp
+            snapshot.level = lastSnapshot.level
+            snapshot.tier = lastSnapshot.tier
+          }
         } catch {
           console.error('Failed to parse game snapshot:', jsonStr)
         }

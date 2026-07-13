@@ -5,6 +5,7 @@ import { type GameSnapshot } from '@/db/schema/session'
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { genderToGrammar } from './build-system-prompt/section-builders'
 import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
+import { AbilityDefinition } from '@/worlds/schema'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -23,6 +24,7 @@ type OpeningInput = {
   characterClass: string
   characterRace: string
   gender: string | null
+  abilities: AbilityDefinition[]
   history: Message[]
   lastSnapshot: GameSnapshot | null
 }
@@ -55,6 +57,7 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     characterClass,
     characterRace,
     gender,
+    abilities,
     history,
     lastSnapshot,
   } = input
@@ -73,6 +76,7 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
         characterClass,
         characterRace,
         gender,
+        abilities,
         lastSnapshot
       )
     : buildRecapPrompt(
@@ -114,6 +118,7 @@ function buildIntroPrompt(
   characterClass: string,
   characterRace: string,
   gender: string | null,
+  abilities: AbilityDefinition[],
   lastSnapshot: GameSnapshot | null
 ): string {
   // Starting equipment comes from race + class and is seeded into the initial
@@ -123,8 +128,15 @@ function buildIntroPrompt(
       ? `${characterName} carries: ${lastSnapshot.inventory.join(', ')}. Weave one or two of these items naturally into the scene. Do not invent additional possessions.`
       : ''
 
+  // Names only, no gmGuidance: the opening is prose, not adjudication. This
+  // colours who the character is without inviting the GM to open on a spell.
+  const abilitiesText =
+    abilities.length > 0
+      ? `${characterName} is capable of: ${abilities.map((a) => a.name).join(', ')}. Let this colour who they are; do not have them use these powers in the opening.`
+      : ''
+
   return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre}". 
-The player's character is ${characterName}, a ${characterRace} ${characterClass}. ${equipmentText}
+The player's character is ${characterName}, a ${characterRace} ${characterClass}. ${equipmentText} ${abilitiesText}
 Begin with a single short evocative title line using "# " (one line only), then write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
 Formatting: use only plain prose, plus that one "# " title line and *italic* for occasional emphasis. Do not use bold, headers beyond the single title, lists, tables, links, or any other markdown.
 Do not ask the player what they want to do. Do not include any JSON. Do not state any numbers, stats or mechanical values in the prose. Keep the prose under 200 words.
