@@ -190,7 +190,7 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
 
   return (
     <div className="flex flex-col min-h-0">
-      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-3 flex items-center gap-1 shrink-0 mb-2">
+      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest  flex items-center gap-1 shrink-0 mb-2">
         Inventory
       </h3>
 
@@ -223,7 +223,7 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
                 </button>
 
                 {isOpen && entry.description && (
-                  <p className="text-xs text-text-muted pl-[21px] pr-1 pb-1.5 leading-snug">
+                  <p className="text-xs text-text-muted pl-5.25 pr-1 pb-1.5 leading-snug">
                     {entry.description}
                   </p>
                 )}
@@ -300,7 +300,7 @@ function AbilitiesSection({
                 </div>
 
                 {isOpen && (
-                  <p className="text-xs text-text-muted pl-[21px] pr-1 pb-1.5 leading-snug">
+                  <p className="text-xs text-text-muted pl-5.25 pr-1 pb-1.5 leading-snug">
                     {ability.description}
                   </p>
                 )}
