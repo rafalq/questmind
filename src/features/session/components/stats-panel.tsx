@@ -119,7 +119,7 @@ export default function StatsPanel({
       />
 
       {/* Abilities */}
-      <AbilitiesSection abilities={abilities} />
+      <AbilitiesSection abilities={abilities} onUseAbility={onUseAbility} />
 
       {/* Quests */}
       <div>
@@ -214,7 +214,13 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
   )
 }
 
-function AbilitiesSection({ abilities }: { abilities: AbilityDefinition[] }) {
+function AbilitiesSection({
+  abilities,
+  onUseAbility,
+}: {
+  abilities: AbilityDefinition[]
+  onUseAbility: (name: string) => void
+}) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   const toggle = (value: string) => {
@@ -242,19 +248,34 @@ function AbilitiesSection({ abilities }: { abilities: AbilityDefinition[] }) {
 
             return (
               <li key={ability.value}>
-                <button
-                  type="button"
-                  onClick={() => toggle(ability.value)}
-                  className="w-full flex items-center gap-2 text-left text-sm text-text-secondary hover:text-text-primary transition-colors py-0.5"
-                >
-                  <IconBolt size={14} className="shrink-0 text-accent" />
-                  <span className="flex-1">{ability.name}</span>
-                  {cost && (
-                    <span className="text-xs text-red-400/70 shrink-0">
-                      {cost}
-                    </span>
-                  )}
-                </button>
+                {/* Two targets, one row: the bolt seeds the composer, the name
+                    reveals the description. Separate buttons, because a single
+                    click cannot mean both. */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onUseAbility(ability.name)}
+                    title={`Use ${ability.name}`}
+                    aria-label={`Use ${ability.name}`}
+                    className="shrink-0 text-accent/60 hover:bg-accent/20 hover:text-accent p-1 border border-border"
+                  >
+                    <IconBolt size={14} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => toggle(ability.value)}
+                    aria-expanded={isOpen}
+                    className="flex-1 flex items-center gap-2 text-left text-sm text-text-secondary hover:text-text-primary transition-colors py-0.5"
+                  >
+                    <span className="flex-1">{ability.name}</span>
+                    {cost && (
+                      <span className="text-xs text-red-400/70 shrink-0">
+                        {cost}
+                      </span>
+                    )}
+                  </button>
+                </div>
 
                 {isOpen && (
                   <p className="text-xs text-text-muted pl-[21px] pr-1 pb-1.5 leading-snug">

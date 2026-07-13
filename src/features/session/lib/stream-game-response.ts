@@ -130,6 +130,14 @@ export function streamGameResponse({
         } catch {
           console.error('Failed to parse game snapshot:', jsonStr)
         }
+      } else {
+        // No separator at all. The model never emitted the state block, so this
+        // turn silently updates nothing — no HP, no abilityUsed, no XP — because
+        // snapshot stays null. The visible symptom is prose ending mid-word; the
+        // invisible one is a turn that mechanically never happened.
+        console.error(
+          `No separator in model output (${fullText.length} chars) for session ${sessionId}. Snapshot lost.`
+        )
       }
 
       // Progression is server-authoritative. The model receives xp/level/tier
