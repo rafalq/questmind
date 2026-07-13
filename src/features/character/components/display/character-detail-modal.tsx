@@ -1,13 +1,22 @@
 'use client'
 
 import { genreBg, genreFont, GenreIcon } from '@/lib/genre-theme'
-import { useEffect } from 'react'
-import { effectiveAttributes } from '@/features/character/lib/progression'
+import { useEffect, useState } from 'react'
+import {
+  computeTier,
+  effectiveAttributes,
+  resolveAbilities,
+} from '@/features/character/lib/progression'
 import { levelFromXp } from '@/features/character/constants/progression'
+import { calculateMaxHp } from '@/features/character/lib/hp'
 import { getWorld, getClassLabel, getRaceLabel } from '@/worlds'
-import type { Attribute, AttributeLabels } from '@/worlds/schema'
+import type {
+  AbilityDefinition,
+  Attribute,
+  AttributeLabels,
+} from '@/worlds/schema'
 import type { Genre } from '@/features/character/constants/'
-import { IconHeart, IconPackage, IconStar, IconX } from '@tabler/icons-react'
+import { IconBolt, IconHeart, IconStar, IconX } from '@tabler/icons-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,6 +39,17 @@ type ActiveCampaign = {
   sessionId: string
 }
 
+/**
+ * This modal is a character sheet, not a game-state view: who the character is,
+ * not what is happening to them right now. Live HP and current inventory belong
+ * to the session and are shown in the stats panel, where they are actually up to
+ * date. Duplicating them here meant reading charactersTable.inventory (the
+ * starting kit, frozen at creation) and campaignCharacters.currentHp — both
+ * stale, and both silently wrong.
+ *
+ * activeCampaign stays on the type because CharacterCard uses it for the resume
+ * button; the modal itself no longer touches it.
+ */
 export type CharacterDetail = {
   id: string
   name: string
@@ -66,23 +86,52 @@ function SectionLabel({
   )
 }
 
-function HpBar({ current, max }: { current: number; max: number }) {
-  const percent = Math.round((current / max) * 100)
+function ModalHeader({
+  genre,
+  onClose,
+}: {
+  genre: Genre
+  onClose: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between p-6 border-b border-border/50">
+      <div className="flex items-center gap-2 text-xs text-text-muted uppercase tracking-widest">
+        <GenreIcon genre={genre} />
+        {genre}
+      </div>
+      <button
+        onClick={onClose}
+        className="text-text-muted hover:text-text-primary transition-colors"
+        aria-label="Close"
+      >
+        <IconX size={18} />
+      </button>
+    </div>
+  )
+}
 
+function CharacterSummary({
+  character,
+  level,
+  tier,
+}: {
+  character: CharacterDetail
+  level: number
+  tier: number
+}) {
   return (
     <div>
-      <SectionLabel icon={<IconHeart size={13} />} label="Hit Points" />
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-border">
-          <div
-            className="h-full bg-accent transition-all"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-        <span className="text-xs text-text-secondary tabular-nums">
-          {current} / {max}
+      <h2 className="text-2xl font-bold text-text-primary">{character.name}</h2>
+      <p className="text-sm text-text-secondary mt-1">
+        {getRaceLabel(character.world, character.race)} ·{' '}
+        {getClassLabel(character.world, character.characterClass)}
+      </p>
+      <p className="text-xs text-text-muted mt-1">
+        Level {level} · Tier {tier} · {character.characterXp} XP ·{' '}
+        <span className={character.isAlive ? 'text-accent' : 'text-red-500'}>
+          {character.isAlive ? 'Alive' : 'Dead'}
         </span>
-      </div>
+      </p>
     </div>
   )
 }
@@ -91,10 +140,12 @@ function AttributeGrid({
   attributes,
   labels,
   keyAttribute,
+  maxHp,
 }: {
   attributes: Record<Attribute, number>
   labels: AttributeLabels
   keyAttribute?: Attribute
+  maxHp: number
 }) {
   return (
     <div>
@@ -132,74 +183,72 @@ function AttributeGrid({
           )
         })}
       </div>
-    </div>
-  )
-}
 
-function InventoryList({ items }: { items: string[] }) {
-  if (items.length === 0) return null
-
-  return (
-    <div>
-      <SectionLabel icon={<IconPackage size={13} />} label="Inventory" />
-      <ul className="flex flex-col gap-1">
-        {items.map((item, i) => (
-          <li
-            key={i}
-            className="text-sm text-text-secondary px-3 py-1.5 border border-border/30"
-          >
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function ModalHeader({
-  genre,
-  onClose,
-}: {
-  genre: Genre
-  onClose: () => void
-}) {
-  return (
-    <div className="flex items-center justify-between p-6 border-b border-border/50">
-      <div className="flex items-center gap-2 text-xs text-text-muted uppercase tracking-widest">
-        <GenreIcon genre={genre} />
-        {genre}
-      </div>
-      <button
-        onClick={onClose}
-        className="text-text-muted hover:text-text-primary transition-colors"
-      >
-        <IconX size={18} />
-      </button>
-    </div>
-  )
-}
-
-function CharacterSummary({
-  character,
-  level,
-}: {
-  character: CharacterDetail
-  level: number
-}) {
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-text-primary">{character.name}</h2>
-      <p className="text-sm text-text-secondary mt-1">
-        {getRaceLabel(character.world, character.race)} ·{' '}
-        {getClassLabel(character.world, character.characterClass)} · Level{' '}
-        {level}
-      </p>
-      <p className="text-xs text-text-muted mt-0.5">
-        {character.characterXp} XP ·{' '}
-        <span className={character.isAlive ? 'text-accent' : 'text-red-500'}>
-          {character.isAlive ? 'Alive' : 'Dead'}
+      {/* Derived, not stored: maxHp follows endurance, which grows per level. */}
+      <div className="flex items-center justify-between px-3 py-2 mt-2 border border-border/50">
+        <span className="flex items-center gap-1.5 text-xs text-text-secondary">
+          <IconHeart size={12} />
+          Max HP
         </span>
-      </p>
+        <span className="text-sm font-bold text-text-primary tabular-nums">
+          {maxHp}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function AbilityList({ abilities }: { abilities: AbilityDefinition[] }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const toggle = (value: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      next.has(value) ? next.delete(value) : next.add(value)
+      return next
+    })
+  }
+
+  return (
+    <div>
+      <SectionLabel icon={<IconBolt size={13} />} label="Abilities" />
+
+      {abilities.length === 0 ? (
+        <p className="text-sm text-text-muted">None yet.</p>
+      ) : (
+        <ul className="flex flex-col gap-1">
+          {abilities.map((ability) => {
+            const isOpen = expanded.has(ability.value)
+            const cost =
+              ability.cost?.kind === 'hp' ? `${ability.cost.amount} HP` : null
+
+            return (
+              <li key={ability.value} className="border border-border/30">
+                <button
+                  type="button"
+                  onClick={() => toggle(ability.value)}
+                  aria-expanded={isOpen}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  <IconBolt size={13} className="shrink-0 text-accent/60" />
+                  <span className="flex-1">{ability.name}</span>
+                  {cost && (
+                    <span className="text-xs text-red-400/70 shrink-0">
+                      {cost}
+                    </span>
+                  )}
+                </button>
+
+                {isOpen && (
+                  <p className="text-xs text-text-muted px-3 pb-2 pl-8 leading-snug">
+                    {ability.description}
+                  </p>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </div>
   )
 }
@@ -215,9 +264,9 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  // Level and attributes are both derived from characterXp: nothing about
-  // progression is stored, so a levelled character shows current numbers rather
-  // than its creation-day ones.
+  // Everything below derives from characterXp. Nothing about progression is
+  // stored, so a levelled character shows its current numbers rather than its
+  // creation-day ones — and the sheet is correct with no session in progress.
   const level = levelFromXp(character.characterXp)
 
   const world = getWorld(character.world)
@@ -232,6 +281,14 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
   const attributes = classDef
     ? effectiveAttributes(baseAttributes, classDef, level)
     : baseAttributes
+
+  const tier = classDef
+    ? computeTier(level, attributes[classDef.keyAttribute])
+    : 1
+
+  const abilities = classDef ? resolveAbilities(classDef.abilities, tier) : []
+
+  const maxHp = calculateMaxHp(attributes.endurance)
 
   return (
     <div
@@ -250,21 +307,16 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
         <ModalHeader genre={character.genre} onClose={onClose} />
 
         <div className="p-6 flex flex-col gap-6">
-          <CharacterSummary character={character} level={level} />
-
-          {character.activeCampaign && (
-            <HpBar
-              current={character.activeCampaign.currentHp}
-              max={character.activeCampaign.maxHp}
-            />
-          )}
+          <CharacterSummary character={character} level={level} tier={tier} />
 
           <AttributeGrid
             attributes={attributes}
             labels={world.attributeLabels}
             keyAttribute={classDef?.keyAttribute}
+            maxHp={maxHp}
           />
-          <InventoryList items={character.inventory} />
+
+          <AbilityList abilities={abilities} />
         </div>
       </div>
     </div>
