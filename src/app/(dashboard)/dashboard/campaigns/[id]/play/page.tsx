@@ -20,7 +20,7 @@ export default async function PlayPage({ params, searchParams }: Props) {
   const data = await getSession(sessionId)
   if (!data) notFound()
 
-  const { session, campaign, character, messages } = data
+  const { session, campaign, character, messages, baseAttributes } = data
 
   /// A real opening is an assistant message WITH narrative content.
   // The initial-snapshot message createSession seeds is role:'assistant'
@@ -75,6 +75,7 @@ export default async function PlayPage({ params, searchParams }: Props) {
       initialMessages={freshData.messages}
       campaign={freshData.campaign}
       character={freshData.character}
+      baseAttributes={freshData.baseAttributes}
     />
   )
 }

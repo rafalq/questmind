@@ -1,6 +1,10 @@
 'use client'
 
-import type { AbilityDefinition } from '@/worlds/schema'
+import type {
+  AbilityDefinition,
+  Attribute,
+  AttributeLabels,
+} from '@/worlds/schema'
 import { type charactersTable } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
 import {
@@ -8,8 +12,11 @@ import {
   type InventoryEntry,
 } from '@/features/session/lib/inventory-display'
 import type { ItemCategory } from '@/worlds/schema'
-import { getWorld } from '@/worlds'
-import { resolveAbilities } from '@/features/character/lib/progression'
+import { getRaceLabel, getWorld } from '@/worlds'
+import {
+  effectiveAttributes,
+  resolveAbilities,
+} from '@/features/character/lib/progression'
 import {
   IconFlask,
   IconPackage,
@@ -27,6 +34,7 @@ type Props = {
   snapshot: GameSnapshot | null
   character: Character
   onUseAbility: (name: string) => void
+  baseAttributes: Record<Attribute, number>
 }
 
 const CATEGORY_ICONS: Record<ItemCategory, typeof IconSword> = {
@@ -52,6 +60,7 @@ export default function StatsPanel({
   snapshot,
   character,
   onUseAbility,
+  baseAttributes,
 }: Props) {
   const hp = snapshot?.hp ?? 100
   const maxHp = snapshot?.maxHp ?? 100
@@ -74,8 +83,14 @@ export default function StatsPanel({
   )
   const abilities = classDef ? resolveAbilities(classDef.abilities, tier) : []
 
+  const attributes = classDef
+    ? effectiveAttributes(baseAttributes, classDef, level)
+    : baseAttributes
+
+  const attributeLabels = getWorld(character.world).attributeLabels
+
   return (
-    <div className="p-6 divide-y divide-border/40 [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
+    <div className="p-6 divide-y divide-border/40 *:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
       {/* Character info */}
       <div>
         <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
@@ -83,7 +98,7 @@ export default function StatsPanel({
         </h3>
         <p className="text-text-primary font-bold">{character.name}</p>
         <div className="text-text-muted text-xs inline-flex items-center gap-1">
-          <span className="capitalize">{character.race}</span> ·{' '}
+          <span>{getRaceLabel(character.world, character.race)}</span> ·{' '}
           <span>{classDef?.label ?? character.characterClass}</span>
         </div>
         <p className="text-text-muted/70 text-xs mt-1">
@@ -112,6 +127,13 @@ export default function StatsPanel({
           />
         </div>
       </div>
+
+      {/* Attributes */}
+      <AttributesSection
+        attributes={attributes}
+        labels={attributeLabels}
+        keyAttribute={classDef?.keyAttribute}
+      />
 
       {/* Inventory */}
       <InventorySection
@@ -287,6 +309,48 @@ function AbilitiesSection({
           })}
         </ul>
       )}
+    </div>
+  )
+}
+
+function AttributesSection({
+  attributes,
+  labels,
+  keyAttribute,
+}: {
+  attributes: Record<Attribute, number>
+  labels: AttributeLabels
+  keyAttribute?: Attribute
+}) {
+  return (
+    <div>
+      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
+        Attributes
+      </h3>
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
+        {(Object.keys(labels) as Attribute[]).map((key) => {
+          // The key attribute gates tier progression — it is the one number
+          // the player should be watching, so it gets the accent.
+          const isKey = key === keyAttribute
+
+          return (
+            <li key={key} className="flex items-baseline justify-between">
+              <span
+                className={`text-xs ${isKey ? 'text-accent' : 'text-text-muted'}`}
+              >
+                {labels[key]}
+              </span>
+              <span
+                className={`text-sm tabular-nums ${
+                  isKey ? 'text-accent font-bold' : 'text-text-secondary'
+                }`}
+              >
+                {attributes[key]}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }

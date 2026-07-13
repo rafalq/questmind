@@ -21,6 +21,7 @@ import {
 } from '@/features/character/lib/progression'
 import { calculateMaxHp } from '@/features/character/lib/hp'
 import type { Attribute } from '@/worlds/schema'
+import { getBaseAttributes } from '@/features/character/queries/get-base-attributes'
 
 const schema = z.object({
   campaignId: z.string().uuid(),
@@ -81,17 +82,7 @@ export const createSession = authActionClient
         )
       )
 
-    // All six attributes: baseValue already includes race, class and gender
-    // modifiers (applied in create-character), so it's the base that per-level
-    // growth is added on top of.
-    const attributeRows = await db
-      .select()
-      .from(characterAttributesTable)
-      .where(eq(characterAttributesTable.characterId, characterId))
-
-    const baseAttributes = Object.fromEntries(
-      attributeRows.map((row) => [row.attribute, row.baseValue])
-    ) as Record<Attribute, number>
+    const baseAttributes = await getBaseAttributes(characterId)
 
     const classDef = getWorld(character.world).classes.find(
       (c) => c.value === character.characterClass
