@@ -1,5 +1,6 @@
 'use client'
 
+import type { AbilityDefinition } from '@/worlds/schema'
 import { type charactersTable } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
 import {
@@ -7,17 +8,16 @@ import {
   type InventoryEntry,
 } from '@/features/session/lib/inventory-display'
 import type { ItemCategory } from '@/worlds/schema'
+import { getWorld } from '@/worlds'
+import { resolveAbilities } from '@/features/character/lib/progression'
 import {
   IconFlask,
-  IconHeart,
-  IconMapSearch,
   IconPackage,
-  IconShield,
   IconShirt,
   IconSparkles,
   IconSword,
   IconTool,
-  IconUserShield,
+  IconBolt,
 } from '@tabler/icons-react'
 import { useState } from 'react'
 
@@ -26,6 +26,7 @@ type Character = typeof charactersTable.$inferSelect
 type Props = {
   snapshot: GameSnapshot | null
   character: Character
+  onUseAbility: (name: string) => void
 }
 
 const CATEGORY_ICONS: Record<ItemCategory, typeof IconSword> = {
@@ -47,7 +48,11 @@ const CATEGORY_COLORS: Record<ItemCategory, string> = {
   misc: 'text-text-muted',
 }
 
-export default function StatsPanel({ snapshot, character }: Props) {
+export default function StatsPanel({
+  snapshot,
+  character,
+  onUseAbility,
+}: Props) {
   const hp = snapshot?.hp ?? 100
   const maxHp = snapshot?.maxHp ?? 100
   const inventory = snapshot?.inventory ?? []
@@ -61,6 +66,14 @@ export default function StatsPanel({ snapshot, character }: Props) {
         ? 'bg-yellow-500'
         : 'bg-red-600'
 
+  const tier = snapshot?.tier ?? 1
+  const level = snapshot?.level ?? 1
+
+  const classDef = getWorld(character.world).classes.find(
+    (c) => c.value === character.characterClass
+  )
+  const abilities = classDef ? resolveAbilities(classDef.abilities, tier) : []
+
   return (
     <div className="p-6 divide-y divide-border/40 [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
       {/* Character info */}
@@ -70,16 +83,12 @@ export default function StatsPanel({ snapshot, character }: Props) {
         </h3>
         <p className="text-text-primary font-bold">{character.name}</p>
         <div className="text-text-muted text-xs inline-flex items-center gap-1">
-          <div className="flex items-center gap-1 justify-center">
-            <span className="capitalize">{character.race}</span>
-          </div>{' '}
-          ·{' '}
-          <div className="flex items-center gap-1 justify-center">
-            <span className="capitalize">
-              {character.characterClass.replaceAll('_', ' ')}
-            </span>
-          </div>
+          <span className="capitalize">{character.race}</span> ·{' '}
+          <span>{classDef?.label ?? character.characterClass}</span>
         </div>
+        <p className="text-text-muted/70 text-xs mt-1">
+          Level {level} · Tier {tier}
+        </p>
       </div>
 
       {/* HP bar */}
@@ -108,6 +117,9 @@ export default function StatsPanel({ snapshot, character }: Props) {
       <InventorySection
         entries={buildInventoryDisplay(inventory, character.world)}
       />
+
+      {/* Abilities */}
+      <AbilitiesSection abilities={abilities} />
 
       {/* Quests */}
       <div>
@@ -191,6 +203,62 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
                 {isOpen && entry.description && (
                   <p className="text-xs text-text-muted pl-[21px] pr-1 pb-1.5 leading-snug">
                     {entry.description}
+                  </p>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function AbilitiesSection({ abilities }: { abilities: AbilityDefinition[] }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const toggle = (value: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      next.has(value) ? next.delete(value) : next.add(value)
+      return next
+    })
+  }
+
+  return (
+    <div>
+      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
+        Abilities
+      </h3>
+
+      {abilities.length === 0 ? (
+        <p className="text-text-muted text-xs">None yet.</p>
+      ) : (
+        <ul className="space-y-1">
+          {abilities.map((ability) => {
+            const isOpen = expanded.has(ability.value)
+            const cost =
+              ability.cost?.kind === 'hp' ? `${ability.cost.amount} HP` : null
+
+            return (
+              <li key={ability.value}>
+                <button
+                  type="button"
+                  onClick={() => toggle(ability.value)}
+                  className="w-full flex items-center gap-2 text-left text-sm text-text-secondary hover:text-text-primary transition-colors py-0.5"
+                >
+                  <IconBolt size={14} className="shrink-0 text-accent" />
+                  <span className="flex-1">{ability.name}</span>
+                  {cost && (
+                    <span className="text-xs text-red-400/70 shrink-0">
+                      {cost}
+                    </span>
+                  )}
+                </button>
+
+                {isOpen && (
+                  <p className="text-xs text-text-muted pl-[21px] pr-1 pb-1.5 leading-snug">
+                    {ability.description}
                   </p>
                 )}
               </li>

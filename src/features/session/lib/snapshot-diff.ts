@@ -2,6 +2,7 @@
 import { type GameSnapshot } from '@/db/schema/session'
 
 export type SnapshotChange =
+  | { kind: 'ability'; name: string }
   | { kind: 'hp'; delta: number }
   | { kind: 'item-gained'; name: string; qty: number }
   | { kind: 'item-lost'; name: string; qty: number }
@@ -28,9 +29,16 @@ export function diffSnapshots(
   prev: GameSnapshot | null,
   next: GameSnapshot | null
 ): SnapshotChange[] {
-  if (!prev || !next) return []
-
   const changes: SnapshotChange[] = []
+
+  // Not a delta: abilityUsed is a fact about this turn, not a difference
+  // between two states. It must be read before the guard below, or an ability
+  // used on the very first turn (prev === null) would be dropped.
+  if (next?.abilityUsed) {
+    changes.push({ kind: 'ability', name: next.abilityUsed })
+  }
+
+  if (!prev || !next) return changes
 
   // HP
   if (next.hp !== prev.hp) {

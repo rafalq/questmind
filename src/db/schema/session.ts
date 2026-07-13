@@ -35,6 +35,9 @@ export type GameSnapshot = {
   xp: number
   level: number
   tier: Tier
+  // Set by the model, validated server-side against the active ability set.
+  // Display-only: drives the "⚡ Crimson Echo" marker above the message.
+  abilityUsed?: string
 
   // ── Dynamic RAG hooks (populated by the model, consumed in later steps) ──
   // npcMet:   NPC names met for the first time this turn → appended to

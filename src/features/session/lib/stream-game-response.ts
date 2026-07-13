@@ -8,6 +8,8 @@ import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
 import { SNAPSHOT_DELIMITER } from './stream-protocol'
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
+import { getWorld } from '@/worlds'
+import { resolveAbilities } from '@/features/character/lib/progression'
 
 const client = new Anthropic()
 
@@ -28,6 +30,13 @@ export function streamGameResponse({
 
   const readable = new ReadableStream({
     async start(controller) {
+      const classDef = getWorld(character.world).classes.find(
+        (c) => c.value === character.characterClass
+      )
+      const activeAbilities = classDef
+        ? resolveAbilities(classDef.abilities, lastSnapshot?.tier ?? 1)
+        : []
+
       const systemPrompt = await buildSystemPrompt({
         genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
         player: {
@@ -118,30 +127,30 @@ export function streamGameResponse({
         const jsonStr = fullText.slice(separatorIndex + SEPARATOR.length).trim()
         try {
           snapshot = JSON.parse(jsonStr)
-
-          if (separatorIndex !== -1) {
-            const jsonStr = fullText
-              .slice(separatorIndex + SEPARATOR.length)
-              .trim()
-            try {
-              snapshot = JSON.parse(jsonStr)
-            } catch {
-              console.error('Failed to parse game snapshot:', jsonStr)
-            }
-          }
-
-          // Progression is server-authoritative. The model receives xp/level/tier
-          // (they gate which abilities it may narrate) but has no say over them:
-          // it typically omits them entirely, and a player could otherwise simply
-          // ask the GM for tier 3. Carry the previous values forward verbatim.
-          if (snapshot && lastSnapshot) {
-            snapshot.xp = lastSnapshot.xp
-            snapshot.level = lastSnapshot.level
-            snapshot.tier = lastSnapshot.tier
-          }
         } catch {
           console.error('Failed to parse game snapshot:', jsonStr)
         }
+      }
+
+      // Progression is server-authoritative. The model receives xp/level/tier
+      // (they gate which abilities it may narrate) but has no say over them:
+      // it typically omits them entirely, and a player could otherwise simply
+      // ask the GM for tier 3. Carry the previous values forward verbatim.
+      if (snapshot && lastSnapshot) {
+        snapshot.xp = lastSnapshot.xp
+        snapshot.level = lastSnapshot.level
+        snapshot.tier = lastSnapshot.tier
+      }
+
+      // The model reports which ability it narrated, but has no authority over
+      // the name: anything outside the character's active set is discarded.
+      // This makes hallucinated or out-of-tier abilities impossible to display
+      // without relying on the model's restraint.
+      if (snapshot?.abilityUsed) {
+        const known = activeAbilities.some(
+          (a) => a.name === snapshot!.abilityUsed
+        )
+        if (!known) snapshot.abilityUsed = undefined
       }
 
       const narrative =

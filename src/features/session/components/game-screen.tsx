@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   type messagesTable,
   type campaignsTable,
   type charactersTable,
 } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
-import ChatPanel from './chat-panel'
+import ChatPanel, { ChatPanelHandle } from './chat-panel'
 import StatsPanel from './stats-panel'
 import { SNAPSHOT_DELIMITER } from '@/features/session/lib/stream-protocol'
 import { UIMessage } from '../lib/types'
@@ -50,6 +50,17 @@ export default function GameScreen({
         snapshot: m.snapshot as GameSnapshot | null,
       }))
   )
+
+  const [abilityToInsert, setAbilityToInsert] = useState<{
+    name: string
+    nonce: number
+  } | null>(null)
+
+  const chatRef = useRef<ChatPanelHandle>(null)
+
+  const handleUseAbility = (name: string) => {
+    chatRef.current?.insertAbility(name)
+  }
 
   // Use the last snapshot from history as initial state
   const lastSnapshot = [...initialMessages].reverse().find((m) => m.snapshot)
@@ -158,6 +169,7 @@ export default function GameScreen({
           </button>
         </div>
         <ChatPanel
+          ref={chatRef}
           messages={messages}
           isStreaming={isStreaming}
           onSend={sendMessage}
@@ -172,7 +184,11 @@ export default function GameScreen({
           isPanelOpen ? 'w-72' : 'w-0 border-l-0 overflow-hidden'
         }`}
       >
-        <StatsPanel snapshot={snapshot} character={character} />
+        <StatsPanel
+          snapshot={snapshot}
+          character={character}
+          onUseAbility={handleUseAbility}
+        />
       </aside>
     </div>
   )
