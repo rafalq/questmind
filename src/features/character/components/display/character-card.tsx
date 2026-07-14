@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation'
 import { useState, type MouseEvent } from 'react'
 import { toast } from 'sonner'
 import { deleteCharacter } from '@/features/character/actions/delete-character'
+import { levelFromXp } from '@/features/character/constants/progression'
+import { getClassLabel, getRaceLabel } from '@/worlds'
 import CharacterDetailModal, {
   type CharacterDetail,
 } from './character-detail-modal'
@@ -49,12 +51,13 @@ export default function CharacterCard({ character }: Props) {
     </div>
   )
 
+  const level = levelFromXp(character.characterXp)
+
   const footer = (
     <div className="flex items-center justify-between">
       <p className="text-text-muted text-xs">
-        Level {character.level} · {character.characterXp} XP
+        Level {level} · {character.characterXp} XP
       </p>
-
       {character.activeCampaign && (
         <ButtonPlayResume
           onClick={(e?: MouseEvent<HTMLButtonElement>) => {
@@ -76,7 +79,7 @@ export default function CharacterCard({ character }: Props) {
       <GenreCard
         genre={character.genre}
         title={character.name}
-        subtitle={`${character.race} · ${character.characterClass.replace(/_/g, ' ')}`}
+        subtitle={`${getRaceLabel(character.world, character.race)} · ${getClassLabel(character.world, character.characterClass)}`}
         badge={badge}
         footer={footer}
         onClick={() => setModalOpen(true)}

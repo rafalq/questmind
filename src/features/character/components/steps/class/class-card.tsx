@@ -47,6 +47,43 @@ export default function ClassCard({
             <ModifierBadge key={attr} attr={attr} val={val ?? 0} />
           ))}
         </div>
+        {/* Abilities: names and tiers only. The player is comparing four
+            classes here, not reading five paragraphs about each — the full
+            descriptions live on the summary step and in the character sheet. */}
+        {cls.abilities.length > 0 && (
+          <div className="w-full mt-2 pt-2 border-t border-border/40">
+            <p className="text-[10px] uppercase tracking-widest text-text-muted/60 text-center mb-2.5">
+              Abilities
+            </p>
+            <ul className="flex flex-col items-center gap-0.5">
+              {cls.abilities.map((a) => (
+                <li
+                  key={a.value}
+                  className="flex items-baseline justify-center gap-2.5 text-xs"
+                >
+                  <span className="text-text-secondary">{a.name}</span>
+                  <span className="text-text-muted/60 tabular-nums">
+                    T{a.tier}
+                    {a.cost?.kind === 'hp' && (
+                      <span className="text-red-400/60 text-[10px] tabular-nums">
+                        {' '}
+                        · {a.cost.amount} HP
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {cls.startingEquipment.length > 0 && (
+          <p className="text-text-muted/70 text-xs mt-2.5">
+            Starts with:{' '}
+            {cls.startingEquipment
+              .map((i) => (i.qty > 1 ? `${i.name} ×${i.qty}` : i.name))
+              .join(', ')}
+          </p>
+        )}
       </div>
     </button>
   )

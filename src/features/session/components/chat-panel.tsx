@@ -1,6 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+} from 'react'
 import MessageBubble from './message-bubble'
 import Button from '@/components/ui/button'
 import { genreFont, genreBg } from '@/lib/genre-theme'
@@ -20,13 +27,14 @@ type Props = {
 const SCROLL_THRESHOLD = 100
 const MAX_INPUT_HEIGHT = 200
 
-export default function ChatPanel({
-  messages,
-  isStreaming,
-  onSend,
-  genre,
-  characterName,
-}: Props) {
+export type ChatPanelHandle = {
+  insertAbility: (name: string) => void
+}
+
+const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
+  { messages, isStreaming, onSend, genre, characterName },
+  ref
+) {
   const [input, setInput] = useState('')
   const [isAtBottom, setIsAtBottom] = useState(true)
 
@@ -70,6 +78,15 @@ export default function ChatPanel({
     el.style.height = 'auto'
     el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)}px`
   }, [input])
+
+  // Called by the stats panel when an ability is clicked. Imperative rather
+  // than a prop + effect: this is an event, not state to synchronise.
+  useImperativeHandle(ref, () => ({
+    insertAbility: (name: string) => {
+      setInput((prev) => (prev ? `${prev} ` : '') + `${name} — `)
+      textareaRef.current?.focus()
+    },
+  }))
 
   // ── Send handlers ────────────────────────────────────────────────────────
 
@@ -186,4 +203,6 @@ export default function ChatPanel({
       </div>
     </div>
   )
-}
+})
+
+export default ChatPanel

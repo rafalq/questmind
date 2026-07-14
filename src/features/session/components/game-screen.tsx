@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   type messagesTable,
   type campaignsTable,
   type charactersTable,
 } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
-import ChatPanel from './chat-panel'
+import ChatPanel, { type ChatPanelHandle } from './chat-panel'
 import StatsPanel from './stats-panel'
 import { SNAPSHOT_DELIMITER } from '@/features/session/lib/stream-protocol'
 import { UIMessage } from '../lib/types'
@@ -15,6 +15,7 @@ import {
   IconLayoutSidebarRightCollapse,
   IconLayoutSidebarRightExpand,
 } from '@tabler/icons-react'
+import type { Attribute } from '@/worlds/schema'
 
 type DbMessage = typeof messagesTable.$inferSelect
 type Campaign = typeof campaignsTable.$inferSelect
@@ -26,6 +27,9 @@ type Props = {
   initialMessages: DbMessage[]
   campaign: Campaign
   character: Character
+  // Base values from the DB: point-buy plus race/class/gender modifiers.
+  // Per-level growth is applied on read, in the panel.
+  baseAttributes: Record<Attribute, number>
 }
 
 export default function GameScreen({
@@ -33,6 +37,7 @@ export default function GameScreen({
   initialMessages,
   campaign,
   character,
+  baseAttributes,
 }: Props) {
   // Reading mode: hides the stats panel so prose gets the full width.
   // Also the mobile default — the panel doesn't fit beside the chat at 360px.
@@ -50,6 +55,15 @@ export default function GameScreen({
         snapshot: m.snapshot as GameSnapshot | null,
       }))
   )
+
+  // Clicking an ability seeds the composer. Imperative, not state: this is an
+  // event, and lifting the input's state would re-render the chat on every
+  // keystroke from up here.
+  const chatRef = useRef<ChatPanelHandle>(null)
+
+  const handleUseAbility = (name: string) => {
+    chatRef.current?.insertAbility(name)
+  }
 
   // Use the last snapshot from history as initial state
   const lastSnapshot = [...initialMessages].reverse().find((m) => m.snapshot)
@@ -158,6 +172,7 @@ export default function GameScreen({
           </button>
         </div>
         <ChatPanel
+          ref={chatRef}
           messages={messages}
           isStreaming={isStreaming}
           onSend={sendMessage}
@@ -172,7 +187,12 @@ export default function GameScreen({
           isPanelOpen ? 'w-72' : 'w-0 border-l-0 overflow-hidden'
         }`}
       >
-        <StatsPanel snapshot={snapshot} character={character} />
+        <StatsPanel
+          snapshot={snapshot}
+          character={character}
+          baseAttributes={baseAttributes}
+          onUseAbility={handleUseAbility}
+        />
       </aside>
     </div>
   )

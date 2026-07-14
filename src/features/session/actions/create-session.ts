@@ -10,12 +10,18 @@ import {
   messagesTable,
   sessionsTable,
 } from '@/db/schema'
+import { levelFromXp } from '@/features/character/constants/progression'
 import { authActionClient } from '@/lib/safe-action'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
-
-const BASE_HP = 50
-const HP_PER_ENDURANCE = 10
+import { getWorld } from '@/worlds'
+import {
+  effectiveAttributes,
+  computeTier,
+} from '@/features/character/lib/progression'
+import { calculateMaxHp } from '@/features/character/lib/hp'
+import type { Attribute } from '@/worlds/schema'
+import { getBaseAttributes } from '@/features/character/queries/get-base-attributes'
 
 const schema = z.object({
   campaignId: z.string().uuid(),
@@ -76,8 +82,20 @@ export const createSession = authActionClient
         )
       )
 
-    const endurance = enduranceAttr?.baseValue ?? 0
-    const maxHp = BASE_HP + endurance * HP_PER_ENDURANCE
+    const baseAttributes = await getBaseAttributes(characterId)
+
+    const classDef = getWorld(character.world).classes.find(
+      (c) => c.value === character.characterClass
+    )
+    if (!classDef)
+      throw new Error('Character class not found in world registry.')
+
+    // Progression is derived, never stored: xp is the only source of truth.
+    const level = levelFromXp(character.characterXp)
+    const attributes = effectiveAttributes(baseAttributes, classDef, level)
+    const tier = computeTier(level, attributes[classDef.keyAttribute])
+
+    const maxHp = calculateMaxHp(attributes.endurance)
 
     const initialSnapshot: GameSnapshot = {
       hp: maxHp,
@@ -85,6 +103,9 @@ export const createSession = authActionClient
       inventory: character.inventory,
       quests: [],
       sceneTag: 'default',
+      xp: character.characterXp,
+      level,
+      tier,
     }
 
     const [session] = await db

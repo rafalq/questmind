@@ -39,12 +39,6 @@ At that scale, derived genre (filtering in JS after fetch) is too slow — want 
 
 This is what turns B-lite RAG (static starting location) into full dynamic RAG (world follows the player).
 
-## 6. Campaign language selection --- DONE! ---
-
-**Current state:** `language-section.ts` exists but is not wired into the live (folder) builder — no importer. Written when the plan targeted the old flat builder; never re-pointed after the switch to the async RAG builder.
-
-**Remaining:** wire `buildLanguageSection` into `build-system-prompt/index.ts`, add a language dropdown to the New Campaign form, add a `language` column to the campaign. Per-font script fallbacks for non-Latin languages already handled in `layout.tsx` / `globals.css`.
-
 ## 7. Encumbrance / carry capacity
 
 **Status:** deferred (post-submission). Item data is authored with `slots` already populated; nothing consumes it at runtime.
@@ -125,3 +119,40 @@ This matters more than it sounds: the three worlds are the product's core differ
 ### Cross-cutting: assets are per world
 
 All four items resolve through the world registry, not through global paths. `classPortraitsBaseUrl` already establishes this pattern — scenes, NPC portraits and card art should follow it rather than introducing a second, parallel convention.
+
+## 8. Dead code and dead columns (superseded, not yet removed)
+
+None of this is load-bearing. It is scaffolding that survived a migration and was left in place rather than removed mid-feature. Documented here so it is a known debt rather than a surprise.
+
+### Superseded world registry
+
+`features/character/constants/` still holds a complete second definition of Tréigthe, from before the Zod-validated world registry existed:
+
+- `constants/fantasy/treigthe.ts` — `TREIGTHE_RACES`, `TREIGTHE_CLASSES`. The data was copied verbatim into `worlds/treigthe/definition.ts` (the comments there say so) but the original was never deleted.
+- `constants/index.ts` — `RACES_BY_WORLD`, `CLASSES_BY_WORLD`. Imported by nothing; a closed loop.
+- `constants/shared.ts` — the old `RaceDefinition` / `ClassDefinition` types, which have no `abilities`, `keyAttribute` or `growth`. Any component still importing these sees a pre-progression view of the world.
+
+`race-portraits.tsx` still imports the old `RaceDefinition`.
+
+**Risk:** two sources of truth for the same world. A change to Tréigthe made in one file and not the other is a silent divergence. Removing the old layer is a mechanical refactor — delete, redirect imports to `@/worlds/schema`, let `tsc` find the rest.
+
+### Duplicated constants
+
+- `Attribute` / `ATTRIBUTES` — three copies: `worlds/schema/attribute.ts` (canonical), `constants/shared.ts`, `types/wizard-types.ts`. They compile because they are structurally identical, which is exactly why nobody noticed.
+- `calculateMaxHp` / `BASE_HP` / `HP_PER_ENDURANCE` — two copies: `lib/hp.ts` and `constants/shared.ts`.
+
+Adding a seventh attribute, or rebalancing HP, would need every copy changed, and missing one would diverge silently.
+
+### Dead columns
+
+- `charactersTable.level` — level is derived from `characterXp` via `levelFromXp()`. Nothing writes it; nothing reads it since the display was fixed.
+- `characterAttributesTable.currentXp` and `.bonus` — per-attribute XP and bonuses, superseded by auto-allocated growth (primary +2, secondary +1 per level). `create-character.ts` still writes zeroes into them.
+- `charactersTable.inventory` — the starting kit, frozen at creation. Live inventory lives in `GameSnapshot`. Read by nothing since the character sheet stopped displaying it.
+
+Dropping these needs a migration and touches `create-character.ts`. They are inert, so this is deferred.
+
+## 9. XP is per character, not per campaign
+
+`characterXp` sits on `charactersTable`, so a character reused in a second campaign keeps the tier it reached in the first.
+
+This is defensible — the character learns, and the experience is theirs — but it was a constraint of the existing schema rather than a decision made first. The alternative is XP on `campaignCharactersTable`, alongside `currentHp`, which would make progression per-campaign and reset on a new adventure. That is arguably the better game design, and the migration is small; it was not done because the column already existed in the wrong place and the deadline was closer than the benefit.

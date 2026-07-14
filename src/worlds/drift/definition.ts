@@ -47,6 +47,9 @@ export const drift: WorldDefinitionInput = {
       label: 'TODO',
       description: 'Placeholder class until the sci-fi schema is finalised.',
       modifiers: {},
+      keyAttribute: 'mind',
+      growth: { primary: 'mind', secondary: 'endurance' },
+      abilities: [],
     },
   ],
 

@@ -1,6 +1,6 @@
 import RacePortraits from './race-portraits'
 import ModifierBadge from '@/features/character/components/steps/modifier-badge'
-import type { RaceDefinition } from '@/features/character/constants'
+import type { RaceDefinition } from '@/worlds/schema'
 
 export default function RaceCard({
   race,
@@ -35,6 +35,14 @@ export default function RaceCard({
             <ModifierBadge key={attr} attr={attr} val={val ?? 0} />
           ))}
         </div>
+        {race.startingEquipment.length > 0 && (
+          <p className="text-text-muted/70 text-xs mt-2.5">
+            Starts with:{' '}
+            {race.startingEquipment
+              .map((i) => (i.qty > 1 ? `${i.name} ×${i.qty}` : i.name))
+              .join(', ')}
+          </p>
+        )}
       </div>
     </button>
   )

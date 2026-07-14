@@ -25,6 +25,9 @@ const BASE_SNAPSHOT: GameSnapshot = {
   inventory: [],
   quests: [],
   sceneTag: 'default',
+  xp: 0,
+  level: 1,
+  tier: 1,
 }
 
 type CommandResult = {
@@ -51,6 +54,7 @@ export function applyDebugCommand(
     case 'set': {
       const target = parts[1]?.toLowerCase()
       const value = Number(parts[2])
+
       if (!Number.isFinite(value)) return null
 
       if (target === 'hp') {
@@ -61,6 +65,15 @@ export function applyDebugCommand(
         snapshot.maxHp = value
         return { snapshot, feedback: `[debug] maxHp set to ${value}` }
       }
+      if (target === 'tier') {
+        // DEV override only: does NOT touch characterXp. Lets you see how the
+        // prompt and panel change per tier without grinding XP. Resets on the
+        // next server-authoritative snapshot write.
+        if (value < 1 || value > 3 || !Number.isInteger(value)) return null
+        snapshot.tier = value as 1 | 2 | 3
+        return { snapshot, feedback: `[debug] tier set to ${value}` }
+      }
+
       return null
     }
 

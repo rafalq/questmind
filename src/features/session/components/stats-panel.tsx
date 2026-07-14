@@ -1,5 +1,10 @@
 'use client'
 
+import type {
+  AbilityDefinition,
+  Attribute,
+  AttributeLabels,
+} from '@/worlds/schema'
 import { type charactersTable } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
 import {
@@ -7,17 +12,19 @@ import {
   type InventoryEntry,
 } from '@/features/session/lib/inventory-display'
 import type { ItemCategory } from '@/worlds/schema'
+import { getRaceLabel, getWorld } from '@/worlds'
+import {
+  effectiveAttributes,
+  resolveAbilities,
+} from '@/features/character/lib/progression'
 import {
   IconFlask,
-  IconHeart,
-  IconMapSearch,
   IconPackage,
-  IconShield,
   IconShirt,
   IconSparkles,
   IconSword,
   IconTool,
-  IconUserShield,
+  IconBolt,
 } from '@tabler/icons-react'
 import { useState } from 'react'
 
@@ -26,6 +33,8 @@ type Character = typeof charactersTable.$inferSelect
 type Props = {
   snapshot: GameSnapshot | null
   character: Character
+  onUseAbility: (name: string) => void
+  baseAttributes: Record<Attribute, number>
 }
 
 const CATEGORY_ICONS: Record<ItemCategory, typeof IconSword> = {
@@ -47,7 +56,12 @@ const CATEGORY_COLORS: Record<ItemCategory, string> = {
   misc: 'text-text-muted',
 }
 
-export default function StatsPanel({ snapshot, character }: Props) {
+export default function StatsPanel({
+  snapshot,
+  character,
+  onUseAbility,
+  baseAttributes,
+}: Props) {
   const hp = snapshot?.hp ?? 100
   const maxHp = snapshot?.maxHp ?? 100
   const inventory = snapshot?.inventory ?? []
@@ -61,8 +75,22 @@ export default function StatsPanel({ snapshot, character }: Props) {
         ? 'bg-yellow-500'
         : 'bg-red-600'
 
+  const tier = snapshot?.tier ?? 1
+  const level = snapshot?.level ?? 1
+
+  const classDef = getWorld(character.world).classes.find(
+    (c) => c.value === character.characterClass
+  )
+  const abilities = classDef ? resolveAbilities(classDef.abilities, tier) : []
+
+  const attributes = classDef
+    ? effectiveAttributes(baseAttributes, classDef, level)
+    : baseAttributes
+
+  const attributeLabels = getWorld(character.world).attributeLabels
+
   return (
-    <div className="p-6 divide-y divide-border/40 [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
+    <div className="p-6 divide-y divide-border/40 *:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
       {/* Character info */}
       <div>
         <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
@@ -70,16 +98,12 @@ export default function StatsPanel({ snapshot, character }: Props) {
         </h3>
         <p className="text-text-primary font-bold">{character.name}</p>
         <div className="text-text-muted text-xs inline-flex items-center gap-1">
-          <div className="flex items-center gap-1 justify-center">
-            <span className="capitalize">{character.race}</span>
-          </div>{' '}
-          ·{' '}
-          <div className="flex items-center gap-1 justify-center">
-            <span className="capitalize">
-              {character.characterClass.replaceAll('_', ' ')}
-            </span>
-          </div>
+          <span>{getRaceLabel(character.world, character.race)}</span> ·{' '}
+          <span>{classDef?.label ?? character.characterClass}</span>
         </div>
+        <p className="text-text-muted/70 text-xs mt-1">
+          Level {level} · Tier {tier}
+        </p>
       </div>
 
       {/* HP bar */}
@@ -104,10 +128,20 @@ export default function StatsPanel({ snapshot, character }: Props) {
         </div>
       </div>
 
+      {/* Attributes */}
+      <AttributesSection
+        attributes={attributes}
+        labels={attributeLabels}
+        keyAttribute={classDef?.keyAttribute}
+      />
+
       {/* Inventory */}
       <InventorySection
         entries={buildInventoryDisplay(inventory, character.world)}
       />
+
+      {/* Abilities */}
+      <AbilitiesSection abilities={abilities} onUseAbility={onUseAbility} />
 
       {/* Quests */}
       <div>
@@ -156,7 +190,7 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
 
   return (
     <div className="flex flex-col min-h-0">
-      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-3 flex items-center gap-1 shrink-0 mb-2">
+      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest  flex items-center gap-1 shrink-0 mb-2">
         Inventory
       </h3>
 
@@ -189,7 +223,7 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
                 </button>
 
                 {isOpen && entry.description && (
-                  <p className="text-xs text-text-muted pl-[21px] pr-1 pb-1.5 leading-snug">
+                  <p className="text-xs text-text-muted pl-5.25 pr-1 pb-1.5 leading-snug">
                     {entry.description}
                   </p>
                 )}
@@ -198,6 +232,125 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
           })}
         </ul>
       )}
+    </div>
+  )
+}
+
+function AbilitiesSection({
+  abilities,
+  onUseAbility,
+}: {
+  abilities: AbilityDefinition[]
+  onUseAbility: (name: string) => void
+}) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  const toggle = (value: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      next.has(value) ? next.delete(value) : next.add(value)
+      return next
+    })
+  }
+
+  return (
+    <div>
+      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
+        Abilities
+      </h3>
+
+      {abilities.length === 0 ? (
+        <p className="text-text-muted text-xs">None yet.</p>
+      ) : (
+        <ul className="space-y-1">
+          {abilities.map((ability) => {
+            const isOpen = expanded.has(ability.value)
+            const cost =
+              ability.cost?.kind === 'hp' ? `${ability.cost.amount} HP` : null
+
+            return (
+              <li key={ability.value}>
+                {/* Two targets, one row: the bolt seeds the composer, the name
+                    reveals the description. Separate buttons, because a single
+                    click cannot mean both. */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onUseAbility(ability.name)}
+                    title={`Use ${ability.name}`}
+                    aria-label={`Use ${ability.name}`}
+                    className="shrink-0 text-accent/60 hover:bg-accent/20 hover:text-accent p-1 border border-border"
+                  >
+                    <IconBolt size={14} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => toggle(ability.value)}
+                    aria-expanded={isOpen}
+                    className="flex-1 flex items-center gap-2 text-left text-sm text-text-secondary hover:text-text-primary transition-colors py-0.5"
+                  >
+                    <span className="flex-1">{ability.name}</span>
+                    {cost && (
+                      <span className="text-xs text-red-400/70 shrink-0">
+                        {cost}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {isOpen && (
+                  <p className="text-xs text-text-muted pl-5.25 pr-1 pb-1.5 leading-snug">
+                    {ability.description}
+                  </p>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function AttributesSection({
+  attributes,
+  labels,
+  keyAttribute,
+}: {
+  attributes: Record<Attribute, number>
+  labels: AttributeLabels
+  keyAttribute?: Attribute
+}) {
+  return (
+    <div>
+      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
+        Attributes
+      </h3>
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
+        {(Object.keys(labels) as Attribute[]).map((key) => {
+          // The key attribute gates tier progression — it is the one number
+          // the player should be watching, so it gets the accent.
+          const isKey = key === keyAttribute
+
+          return (
+            <li key={key} className="flex items-baseline justify-between">
+              <span
+                className={`text-xs ${isKey ? 'text-accent' : 'text-text-muted'}`}
+              >
+                {labels[key]}
+              </span>
+              <span
+                className={`text-sm tabular-nums ${
+                  isKey ? 'text-accent font-bold' : 'text-text-secondary'
+                }`}
+              >
+                {attributes[key]}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }

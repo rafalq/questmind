@@ -8,6 +8,18 @@ import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
 import { SNAPSHOT_DELIMITER } from './stream-protocol'
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
+import { getWorld } from '@/worlds'
+import { resolveAbilities } from '@/features/character/lib/progression'
+import { charactersTable } from '@/db/schema'
+import {
+  effectiveAttributes,
+  computeTier,
+} from '@/features/character/lib/progression'
+import {
+  levelFromXp,
+  XP_PER_TURN,
+} from '@/features/character/constants/progression'
+import { calculateMaxHp } from '@/features/character/lib/hp'
 
 const client = new Anthropic()
 
@@ -22,12 +34,19 @@ export function streamGameResponse({
   context,
   claudeMessages,
 }: StreamInput): Response {
-  const { campaign, character, lastSnapshot } = context
+  const { campaign, character, lastSnapshot, baseAttributes } = context
 
   const encoder = new TextEncoder()
 
   const readable = new ReadableStream({
     async start(controller) {
+      const classDef = getWorld(character.world).classes.find(
+        (c) => c.value === character.characterClass
+      )
+      const activeAbilities = classDef
+        ? resolveAbilities(classDef.abilities, lastSnapshot?.tier ?? 1)
+        : []
+
       const systemPrompt = await buildSystemPrompt({
         genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
         player: {
@@ -36,6 +55,8 @@ export function streamGameResponse({
           race: character.race,
           characterClass: character.characterClass,
           gender: character.gender,
+          world: character.world,
+          tier: lastSnapshot?.tier ?? 1,
         },
         language: campaign.language,
       })
@@ -119,6 +140,48 @@ export function streamGameResponse({
         } catch {
           console.error('Failed to parse game snapshot:', jsonStr)
         }
+      } else {
+        // No separator at all. The model never emitted the state block, so this
+        // turn silently updates nothing — no HP, no abilityUsed, no XP — because
+        // snapshot stays null. The visible symptom is prose ending mid-word; the
+        // invisible one is a turn that mechanically never happened.
+        console.error(
+          `No separator in model output (${fullText.length} chars) for session ${sessionId}. Snapshot lost.`
+        )
+      }
+
+      // Progression is server-authoritative and deterministic. XP is awarded
+      // per turn by the server, never by the model: an LLM handing out points
+      // would be untestable and trivially talked up by the player. The model
+      // sees xp/level/tier because they gate which abilities it may narrate,
+      // but anything it sends back for these fields is discarded.
+      if (snapshot && lastSnapshot && classDef) {
+        const xp = lastSnapshot.xp + XP_PER_TURN
+        const level = levelFromXp(xp)
+        const attributes = effectiveAttributes(baseAttributes, classDef, level)
+
+        snapshot.xp = xp
+        snapshot.level = level
+        snapshot.tier = computeTier(level, attributes[classDef.keyAttribute])
+        // maxHp tracks endurance growth, so levelling widens the pool. Without
+        // this a Bleeder's costs would rise while its HP stayed flat.
+        snapshot.maxHp = calculateMaxHp(attributes.endurance)
+
+        await db
+          .update(charactersTable)
+          .set({ characterXp: xp })
+          .where(eq(charactersTable.id, character.id))
+      }
+
+      // The model reports which ability it narrated, but has no authority over
+      // the name: anything outside the character's active set is discarded.
+      // This makes hallucinated or out-of-tier abilities impossible to display
+      // without relying on the model's restraint.
+      if (snapshot?.abilityUsed) {
+        const known = activeAbilities.some(
+          (a) => a.name === snapshot!.abilityUsed
+        )
+        if (!known) snapshot.abilityUsed = undefined
       }
 
       const narrative =

@@ -7,6 +7,7 @@ import {
 } from '@/db/schema'
 import { auth } from '@clerk/nextjs/server'
 import { eq, and, asc } from 'drizzle-orm'
+import { getBaseAttributes } from '@/features/character/queries/get-base-attributes'
 
 export async function getSession(sessionId: string) {
   const { userId } = await auth()
@@ -31,11 +32,13 @@ export async function getSession(sessionId: string) {
     .from(charactersTable)
     .where(eq(charactersTable.id, session.characterId))
 
+  const baseAttributes = await getBaseAttributes(session.characterId)
+
   const messages = await db
     .select()
     .from(messagesTable)
     .where(eq(messagesTable.sessionId, sessionId))
     .orderBy(asc(messagesTable.createdAt))
 
-  return { session, campaign, character, messages }
+  return { session, campaign, character, messages, baseAttributes }
 }

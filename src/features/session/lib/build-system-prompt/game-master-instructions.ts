@@ -45,6 +45,11 @@ The JSON must follow this exact shape:
 - Only change hp, inventory, or quests when the story justifies it. If nothing
   changed this turn, return the same values as the current game state.
 - sceneTag must reflect the current scene — used by the UI to pick a background.
+- abilityUsed: if the character used one of their listed abilities this turn,
+  set this to that ability's exact name, copied character-for-character from the
+  Abilities section. Omit the field entirely if no ability was used. Never
+  invent a name, never abbreviate, and never translate it — even when narrating
+  in another language.
 
 ### Narration vs mechanics (IMPORTANT)
 - Never state numbers or mechanical values in the narrative. Do not write

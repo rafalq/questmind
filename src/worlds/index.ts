@@ -55,6 +55,23 @@ export function getWorld(worldValue: string): WorldDefinition {
   return world
 }
 
+/**
+ * Resolves a class or race slug to its display label. Raw slugs must never
+ * reach the UI or the prompt: 'last_breath_priest' is data, 'Last Breath
+ * Priest' is what a person reads. Falls back to the slug when the world or
+ * entry is unknown, so a stale value degrades instead of throwing.
+ */
+export function getClassLabel(world: string, characterClass: string): string {
+  return (
+    getWorld(world).classes.find((c) => c.value === characterClass)?.label ??
+    characterClass
+  )
+}
+
+export function getRaceLabel(world: string, race: string): string {
+  return getWorld(world).races.find((r) => r.value === race)?.label ?? race
+}
+
 export function getRace(worldValue: string, raceValue: string) {
   const race = getWorld(worldValue).races.find((r) => r.value === raceValue)
   if (!race) {
@@ -140,5 +157,4 @@ export function assertValidCombination(input: CharacterInput): void {
   }
 }
 
-export * from './campaign-brief'
 export * from './schema'

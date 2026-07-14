@@ -1,0 +1,12 @@
+// src/worlds/schema/index.ts
+export * from './primitives'
+export * from './item'
+export * from './attribute'
+export * from './ability'
+export * from './gender'
+export * from './race'
+export * from './class'
+export * from './prompt'
+export * from './campaign-brief'
+export * from './scenario'
+export * from './world'
