@@ -20,6 +20,7 @@ import {
   XP_PER_TURN,
 } from '@/features/character/constants/progression'
 import { calculateMaxHp } from '@/features/character/lib/hp'
+import { persistLoreState } from '@/features/session/lib/lore-writer/persist-lore'
 
 const client = new Anthropic()
 
@@ -60,7 +61,6 @@ export function streamGameResponse({
         },
         language: campaign.language,
       })
-
       // Base prompt + optional current-state blob (both English).
       const baseSystem = lastSnapshot
         ? `${systemPrompt}\n\nCurrent game state:\n${JSON.stringify(lastSnapshot)}`
@@ -135,6 +135,7 @@ export function streamGameResponse({
 
       if (separatorIndex !== -1) {
         const jsonStr = fullText.slice(separatorIndex + SEPARATOR.length).trim()
+
         try {
           snapshot = JSON.parse(jsonStr)
         } catch {
@@ -182,6 +183,30 @@ export function streamGameResponse({
           (a) => a.name === snapshot!.abilityUsed
         )
         if (!known) snapshot.abilityUsed = undefined
+      }
+
+      if (snapshot?.abilityUsed) {
+        const known = activeAbilities.some(
+          (a) => a.name === snapshot!.abilityUsed
+        )
+        if (!known) snapshot.abilityUsed = undefined
+      }
+
+      // ── Dynamic RAG write ─────────────────────────────────────────────
+      // Closes the loop: the model reports who was met and where the player
+      // went, and resolveLore reads it back on the next turn — pulling in the
+      // new location's prompt context and the NPCs who live there. The world
+      // follows the player, one turn behind.
+      //
+      // Awaited, not fire-and-forget: the next request can start the moment
+      // this response ends, and a lore write still in flight would be read
+      // back stale. Never throws — see persistLoreState.
+      if (snapshot) {
+        await persistLoreState({
+          campaignId: campaign.id,
+          genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
+          snapshot,
+        })
       }
 
       const narrative =
