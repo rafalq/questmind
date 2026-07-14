@@ -27,6 +27,7 @@ import {
   IconBolt,
 } from '@tabler/icons-react'
 import { useState } from 'react'
+import CollapsibleSection from '@/components/ui/collapsible-section'
 
 type Character = typeof charactersTable.$inferSelect
 
@@ -129,48 +130,30 @@ export default function StatsPanel({
       </div>
 
       {/* Attributes */}
-      <AttributesSection
-        attributes={attributes}
-        labels={attributeLabels}
-        keyAttribute={classDef?.keyAttribute}
-      />
+      <CollapsibleSection label="Attributes">
+        <AttributesSection
+          attributes={attributes}
+          labels={attributeLabels}
+          keyAttribute={classDef?.keyAttribute}
+        />
+      </CollapsibleSection>
 
       {/* Inventory */}
-      <InventorySection
-        entries={buildInventoryDisplay(inventory, character.world)}
-      />
+      <CollapsibleSection label="Inventory">
+        <InventorySection
+          entries={buildInventoryDisplay(inventory, character.world)}
+        />
+      </CollapsibleSection>
 
       {/* Abilities */}
-      <AbilitiesSection abilities={abilities} onUseAbility={onUseAbility} />
+      <CollapsibleSection label="Abilities">
+        <AbilitiesSection abilities={abilities} onUseAbility={onUseAbility} />
+      </CollapsibleSection>
 
       {/* Quests */}
-      <div>
-        <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest flex items-center gap-1 mb-2">
-          Quests
-        </h3>
-        {quests.length === 0 ? (
-          <p className="text-text-muted text-xs">No active quests.</p>
-        ) : (
-          <ul className="space-y-2">
-            {quests.map((quest) => (
-              <li key={quest.id} className="text-sm">
-                <span
-                  className={
-                    quest.status === 'completed'
-                      ? 'text-text-muted line-through'
-                      : 'text-text-secondary'
-                  }
-                >
-                  {quest.title}
-                </span>
-                {quest.status === 'completed' && (
-                  <span className="ml-2 text-xs text-accent">✓</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <CollapsibleSection label="Quests">
+        <QuestsSection quests={quests} />
+      </CollapsibleSection>
     </div>
   )
 }
@@ -190,10 +173,6 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
 
   return (
     <div className="flex flex-col min-h-0">
-      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest  flex items-center gap-1 shrink-0 mb-2">
-        Inventory
-      </h3>
-
       {entries.length === 0 ? (
         <p className="text-text-muted text-xs">Nothing yet.</p>
       ) : (
@@ -255,10 +234,6 @@ function AbilitiesSection({
 
   return (
     <div>
-      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
-        Abilities
-      </h3>
-
       {abilities.length === 0 ? (
         <p className="text-text-muted text-xs">None yet.</p>
       ) : (
@@ -324,9 +299,6 @@ function AttributesSection({
 }) {
   return (
     <div>
-      <h3 className="text-[10px] text-text-muted/60 uppercase tracking-widest mb-2">
-        Attributes
-      </h3>
       <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
         {(Object.keys(labels) as Attribute[]).map((key) => {
           // The key attribute gates tier progression — it is the one number
@@ -351,6 +323,35 @@ function AttributesSection({
           )
         })}
       </ul>
+    </div>
+  )
+}
+
+function QuestsSection({ quests }: { quests: GameSnapshot['quests'] }) {
+  return (
+    <div>
+      {quests.length === 0 ? (
+        <p className="text-text-muted text-xs">No active quests.</p>
+      ) : (
+        <ul className="space-y-2">
+          {quests.map((quest) => (
+            <li key={quest.id} className="text-sm">
+              <span
+                className={
+                  quest.status === 'completed'
+                    ? 'text-text-muted line-through'
+                    : 'text-text-secondary'
+                }
+              >
+                {quest.title}
+              </span>
+              {quest.status === 'completed' && (
+                <span className="ml-2 text-xs text-accent">✓</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
