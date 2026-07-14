@@ -37,6 +37,30 @@ export async function resolveLore(
 
   if (!world) throw new Error(`World not found for genre: ${genre}`)
 
+  // ── Known locations — the closed set the model may emit as `location` ────
+  // Same discipline as sceneTag. A hallucinated slug gets written to
+  // campaignLoreState.currentLocationSlug, and the next turn's lookup then
+  // returns nothing: locationBlock is silently empty and the player loses all
+  // location context with no error anywhere. The enum is the contract.
+  const activeLocations = await db.query.locationsTable.findMany({
+    where: eq(locationsTable.isActive, true),
+    with: { region: true },
+  })
+
+  const worldLocations = activeLocations.filter(
+    (l) => l.region.worldId === world.id
+  )
+
+  const knownLocationsBlock =
+    worldLocations.length > 0
+      ? `## KNOWN LOCATIONS\nThe only values the "location" field may take.\n${worldLocations
+          .map(
+            (l) =>
+              `- ${l.slug} — ${l.name}${l.nameTranslation ? ` (${l.nameTranslation})` : ''}`
+          )
+          .join('\n')}`
+      : ''
+
   // ── Current location ─────────────────────────────────────────────────────
 
   const secretLore: string[] = []
@@ -94,6 +118,7 @@ export async function resolveLore(
   return {
     worldCore: world.systemPromptCore,
     locationBlock,
+    knownLocationsBlock,
     npcBlock,
     eventsBlock,
     secretLore,

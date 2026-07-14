@@ -30,6 +30,7 @@ export interface BuildPromptOptions {
 export interface ResolvedLore {
   worldCore: string
   locationBlock: string
+  knownLocationsBlock: string
   npcBlock: string
   eventsBlock: string
   secretLore: string[]
@@ -71,6 +72,7 @@ export async function buildSystemPrompt(
   return [
     lore.worldCore,
     lore.locationBlock,
+    lore.knownLocationsBlock,
     lore.npcBlock,
     lore.eventsBlock,
     playerBlock,
