@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import type { RaceDefinition } from '@/features/character/constants'
+import type { RaceDefinition } from '@/worlds/schema'
 
 export default function RacePortraits({ race }: { race: RaceDefinition }) {
   if (race.genderless) {

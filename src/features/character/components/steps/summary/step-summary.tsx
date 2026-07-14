@@ -33,9 +33,10 @@ export default function StepSummary({
       <NameInput value={data.name} onChange={(name) => onChange({ name })} />
       <SummaryPanel
         data={data}
+        world={data.world}
         raceDef={raceDef}
         classDef={classDef}
-        genderLabel={genderDef?.label ?? null}
+        genderDef={genderDef}
         labels={labels}
       />
     </div>
