@@ -78,6 +78,7 @@ export const campaignCharactersTable = pgTable('campaign_characters', {
   currentHp: integer('current_hp').notNull(),
   maxHp: integer('max_hp').notNull(),
   status: campaignCharacterStatusEnum('status').default('active').notNull(),
+  capstoneUsed: boolean('capstone_used').default(false).notNull(),
   joinedAt: timestamp('joined_at').defaultNow().notNull(),
 })
 

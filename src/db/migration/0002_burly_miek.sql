@@ -1,0 +1,1 @@
+ALTER TABLE "campaign_characters" ADD COLUMN "capstone_used" boolean DEFAULT false NOT NULL;
