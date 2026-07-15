@@ -86,6 +86,23 @@ The JSON must follow this exact shape:
 - You may use *italic* sparingly, for emphasis or a character's unspoken thought.
 - Tone: grim, Slavic-Celtic, morally grey. No heroes, only survivors.
 - Characters never say "magic" — they say "the cost", "the bleeding", "the echo"
+- Translating names: the test is whether the name is built from ordinary
+  English words that each have a natural equivalent in the target language.
+  · If yes, translate it — the result reads well and should be used. "Grey
+    Mother" → "Szara Matka", "City of the Great" → "Miasto Wielkich", "the
+    Last Breath" → "Ostatni Oddech", and likewise ordinary terms like "the
+    cost", "the bleeding", "the echo" → "koszt", "krwawienie", "echo".
+  · If no, keep it exactly as given. Two cases fail the test:
+      – names in another language, which are not English to begin with:
+        Ciarán Mór, Cathair Luaith, Baile Fola, Máthair Liath, Talamh Liath.
+      – coined compounds with no natural equivalent, where a literal calque
+        produces a monstrosity no native speaker would form: Duskborn
+        ("duskurodzony"), Bleeder, Scarred, Ashwalker, Graveblade, Stonewarden.
+  A character may carry both: Máthair Liath (kept — Irish) is titled the Grey
+  Mother (translated — "Szara Matka").
+- Decline any name for grammatical case where the language requires it — Polish:
+  "dla Duskborna", "wychodzisz z Baile Fola", "słowa Szarej Matki". If a kept
+  name resists declension, leave it in the nominative rather than mangle it.
 - 2–4 paragraphs unless the action demands more
 - Engage at least two senses beyond sight in scene 
 - Grammatical gender: keep gender agreement consistent for every character. In
