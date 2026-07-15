@@ -1,7 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { db } from '@/db'
-import { campaignsTable, messagesTable } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import {
+  campaignsTable,
+  messagesTable,
+  campaignCharactersTable,
+} from '@/db/schema'
+import { eq, and } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
@@ -35,7 +39,13 @@ export function streamGameResponse({
   context,
   claudeMessages,
 }: StreamInput): Response {
-  const { campaign, character, lastSnapshot, baseAttributes } = context
+  const {
+    campaign,
+    character,
+    campaignCharacter,
+    lastSnapshot,
+    baseAttributes,
+  } = context
 
   const encoder = new TextEncoder()
 
@@ -44,10 +54,16 @@ export function streamGameResponse({
       const classDef = getWorld(character.world).classes.find(
         (c) => c.value === character.characterClass
       )
-      const activeAbilities = classDef
+      let activeAbilities = classDef
         ? resolveAbilities(classDef.abilities, lastSnapshot?.tier ?? 1)
         : []
 
+      // Capstone spent this campaign → remove it from what the model is even offered.
+      // The prompt renders this list verbatim; the model never sees a used capstone,
+      // so it can't narrate it. Server-side abilityUsed validation below is the backstop.
+      if (campaignCharacter.capstoneUsed) {
+        activeAbilities = activeAbilities.filter((a) => !a.capstone)
+      }
       const systemPrompt = await buildSystemPrompt({
         genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
         player: {
@@ -57,7 +73,7 @@ export function streamGameResponse({
           characterClass: character.characterClass,
           gender: character.gender,
           world: character.world,
-          tier: lastSnapshot?.tier ?? 1,
+          abilities: activeAbilities,
         },
         language: campaign.language,
       })
@@ -216,6 +232,28 @@ export function streamGameResponse({
         if (!known) snapshot.abilityUsed = undefined
       }
 
+      // Burn the capstone: if this turn's ability was the capstone, mark it
+      // spent for the whole campaign. activeAbilities is already filtered, so
+      // used?.capstone can only be true on the FIRST use — on later turns the
+      // capstone isn't in the set and this never fires. The capstoneUsed=false
+      // guard in WHERE makes the write idempotent and race-safe: two turns
+      // can't both spend it.
+      if (snapshot?.abilityUsed) {
+        const used = activeAbilities.find(
+          (a) => a.name === snapshot!.abilityUsed
+        )
+        if (used?.capstone) {
+          await db
+            .update(campaignCharactersTable)
+            .set({ capstoneUsed: true })
+            .where(
+              and(
+                eq(campaignCharactersTable.id, campaignCharacter.id),
+                eq(campaignCharactersTable.capstoneUsed, false)
+              )
+            )
+        }
+      }
       // ── Dynamic RAG write ─────────────────────────────────────────────
       // Closes the loop: the model reports who was met and where the player
       // went, and resolveLore reads it back on the next turn — pulling in the
