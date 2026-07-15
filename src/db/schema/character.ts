@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from 'drizzle-orm/pg-core'
 import { genreEnum } from './enums'
@@ -67,21 +68,29 @@ export const characterAttributesTable = pgTable('character_attributes', {
   bonus: integer('bonus').default(0).notNull(),
 })
 
-export const campaignCharactersTable = pgTable('campaign_characters', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  campaignId: uuid('campaign_id').references(() => campaignsTable.id, {
-    onDelete: 'set null',
-  }),
-  characterId: uuid('character_id')
-    .notNull()
-    .references(() => charactersTable.id, { onDelete: 'cascade' }),
-  currentHp: integer('current_hp').notNull(),
-  maxHp: integer('max_hp').notNull(),
-  status: campaignCharacterStatusEnum('status').default('active').notNull(),
-  capstoneUsed: boolean('capstone_used').default(false).notNull(),
-  joinedAt: timestamp('joined_at').defaultNow().notNull(),
-})
-
+export const campaignCharactersTable = pgTable(
+  'campaign_characters',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    campaignId: uuid('campaign_id').references(() => campaignsTable.id, {
+      onDelete: 'set null',
+    }),
+    characterId: uuid('character_id')
+      .notNull()
+      .references(() => charactersTable.id, { onDelete: 'cascade' }),
+    currentHp: integer('current_hp').notNull(),
+    maxHp: integer('max_hp').notNull(),
+    status: campaignCharacterStatusEnum('status').default('active').notNull(),
+    capstoneUsed: boolean('capstone_used').default(false).notNull(),
+    joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  },
+  (table) => [
+    unique('campaign_characters_campaign_id_character_id_unique').on(
+      table.campaignId,
+      table.characterId
+    ),
+  ]
+)
 // ─────────────────────────────────────────
 // RELATIONS
 // ─────────────────────────────────────────

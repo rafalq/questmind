@@ -1,0 +1,1 @@
+ALTER TABLE "campaign_characters" ADD CONSTRAINT "campaign_characters_campaign_id_character_id_unique" UNIQUE("campaign_id","character_id");
