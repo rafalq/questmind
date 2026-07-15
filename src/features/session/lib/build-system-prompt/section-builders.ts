@@ -4,6 +4,7 @@
 
 import type { PlayerContext } from './'
 import { loreAppliesTo } from './lore-filter'
+import { getClassLabel, getRaceLabel } from '@/worlds'
 
 // ── Location block ─────────────────────────────────────────────────────────
 
@@ -127,15 +128,22 @@ export function genderToGrammar(
 
 export function buildPlayerBlock(player: PlayerContext): string {
   const grammar = genderToGrammar(player.gender)
+
+  // Labels, not slugs. `duskborn` mid-sentence reads as a common noun and the
+  // model translates it ("duskurodzony"); `Duskborn` reads as a name and
+  // survives. Raw slugs must not reach the prompt — it is a display surface.
+  const race = getRaceLabel(player.world, player.race)
+  const characterClass = getClassLabel(player.world, player.characterClass)
+
   return `## PLAYER CHARACTER
 Name: ${player.characterName}
-Race: ${player.race}
-Class: ${player.characterClass}
+Race: ${race}
+Class: ${characterClass}
 Grammatical gender: ${grammar} — in gendered languages, every verb, adjective and participle referring to ${player.characterName} must take ${grammar} forms.
 
 Tier access rules:
-- Reveal tier_1 lore relevant to the ${player.race} race.
-- Reveal tier_2 lore relevant to the ${player.characterClass} class.
+- Reveal tier_1 lore relevant to the ${race} race.
+- Reveal tier_2 lore relevant to the ${characterClass} class.
 - Judge tier_3 access case by case from what the player does in the session.
 - Never reveal tier_secret content directly.`
 }
