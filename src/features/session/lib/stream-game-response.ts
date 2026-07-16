@@ -93,10 +93,17 @@ export function streamGameResponse({
       // Recency is a single slot and both instructions want it. So the format
       // contract goes last: it is the one whose absence silently destroys the
       // turn, while a slip in language is merely visible and recoverable.
+      // Output language is pinned to the campaign's language, regardless of what
+      // language the player types in. Without this the model mirrors the
+      // player's input: an English campaign drifts into Polish the moment the
+      // player writes a Polish sentence, because nothing in the (all-English)
+      // prompt actively holds narration in English. "English is the model's
+      // default" stops being true the instant the most recent turn is in
+      // another language — and recency is exactly the slot this directive owns.
       const languageDirective =
         campaign.language === 'en'
-          ? ''
-          : `\n\n---\n\nOUTPUT LANGUAGE: Write every word of narrative, dialogue and description in ${getLanguage(campaign.language).promptName}. This overrides the language of any lore or state text above. Only the machine-readable block after "${SEPARATOR}" stays in English — English keys, English values.`
+          ? `\n\n---\n\nOUTPUT LANGUAGE: Write every word of narrative, dialogue and description in English, regardless of the language the player writes in. The player may switch language at any point; always narrate back in English.`
+          : `\n\n---\n\nOUTPUT LANGUAGE: Write every word of narrative, dialogue and description in ${getLanguage(campaign.language).promptName}, regardless of the language the player writes in. This overrides the language of any lore or state text above, and the language of the player's own messages. Only the machine-readable block after "${SEPARATOR}" stays in English — English keys, English values.`
 
       const formatDirective = `\n\n---\n\nBEFORE YOU FINISH: your reply is not complete until you have written the separator "${SEPARATOR}" on its own line, followed by the JSON state block. The prose is only half the turn — the interface reads nothing but the JSON, so a reply that ends after the narrative changes nothing in the game at all. Never end on a question to the player. Narrate, then separate, then emit the JSON.`
 
