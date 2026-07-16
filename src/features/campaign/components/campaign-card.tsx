@@ -8,6 +8,7 @@ import { useAction } from 'next-safe-action/hooks'
 import { toast } from 'sonner'
 import { deleteCampaign } from '../actions/delete-campaign'
 import CampaignEditableTitle from './campaign-editable-title'
+import { genreCardImage } from '@/lib/genre-card-image'
 
 type Campaign = {
   id: string
@@ -54,6 +55,7 @@ export default function CampaignCard({
   return (
     <GenreCard
       genre={campaign.genre}
+      imageUrl={genreCardImage(campaign.genre)}
       title={
         <CampaignEditableTitle campaignId={campaign.id} name={campaign.name} />
       }

@@ -10,7 +10,7 @@ import { useState, type MouseEvent } from 'react'
 import { toast } from 'sonner'
 import { deleteCharacter } from '@/features/character/actions/delete-character'
 import { levelFromXp } from '@/features/character/constants/progression'
-import { getClassLabel, getRaceLabel } from '@/worlds'
+import { getClassLabel, getRaceLabel, getWorld } from '@/worlds'
 import CharacterDetailModal, {
   type CharacterDetail,
 } from './character-detail-modal'
@@ -81,6 +81,7 @@ export default function CharacterCard({ character }: Props) {
         title={character.name}
         subtitle={`${getRaceLabel(character.world, character.race)} · ${getClassLabel(character.world, character.characterClass)}`}
         badge={badge}
+        imageUrl={getWorld(character.world).cardImageUrl}
         footer={footer}
         onClick={() => setModalOpen(true)}
         onDelete={{

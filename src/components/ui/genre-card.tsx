@@ -16,6 +16,7 @@ type GenreCardProps = {
   meta?: React.ReactNode
   footer?: React.ReactNode
   actions?: React.ReactNode
+  imageUrl?: string
   onClick?: () => void
   onDelete?: {
     label: string
@@ -34,6 +35,7 @@ export default function GenreCard({
   meta,
   footer,
   actions,
+  imageUrl,
   onClick,
   onDelete,
   className,
@@ -44,10 +46,14 @@ export default function GenreCard({
     <>
       <div
         onClick={onClick}
-        className={`p-6 border border-border flex flex-col gap-2 relative group ${className || ''}`}
+        className={`p-6 border border-border flex flex-col gap-2 relative group bg-cover ${className || ''}`}
         style={{
           fontFamily: genreFont[genre],
           backgroundColor: genreBg[genre],
+          backgroundPosition: 'center 30%',
+          ...(imageUrl && {
+            backgroundImage: `linear-gradient(rgba(10,8,5,0.82), rgba(10,8,5,0.82)), url("${imageUrl}")`,
+          }),
         }}
       >
         <div
