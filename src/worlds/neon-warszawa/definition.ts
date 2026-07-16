@@ -14,7 +14,7 @@ export const neonWarszawa: WorldDefinitionInput = {
   name: 'Neon Warszawa',
   subtitle: '2087',
   description: 'TODO: full world description for Neon Warszawa 2087.',
-
+  cardImageUrl: '/images/cyberpunk/neon-warszawa/cyberpunk-hero.jpg',
   // TODO: rename attributes to fit the cyberpunk flavour
   attributeLabels: {
     strength: 'Strength',

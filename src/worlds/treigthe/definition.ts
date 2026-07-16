@@ -32,6 +32,7 @@ export const treigthe: WorldDefinitionInput = {
     'A dark Celtic-Slavic realm where the gods died centuries ago, their ' +
     'corpses rotting in the heavens. Magic is real, but nothing is free — ' +
     'every spell costs blood, years, or memory.',
+  cardImageUrl: '/images/fantasy/treigthe/fantasy-hero.jpg',
   startingLocation: 'cathair-luaith', // slug — must match locationsTable.slug in seed/treigthe.ts
 
   // From TREIGTHE_ATTRIBUTE_LABELS

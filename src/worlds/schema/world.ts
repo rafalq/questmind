@@ -25,6 +25,7 @@ export const WorldDefinitionSchema = z
     subtitle: z.string().min(1),
     /** Shown on the world selection card. */
     description: z.string().min(1),
+    cardImageUrl: z.string().min(1),
     /** World-specific attribute display names (ATTRIBUTE_LABELS_BY_WORLD). */
     attributeLabels: AttributeLabelsSchema,
     /** Sex options with stat modifiers (replaces WORLD_GENDER_OPTIONS). */

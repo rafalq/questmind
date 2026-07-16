@@ -11,7 +11,7 @@ export const drift: WorldDefinitionInput = {
   name: 'The Drift',
   subtitle: 'The Unmoored',
   description: 'TODO: full world description for The Drift.',
-
+  cardImageUrl: '/images/sci-fi/drift/sci-fi-hero.jpg',
   // TODO: rename attributes to fit the sci-fi flavour
   attributeLabels: {
     strength: 'Strength',
