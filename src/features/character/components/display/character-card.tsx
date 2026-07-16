@@ -15,6 +15,8 @@ import CharacterDetailModal, {
   type CharacterDetail,
 } from './character-detail-modal'
 import Tooltip from '@/components/ui/tooltip'
+import { TREIGTHE_CLASS_ICONS } from '@/features/character/constants/fantasy/treigthe'
+import { IconUser } from '@tabler/icons-react'
 
 type Props = {
   character: CharacterDetail
@@ -74,6 +76,17 @@ export default function CharacterCard({ character }: Props) {
     </div>
   )
 
+  const ClassIcon =
+    TREIGTHE_CLASS_ICONS[
+      character.characterClass as keyof typeof TREIGTHE_CLASS_ICONS
+    ] ?? IconUser
+
+  const avatar = (
+    <div className="shrink-0 w-10 h-10 rounded-full border border-border flex items-center justify-center text-accent bg-bg-base/40">
+      <ClassIcon size={18} />
+    </div>
+  )
+
   return (
     <>
       <GenreCard
@@ -81,6 +94,7 @@ export default function CharacterCard({ character }: Props) {
         title={character.name}
         subtitle={`${getRaceLabel(character.world, character.race)} · ${getClassLabel(character.world, character.characterClass)}`}
         badge={badge}
+        avatar={avatar}
         imageUrl={getWorld(character.world).cardImageUrl}
         footer={footer}
         onClick={() => setModalOpen(true)}

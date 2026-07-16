@@ -16,6 +16,7 @@ type GenreCardProps = {
   meta?: React.ReactNode
   footer?: React.ReactNode
   actions?: React.ReactNode
+  avatar?: React.ReactNode
   imageUrl?: string
   onClick?: () => void
   onDelete?: {
@@ -35,6 +36,7 @@ export default function GenreCard({
   meta,
   footer,
   actions,
+  avatar,
   imageUrl,
   onClick,
   onDelete,
@@ -80,7 +82,10 @@ export default function GenreCard({
           )}
         </div>
 
-        <h2 className="text-lg font-bold text-text-primary">{title}</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-bold text-text-primary">{title}</h2>
+          {avatar && <div className="shrink-0">{avatar}</div>}
+        </div>
 
         {subtitle && (
           <div className="text-sm text-text-secondary capitalize">

@@ -1,5 +1,5 @@
-import { IconSword, IconRocket, IconCpu } from '@tabler/icons-react'
 import type { Genre } from '@/worlds'
+import { IconCpu, IconRocket, IconTower } from '@tabler/icons-react'
 
 export const genreFont: Record<Genre, string> = {
   fantasy: 'var(--font-im-fell)',
@@ -15,7 +15,7 @@ export const genreBg: Record<Genre, string> = {
 
 // prywatna mapa — na zewnątrz używaj <GenreIcon>, nie surowej mapy
 const genreIconMap: Record<Genre, React.FC<{ size?: number }>> = {
-  fantasy: IconSword,
+  fantasy: IconTower,
   'sci-fi': IconRocket,
   cyberpunk: IconCpu,
 }
