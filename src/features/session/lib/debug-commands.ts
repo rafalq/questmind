@@ -28,6 +28,7 @@ const BASE_SNAPSHOT: GameSnapshot = {
   xp: 0,
   level: 1,
   tier: 1,
+  capstoneUsed: false,
 }
 
 type CommandResult = {

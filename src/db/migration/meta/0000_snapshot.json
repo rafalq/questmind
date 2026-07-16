@@ -1,5 +1,5 @@
 {
-  "id": "8834335e-f744-4e70-98ed-55fff567f2ce",
+  "id": "de3f42e5-fe9f-46c2-8816-692e64bd6e1e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -20,6 +20,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'en'"
         },
         "name": {
           "name": "name",
@@ -112,6 +119,13 @@
           "notNull": true,
           "default": "'active'"
         },
+        "capstone_used": {
+          "name": "capstone_used",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "joined_at": {
           "name": "joined_at",
           "type": "timestamp",
@@ -150,7 +164,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "campaign_characters_campaign_id_character_id_unique": {
+          "name": "campaign_characters_campaign_id_character_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "campaign_id",
+            "character_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -272,12 +295,6 @@
         },
         "gender": {
           "name": "gender",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "background_story": {
-          "name": "background_story",
           "type": "text",
           "primaryKey": false,
           "notNull": false

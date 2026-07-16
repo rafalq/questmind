@@ -198,6 +198,13 @@ export function streamGameResponse({
         console.error('TAIL:', JSON.stringify(fullText.slice(-150)))
       }
 
+      // Default the mirror as soon as we have a snapshot: the server-authoritative
+      // block may skip on turn one (no lastSnapshot), and the burn block below
+      // flips it to true only on spend. This is the single initialization point.
+      if (snapshot) {
+        snapshot.capstoneUsed = campaignCharacter.capstoneUsed
+      }
+
       // Progression is server-authoritative and deterministic. XP is awarded
       // per turn by the server, never by the model: an LLM handing out points
       // would be untestable and trivially talked up by the player. The model
@@ -211,8 +218,6 @@ export function streamGameResponse({
         snapshot.xp = xp
         snapshot.level = level
         snapshot.tier = computeTier(level, attributes[classDef.keyAttribute])
-        // maxHp tracks endurance growth, so levelling widens the pool. Without
-        // this a Bleeder's costs would rise while its HP stayed flat.
         snapshot.maxHp = calculateMaxHp(attributes.endurance)
 
         await db
@@ -222,27 +227,22 @@ export function streamGameResponse({
       }
 
       // The model reports which ability it narrated, but has no authority over
-      // the name: anything outside the character's active set is discarded.
-      // This makes hallucinated or out-of-tier abilities impossible to display
-      // without relying on the model's restraint.
-      if (snapshot?.abilityUsed) {
-        const known = activeAbilities.some(
-          (a) => a.name === snapshot!.abilityUsed
-        )
-        if (!known) snapshot.abilityUsed = undefined
-      }
-
-      // Burn the capstone: if this turn's ability was the capstone, mark it
-      // spent for the whole campaign. activeAbilities is already filtered, so
-      // used?.capstone can only be true on the FIRST use — on later turns the
-      // capstone isn't in the set and this never fires. The capstoneUsed=false
-      // guard in WHERE makes the write idempotent and race-safe: two turns
-      // can't both spend it.
+      // the name: anything outside the character's active set is discarded
+      // (hallucinated or out-of-tier abilities can't reach the UI). If the
+      // named ability was the capstone, that same use burns it for the campaign.
       if (snapshot?.abilityUsed) {
         const used = activeAbilities.find(
           (a) => a.name === snapshot!.abilityUsed
         )
-        if (used?.capstone) {
+
+        if (!used) {
+          // Unknown name — backstop: discard so the UI can't show it.
+          snapshot.abilityUsed = undefined
+        } else if (used.capstone) {
+          // Burn the capstone. activeAbilities is already filtered, so this
+          // only fires on the FIRST use — later turns don't have it in the set.
+          // The capstoneUsed=false guard makes the write idempotent and
+          // race-safe: two turns can't both spend it.
           await db
             .update(campaignCharactersTable)
             .set({ capstoneUsed: true })
@@ -252,6 +252,7 @@ export function streamGameResponse({
                 eq(campaignCharactersTable.capstoneUsed, false)
               )
             )
+          snapshot.capstoneUsed = true
         }
       }
       // ── Dynamic RAG write ─────────────────────────────────────────────
