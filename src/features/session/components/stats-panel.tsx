@@ -280,11 +280,13 @@ function AbilitiesSection({
                     aria-expanded={isOpen}
                     className={`flex-1 flex items-center gap-2 text-left text-sm transition-colors py-0.5 ${
                       spent
-                        ? 'text-text-muted line-through'
+                        ? 'text-text-muted'
                         : 'text-text-secondary hover:text-text-primary'
                     }`}
                   >
-                    <span className="flex-1">{ability.name}</span>
+                    <span className={`flex-1 ${spent && 'line-through'}`}>
+                      {ability.name}
+                    </span>
                     {spent ? (
                       <span className="text-[10px] uppercase tracking-wider text-text-muted shrink-0">
                         Spent
