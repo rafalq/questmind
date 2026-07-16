@@ -20,6 +20,7 @@ import {
   XP_PER_TURN,
 } from '@/features/character/constants/progression'
 import { calculateMaxHp } from '@/features/character/lib/hp'
+import { persistLoreState } from '@/features/session/lib/lore-writer/persist-lore'
 
 const client = new Anthropic()
 
@@ -60,23 +61,30 @@ export function streamGameResponse({
         },
         language: campaign.language,
       })
-
       // Base prompt + optional current-state blob (both English).
       const baseSystem = lastSnapshot
         ? `${systemPrompt}\n\nCurrent game state:\n${JSON.stringify(lastSnapshot)}`
         : systemPrompt
 
-      // Terminal language directive — the LAST thing the model reads before
-      // generating. The `## Language` block inside the builder explains the
-      // full rule, but it sits before ~2k tokens of English lore, GM
-      // instructions and the state blob above, so recency pulls the model
-      // back into English. Repeating the imperative at the very end (after
-      // the state blob) is what actually holds the narration language.
-      // English needs nothing — it's the default and the JSON is English too.
-      const fullSystem =
+      // Terminal reminder of the output contract. The language directive below
+      // was added because recency was pulling narration back into English —
+      // and it worked, but it worked too well: as the last thing the model
+      // read, it left "write beautiful Polish prose" as the whole of its final
+      // instruction, and the model would finish a paragraph and stop. Prose,
+      // end_turn, no separator, no JSON — a turn that mechanically never
+      // happened, at ~470 tokens out of 2048.
+      //
+      // Recency is a single slot and both instructions want it. So the format
+      // contract goes last: it is the one whose absence silently destroys the
+      // turn, while a slip in language is merely visible and recoverable.
+      const languageDirective =
         campaign.language === 'en'
-          ? baseSystem
-          : `${baseSystem}\n\n---\n\nOUTPUT LANGUAGE: Write every word of narrative, dialogue and description in ${getLanguage(campaign.language).promptName}. This overrides the language of any lore or state text above. Only the machine-readable block after "${SEPARATOR}" stays in English — English keys, English values.`
+          ? ''
+          : `\n\n---\n\nOUTPUT LANGUAGE: Write every word of narrative, dialogue and description in ${getLanguage(campaign.language).promptName}. This overrides the language of any lore or state text above. Only the machine-readable block after "${SEPARATOR}" stays in English — English keys, English values.`
+
+      const formatDirective = `\n\n---\n\nBEFORE YOU FINISH: your reply is not complete until you have written the separator "${SEPARATOR}" on its own line, followed by the JSON state block. The prose is only half the turn — the interface reads nothing but the JSON, so a reply that ends after the narrative changes nothing in the game at all. Never end on a question to the player. Narrate, then separate, then emit the JSON.`
+
+      const fullSystem = baseSystem + languageDirective + formatDirective
 
       let fullText = ''
 
@@ -128,10 +136,29 @@ export function streamGameResponse({
         }
       }
 
+      const final = await stream.finalMessage()
+      console.log(
+        'STOP REASON:',
+        final.stop_reason,
+        '| tokens:',
+        final.usage.output_tokens
+      )
+
       // ── Parse JSON snapshot ───────────────────────────────────────────
 
       const separatorIndex = fullText.indexOf(SEPARATOR)
       let snapshot: GameSnapshot | null = null
+
+      // Flush the hold-back. During streaming we withhold the last
+      // (SEPARATOR.length - 1) chars in case they are the start of a separator
+      // that completes in a later chunk. When no separator ever arrives, those
+      // chars were never a separator — they were the end of a sentence, and
+      // they were silently dropped. The client saw prose ending mid-word while
+      // the database held the full text: two different narratives for one turn.
+      if (separatorIndex === -1 && sentUpTo < fullText.length) {
+        controller.enqueue(encoder.encode(fullText.slice(sentUpTo)))
+        sentUpTo = fullText.length
+      }
 
       if (separatorIndex !== -1) {
         const jsonStr = fullText.slice(separatorIndex + SEPARATOR.length).trim()
@@ -148,6 +175,11 @@ export function streamGameResponse({
         console.error(
           `No separator in model output (${fullText.length} chars) for session ${sessionId}. Snapshot lost.`
         )
+        // The tail is the evidence: it shows whether the model stopped early,
+        // or emitted a separator we failed to recognise — an em-dash variant
+        // (—JSON—) would be invisible to indexOf while looking correct to a
+        // human reading the log.
+        console.error('TAIL:', JSON.stringify(fullText.slice(-150)))
       }
 
       // Progression is server-authoritative and deterministic. XP is awarded
@@ -182,6 +214,23 @@ export function streamGameResponse({
           (a) => a.name === snapshot!.abilityUsed
         )
         if (!known) snapshot.abilityUsed = undefined
+      }
+
+      // ── Dynamic RAG write ─────────────────────────────────────────────
+      // Closes the loop: the model reports who was met and where the player
+      // went, and resolveLore reads it back on the next turn — pulling in the
+      // new location's prompt context and the NPCs who live there. The world
+      // follows the player, one turn behind.
+      //
+      // Awaited, not fire-and-forget: the next request can start the moment
+      // this response ends, and a lore write still in flight would be read
+      // back stale. Never throws — see persistLoreState.
+      if (snapshot) {
+        await persistLoreState({
+          campaignId: campaign.id,
+          genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
+          snapshot,
+        })
       }
 
       const narrative =

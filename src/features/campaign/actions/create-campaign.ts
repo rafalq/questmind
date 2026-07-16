@@ -34,10 +34,20 @@ export const createCampaign = authActionClient
 
     // Seed the lore-state row so resolveLore has a starting location to pull
     // scene context from on the very first turn (B-lite RAG entry point).
+    const startingLocation = getStartingLocationByGenre(parsedInput.genre)
+
     await db.insert(campaignLoreStateTable).values({
       campaignId: campaign.id,
-      currentLocationSlug: getStartingLocationByGenre(parsedInput.genre),
-      // activeNpcIds stays [] — populated by the write layer (step 3)
+      currentLocationSlug: startingLocation,
+      // Seeded into the visit history too. The write layer only appends on a
+      // *move*, and arriving where you already are is not a move — so without
+      // this the starting city would never enter visitedLocationSlugs, and a
+      // player who spent the whole campaign in Cathair Luaith would have never
+      // been there. Every future reader of this column would then need to
+      // special-case the current location; better to make the column true here.
+      visitedLocationSlugs: [startingLocation],
+      // activeNpcIds is never written — presence is derived in resolveLore
+      // from npc_characters.primaryLocationId. See docs/future/data-model.md.
     })
 
     revalidatePath(ROUTES.dashboard)

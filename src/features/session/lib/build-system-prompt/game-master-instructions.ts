@@ -24,8 +24,10 @@ The JSON must follow this exact shape:
   "maxHp": <integer — max hp>,
   "inventory": <string[] — the player's FULL current inventory after this turn>,
   "quests": <{ "id": string, "title": string, "status": "active" | "completed" }[]>,
-  "npc_met": <string[] — NPC names encountered for the first time>,
-  "location": <string | null — new location slug if player moved, otherwise null>,
+  "npcMet": <string[] — names of NPCs encountered for the FIRST time this turn>,
+  "location": <string | null — slug from KNOWN LOCATIONS if the player moved
+               this turn, otherwise null>,
+  "abilityUsed": <string — exact ability name, omit the field if none was used>,
   "sceneTag": <one of: "city_square" | "tavern" | "port" | "forest" | "bog" |
                "mountain_pass" | "tomb_entrance" | "tomb_interior" | "castle_cliff" |
                "excavation" | "battle" | "camp_night" | "default">
@@ -51,6 +53,18 @@ The JSON must follow this exact shape:
   invent a name, never abbreviate, and never translate it — even when narrating
   in another language.
 
+### World-state rules (IMPORTANT)
+- "npcMet" contains only NPCs the player meets for the first time in this turn.
+  Copy the name character-for-character from the NPC section above — never
+  translate it, never abbreviate it, never substitute a title for a name. An
+  NPC you invented yourself may be listed; it simply will not be remembered.
+  Return an empty array when nobody new was met.
+- "location" is null unless the player physically moved to a different place
+  this turn. When they did, it must be one of the slugs listed under
+  KNOWN LOCATIONS — exactly as written there, in English, lowercase. Never
+  invent a slug, never derive one from a sub-location or a building. Moving
+  within a location (entering a cathedral, a cellar, a room) is NOT a move.
+
 ### Narration vs mechanics (IMPORTANT)
 - Never state numbers or mechanical values in the narrative. Do not write
   "you lose 15 hp", "-2 health", "you now have 3 bandages", "quest updated",
@@ -72,6 +86,23 @@ The JSON must follow this exact shape:
 - You may use *italic* sparingly, for emphasis or a character's unspoken thought.
 - Tone: grim, Slavic-Celtic, morally grey. No heroes, only survivors.
 - Characters never say "magic" — they say "the cost", "the bleeding", "the echo"
+- Translating names: the test is whether the name is built from ordinary
+  English words that each have a natural equivalent in the target language.
+  · If yes, translate it — the result reads well and should be used. "Grey
+    Mother" → "Szara Matka", "City of the Great" → "Miasto Wielkich", "the
+    Last Breath" → "Ostatni Oddech", and likewise ordinary terms like "the
+    cost", "the bleeding", "the echo" → "koszt", "krwawienie", "echo".
+  · If no, keep it exactly as given. Two cases fail the test:
+      – names in another language, which are not English to begin with:
+        Ciarán Mór, Cathair Luaith, Baile Fola, Máthair Liath, Talamh Liath.
+      – coined compounds with no natural equivalent, where a literal calque
+        produces a monstrosity no native speaker would form: Duskborn
+        ("duskurodzony"), Bleeder, Scarred, Ashwalker, Graveblade, Stonewarden.
+  A character may carry both: Máthair Liath (kept — Irish) is titled the Grey
+  Mother (translated — "Szara Matka").
+- Decline any name for grammatical case where the language requires it — Polish:
+  "dla Duskborna", "wychodzisz z Baile Fola", "słowa Szarej Matki". If a kept
+  name resists declension, leave it in the nominative rather than mangle it.
 - 2–4 paragraphs unless the action demands more
 - Engage at least two senses beyond sight in scene 
 - Grammatical gender: keep gender agreement consistent for every character. In

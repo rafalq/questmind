@@ -10,7 +10,7 @@ import {
   worldEventsTable,
   campaignLoreStateTable,
 } from '@/db/schema/lore'
-import { eq, inArray, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
 import type { BuildPromptOptions, ResolvedLore } from './'
 import { buildLocationBlock, buildNpcBlock } from './section-builders'
 
@@ -26,8 +26,11 @@ export async function resolveLore(
   })
 
   const currentLocationSlug = loreState?.currentLocationSlug ?? null
-  const activeNpcIds = loreState?.activeNpcIds ?? []
   const droppedSecretHints = loreState?.droppedSecretHints ?? []
+  // activeNpcIds is NOT read: nothing ever wrote it, so it was permanently []
+  // and npcBlock was permanently empty — the model has never seen an authored
+  // NPC. Presence is derived below from primaryLocationId instead, which is
+  // already correct in the seed and needs no write path to stay correct.
 
   // ── World core ───────────────────────────────────────────────────────────
 
@@ -37,10 +40,35 @@ export async function resolveLore(
 
   if (!world) throw new Error(`World not found for genre: ${genre}`)
 
+  // ── Known locations — the closed set the model may emit as `location` ────
+  // Same discipline as sceneTag. A hallucinated slug gets written to
+  // campaignLoreState.currentLocationSlug, and the next turn's lookup then
+  // returns nothing: locationBlock is silently empty and the player loses all
+  // location context with no error anywhere. The enum is the contract.
+  const activeLocations = await db.query.locationsTable.findMany({
+    where: eq(locationsTable.isActive, true),
+    with: { region: true },
+  })
+
+  const worldLocations = activeLocations.filter(
+    (l) => l.region.worldId === world.id
+  )
+
+  const knownLocationsBlock =
+    worldLocations.length > 0
+      ? `## KNOWN LOCATIONS\nThe only values the "location" field may take.\n${worldLocations
+          .map(
+            (l) =>
+              `- ${l.slug} — ${l.name}${l.nameTranslation ? ` (${l.nameTranslation})` : ''}`
+          )
+          .join('\n')}`
+      : ''
+
   // ── Current location ─────────────────────────────────────────────────────
 
   const secretLore: string[] = []
   let locationBlock = ''
+  let currentLocationId: string | null = null
 
   if (currentLocationSlug) {
     const location = await db.query.locationsTable.findFirst({
@@ -53,17 +81,32 @@ export async function resolveLore(
     })
 
     if (location) {
+      currentLocationId = location.id
       locationBlock = buildLocationBlock(location, player, secretLore)
     }
   }
 
-  // ── Active NPCs ──────────────────────────────────────────────────────────
+  // ── Present NPCs ─────────────────────────────────────────────────────────
+  // Presence follows the player: whoever calls the current location home is in
+  // scene. This is what closes the loop — the write layer moves the player, and
+  // the cast changes by itself on the next turn. No second column to keep in
+  // sync, and no chance of a stale activeNpcIds pointing at a city the player
+  // left three turns ago.
+  //
+  // `hidden` NPCs are excluded on purpose. Canncaillte is written to be found,
+  // not met: inject him whenever the player stands in Cathair Luaith and the GM
+  // will simply walk him over on turn one, spending a character designed as a
+  // reward for looking. He must enter through the story, not through presence.
 
   let npcBlock = ''
 
-  if (activeNpcIds.length > 0) {
+  if (currentLocationId) {
     const npcs = await db.query.npcCharactersTable.findMany({
-      where: inArray(npcCharactersTable.id, activeNpcIds),
+      where: and(
+        eq(npcCharactersTable.primaryLocationId, currentLocationId),
+        eq(npcCharactersTable.isActive, true),
+        ne(npcCharactersTable.role, 'hidden')
+      ),
       with: { lore: true },
     })
 
@@ -94,6 +137,7 @@ export async function resolveLore(
   return {
     worldCore: world.systemPromptCore,
     locationBlock,
+    knownLocationsBlock,
     npcBlock,
     eventsBlock,
     secretLore,

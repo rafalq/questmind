@@ -21,7 +21,8 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed:treigthe": "tsx --env-file=.env.local src/db/seed/treigthe.ts"
+    "seed:treigthe": "tsx --env-file=.env.local src/db/seed/treigthe.ts",
+    "seed:baile-fola": "tsx --env-file=.env.local src/db/seed/baile-fola.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
