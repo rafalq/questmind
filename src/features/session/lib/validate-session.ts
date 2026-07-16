@@ -25,6 +25,8 @@ export async function validateSession(
   sessionId: string,
   userId: string
 ): Promise<SessionContext | null> {
+  // Auth/ownership gate — must run first and alone: it gates the early return
+  // below, and every other query depends on session.campaignId / characterId.
   const [session] = await db
     .select()
     .from(sessionsTable)
@@ -34,39 +36,50 @@ export async function validateSession(
 
   if (!session || session.status !== 'active') return null
 
-  const [campaign] = await db
-    .select()
-    .from(campaignsTable)
-    .where(eq(campaignsTable.id, session.campaignId))
-
-  const [character] = await db
-    .select()
-    .from(charactersTable)
-    .where(eq(charactersTable.id, session.characterId))
-
-  const [campaignCharacter] = await db
-    .select()
-    .from(campaignCharactersTable)
-    .where(
-      and(
-        eq(campaignCharactersTable.campaignId, session.campaignId),
-        eq(campaignCharactersTable.characterId, session.characterId)
-      )
-    )
+  // The remaining five reads are independent of each other, so batch them into
+  // a single round-trip's worth of parallel awaits: 6 sequential -> 2 total.
+  //
+  // Intentional behavioural tradeoff: previously a missing campaignCharacter
+  // returned BEFORE history/baseAttributes were fetched. Now all five fire
+  // before that guard, so the missing-campaignCharacter path does a little
+  // extra work. That's an error-path edge case, not the hot path — acceptable.
+  const [
+    [campaign],
+    [character],
+    [campaignCharacter],
+    history,
+    baseAttributes,
+  ] = await Promise.all([
+    db
+      .select()
+      .from(campaignsTable)
+      .where(eq(campaignsTable.id, session.campaignId)),
+    db
+      .select()
+      .from(charactersTable)
+      .where(eq(charactersTable.id, session.characterId)),
+    db
+      .select()
+      .from(campaignCharactersTable)
+      .where(
+        and(
+          eq(campaignCharactersTable.campaignId, session.campaignId),
+          eq(campaignCharactersTable.characterId, session.characterId)
+        )
+      ),
+    db
+      .select()
+      .from(messagesTable)
+      .where(eq(messagesTable.sessionId, sessionId))
+      .orderBy(asc(messagesTable.createdAt)),
+    getBaseAttributes(session.characterId),
+  ])
 
   if (!campaignCharacter) return null
-
-  const history = await db
-    .select()
-    .from(messagesTable)
-    .where(eq(messagesTable.sessionId, sessionId))
-    .orderBy(asc(messagesTable.createdAt))
 
   const lastSnapshot =
     ([...history].reverse().find((m) => m.snapshot)
       ?.snapshot as GameSnapshot) ?? null
-
-  const baseAttributes = await getBaseAttributes(session.characterId)
 
   return {
     session,
