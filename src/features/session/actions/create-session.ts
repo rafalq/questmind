@@ -106,6 +106,7 @@ export const createSession = authActionClient
       xp: character.characterXp,
       level,
       tier,
+      capstoneUsed: false,
     }
 
     const [session] = await db

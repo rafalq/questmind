@@ -3,7 +3,7 @@ import {
   sessionsTable,
   campaignsTable,
   charactersTable,
-  characterAttributesTable,
+  campaignCharactersTable,
   messagesTable,
 } from '@/db/schema'
 import { eq, and, asc } from 'drizzle-orm'
@@ -15,6 +15,7 @@ export type SessionContext = {
   session: typeof sessionsTable.$inferSelect
   campaign: typeof campaignsTable.$inferSelect
   character: typeof charactersTable.$inferSelect
+  campaignCharacter: typeof campaignCharactersTable.$inferSelect
   history: (typeof messagesTable.$inferSelect)[]
   lastSnapshot: GameSnapshot | null
   baseAttributes: Record<Attribute, number>
@@ -43,6 +44,18 @@ export async function validateSession(
     .from(charactersTable)
     .where(eq(charactersTable.id, session.characterId))
 
+  const [campaignCharacter] = await db
+    .select()
+    .from(campaignCharactersTable)
+    .where(
+      and(
+        eq(campaignCharactersTable.campaignId, session.campaignId),
+        eq(campaignCharactersTable.characterId, session.characterId)
+      )
+    )
+
+  if (!campaignCharacter) return null
+
   const history = await db
     .select()
     .from(messagesTable)
@@ -59,6 +72,7 @@ export async function validateSession(
     session,
     campaign,
     character,
+    campaignCharacter,
     history,
     lastSnapshot,
     baseAttributes,

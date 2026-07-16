@@ -25,25 +25,12 @@ export type GameSnapshot = {
   inventory: string[]
   quests: { id: string; title: string; status: 'active' | 'completed' }[]
   sceneTag: string
-
-  // ── Progression: SERVER-AUTHORITATIVE ──────────────────────────────────
-  // Derived from charactersTable.characterXp, never from the model's reply.
-  // The model receives these (they gate which abilities it may narrate) but
-  // must never set them: overwrite on every snapshot write, or a player can
-  // simply ask the GM for tier 3.
-  // level = levelFromXp(xp); tier = computeTier(level, keyAttributeValue)
   xp: number
   level: number
   tier: Tier
-  // Set by the model, validated server-side against the active ability set.
-  // Display-only: drives the "⚡ Crimson Echo" marker above the message.
   abilityUsed?: string
-
+  capstoneUsed: boolean
   // ── Dynamic RAG hooks (populated by the model, consumed in later steps) ──
-  // npcMet:   NPC names met for the first time this turn → appended to
-  //           campaignLoreState.metNpcIds for cross-campaign continuity.
-  // location: new location slug if the player moved this turn, else null →
-  //           updates campaignLoreState.currentLocationSlug + scene image.
   npcMet?: string[]
   location?: string | null
 }

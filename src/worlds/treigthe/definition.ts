@@ -199,11 +199,12 @@ export const treigthe: WorldDefinitionInput = {
           value: 'last_one_standing',
           name: 'Last One Standing',
           tier: 3,
+          capstone: true,
           description:
             'Others die. That is the arrangement, and it has held for twenty ' +
             'years. You have never once asked why it is not you.',
           gmGuidance:
-            'Once per session, when death is certain, someone else takes it ' +
+            'Once per campaign, when death is certain, someone else takes it ' +
             'instead — name who dies in their place and let the character walk away.',
           cost: {
             kind: 'narrative',
@@ -303,11 +304,12 @@ export const treigthe: WorldDefinitionInput = {
           value: 'everything_costs_something',
           name: 'Everything Costs Something',
           tier: 3,
+          capstone: true,
           description:
             'The last lesson of the echo: nothing is given. Break the world open ' +
             'once — and pay for it for the rest of your life.',
           gmGuidance:
-            'Once per session, a devastating rupture in the world; invent a ' +
+            'Once per campaign, a devastating rupture in the world; invent a ' +
             'permanent price the character carries for the rest of the campaign.',
           cost: { kind: 'narrative', note: 'permanent — chosen by the GM' },
         },
@@ -387,11 +389,12 @@ export const treigthe: WorldDefinitionInput = {
           value: 'between_worlds',
           name: 'Between Worlds',
           tier: 3,
+          capstone: true,
           description:
             'The trap closes on nothing. You were never quite in it — and ' +
             'something of yours stays behind to prove you were.',
           gmGuidance:
-            'Once per session, walks out of a situation with no way out; they ' +
+            'Once per campaign, walks out of a situation with no way out; they ' +
             'leave something behind to do it — decide what, and make it hurt.',
           cost: {
             kind: 'narrative',
@@ -480,11 +483,12 @@ export const treigthe: WorldDefinitionInput = {
           value: 'deaths_warrant',
           name: "Death's Warrant",
           tier: 3,
+          capstone: true,
           description:
             'You name one person to the dead gods. They agree. They always agree — ' +
             'and they take their fee from you as well.',
           gmGuidance:
-            'Once per session, a curse the dead gods enforce against one named ' +
+            'Once per campaign, a curse the dead gods enforce against one named ' +
             'target; they take payment from the priest too — say what it costs them.',
           cost: {
             kind: 'narrative',

@@ -1,9 +1,9 @@
 // src/features/game/lib/build-system-prompt/index.ts
 // Main entry point — composes lore sections into the final system prompt.
-import { buildLanguageSection } from './language-section'
-import { getWorld } from '@/worlds'
 import { resolveAbilities } from '@/features/character/lib/progression'
 import { buildAbilitiesSection } from '@/features/session/lib/build-system-prompt/abilities-section'
+import { AbilityDefinition, getWorld } from '@/worlds'
+import { buildLanguageSection } from './language-section'
 
 export interface PlayerContext {
   campaignId: string
@@ -11,11 +11,8 @@ export interface PlayerContext {
   race: string
   characterClass: string
   gender: string | null
-  // backstory removed — free-text player input dropped from the wizard;
-  // it added no world-consistent signal to tier access.
-  // backstory: string
   world: string
-  tier: 1 | 2 | 3
+  abilities: AbilityDefinition[]
 }
 
 export interface BuildPromptOptions {
@@ -39,9 +36,9 @@ export interface ResolvedLore {
 
 export { SEPARATOR } from './game-master-instructions'
 
-import { resolveLore } from './lore-resolver'
-import { buildSecretBlock, buildPlayerBlock } from './section-builders'
 import { GAME_MASTER_INSTRUCTIONS } from './game-master-instructions'
+import { resolveLore } from './lore-resolver'
+import { buildPlayerBlock, buildSecretBlock } from './section-builders'
 
 export async function buildSystemPrompt(
   options: BuildPromptOptions
@@ -57,12 +54,10 @@ export async function buildSystemPrompt(
   const classDef = getWorld(player.world).classes.find(
     (c) => c.value === player.characterClass
   )
-  const abilitiesBlock = classDef
-    ? buildAbilitiesSection(
-        classDef.label,
-        resolveAbilities(classDef.abilities, player.tier)
-      )
-    : ''
+  const abilitiesBlock =
+    classDef && player.abilities.length
+      ? buildAbilitiesSection(classDef.label, player.abilities)
+      : ''
 
   const languageBlock = buildLanguageSection(language)
   const continuityBlock = sessionSummary

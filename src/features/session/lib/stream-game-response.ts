@@ -1,7 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { db } from '@/db'
-import { campaignsTable, messagesTable } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import {
+  campaignsTable,
+  messagesTable,
+  campaignCharactersTable,
+} from '@/db/schema'
+import { eq, and } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
@@ -35,7 +39,13 @@ export function streamGameResponse({
   context,
   claudeMessages,
 }: StreamInput): Response {
-  const { campaign, character, lastSnapshot, baseAttributes } = context
+  const {
+    campaign,
+    character,
+    campaignCharacter,
+    lastSnapshot,
+    baseAttributes,
+  } = context
 
   const encoder = new TextEncoder()
 
@@ -44,10 +54,16 @@ export function streamGameResponse({
       const classDef = getWorld(character.world).classes.find(
         (c) => c.value === character.characterClass
       )
-      const activeAbilities = classDef
+      let activeAbilities = classDef
         ? resolveAbilities(classDef.abilities, lastSnapshot?.tier ?? 1)
         : []
 
+      // Capstone spent this campaign → remove it from what the model is even offered.
+      // The prompt renders this list verbatim; the model never sees a used capstone,
+      // so it can't narrate it. Server-side abilityUsed validation below is the backstop.
+      if (campaignCharacter.capstoneUsed) {
+        activeAbilities = activeAbilities.filter((a) => !a.capstone)
+      }
       const systemPrompt = await buildSystemPrompt({
         genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
         player: {
@@ -57,7 +73,7 @@ export function streamGameResponse({
           characterClass: character.characterClass,
           gender: character.gender,
           world: character.world,
-          tier: lastSnapshot?.tier ?? 1,
+          abilities: activeAbilities,
         },
         language: campaign.language,
       })
@@ -182,6 +198,13 @@ export function streamGameResponse({
         console.error('TAIL:', JSON.stringify(fullText.slice(-150)))
       }
 
+      // Default the mirror as soon as we have a snapshot: the server-authoritative
+      // block may skip on turn one (no lastSnapshot), and the burn block below
+      // flips it to true only on spend. This is the single initialization point.
+      if (snapshot) {
+        snapshot.capstoneUsed = campaignCharacter.capstoneUsed
+      }
+
       // Progression is server-authoritative and deterministic. XP is awarded
       // per turn by the server, never by the model: an LLM handing out points
       // would be untestable and trivially talked up by the player. The model
@@ -195,8 +218,6 @@ export function streamGameResponse({
         snapshot.xp = xp
         snapshot.level = level
         snapshot.tier = computeTier(level, attributes[classDef.keyAttribute])
-        // maxHp tracks endurance growth, so levelling widens the pool. Without
-        // this a Bleeder's costs would rise while its HP stayed flat.
         snapshot.maxHp = calculateMaxHp(attributes.endurance)
 
         await db
@@ -206,16 +227,34 @@ export function streamGameResponse({
       }
 
       // The model reports which ability it narrated, but has no authority over
-      // the name: anything outside the character's active set is discarded.
-      // This makes hallucinated or out-of-tier abilities impossible to display
-      // without relying on the model's restraint.
+      // the name: anything outside the character's active set is discarded
+      // (hallucinated or out-of-tier abilities can't reach the UI). If the
+      // named ability was the capstone, that same use burns it for the campaign.
       if (snapshot?.abilityUsed) {
-        const known = activeAbilities.some(
+        const used = activeAbilities.find(
           (a) => a.name === snapshot!.abilityUsed
         )
-        if (!known) snapshot.abilityUsed = undefined
-      }
 
+        if (!used) {
+          // Unknown name — backstop: discard so the UI can't show it.
+          snapshot.abilityUsed = undefined
+        } else if (used.capstone) {
+          // Burn the capstone. activeAbilities is already filtered, so this
+          // only fires on the FIRST use — later turns don't have it in the set.
+          // The capstoneUsed=false guard makes the write idempotent and
+          // race-safe: two turns can't both spend it.
+          await db
+            .update(campaignCharactersTable)
+            .set({ capstoneUsed: true })
+            .where(
+              and(
+                eq(campaignCharactersTable.id, campaignCharacter.id),
+                eq(campaignCharactersTable.capstoneUsed, false)
+              )
+            )
+          snapshot.capstoneUsed = true
+        }
+      }
       // ── Dynamic RAG write ─────────────────────────────────────────────
       // Closes the loop: the model reports who was met and where the player
       // went, and resolveLore reads it back on the next turn — pulling in the

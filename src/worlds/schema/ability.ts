@@ -19,6 +19,7 @@ export const AbilityDefinitionSchema = z.object({
   cost: AbilityCostSchema.optional(),
   // If set, this ability replaces that slug once unlocked (evolve / scale).
   evolvesFrom: z.string().optional(),
+  capstone: z.boolean().optional(),
 })
 
 export type AbilityDefinitionInput = z.input<typeof AbilityDefinitionSchema>

@@ -84,6 +84,8 @@ export default function StatsPanel({
   )
   const abilities = classDef ? resolveAbilities(classDef.abilities, tier) : []
 
+  const capstoneUsed = snapshot?.capstoneUsed ?? false
+
   const attributes = classDef
     ? effectiveAttributes(baseAttributes, classDef, level)
     : baseAttributes
@@ -147,7 +149,11 @@ export default function StatsPanel({
 
       {/* Abilities */}
       <CollapsibleSection label="Abilities">
-        <AbilitiesSection abilities={abilities} onUseAbility={onUseAbility} />
+        <AbilitiesSection
+          abilities={abilities}
+          onUseAbility={onUseAbility}
+          capstoneUsed={capstoneUsed}
+        />
       </CollapsibleSection>
 
       {/* Quests */}
@@ -218,9 +224,11 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
 function AbilitiesSection({
   abilities,
   onUseAbility,
+  capstoneUsed,
 }: {
   abilities: AbilityDefinition[]
   onUseAbility: (name: string) => void
+  capstoneUsed: boolean
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
@@ -242,7 +250,7 @@ function AbilitiesSection({
             const isOpen = expanded.has(ability.value)
             const cost =
               ability.cost?.kind === 'hp' ? `${ability.cost.amount} HP` : null
-
+            const spent = ability.capstone === true && capstoneUsed
             return (
               <li key={ability.value}>
                 {/* Two targets, one row: the bolt seeds the composer, the name
@@ -252,9 +260,16 @@ function AbilitiesSection({
                   <button
                     type="button"
                     onClick={() => onUseAbility(ability.name)}
-                    title={`Use ${ability.name}`}
-                    aria-label={`Use ${ability.name}`}
-                    className="shrink-0 text-accent/60 hover:bg-accent/20 hover:text-accent p-1 border border-border"
+                    disabled={spent}
+                    title={
+                      spent
+                        ? `${ability.name} — spent this campaign`
+                        : `Use ${ability.name}`
+                    }
+                    aria-label={
+                      spent ? `${ability.name}, spent` : `Use ${ability.name}`
+                    }
+                    className="shrink-0 text-accent/60 hover:bg-accent/20 hover:text-accent p-1 border border-border disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-accent/60"
                   >
                     <IconBolt size={14} />
                   </button>
@@ -263,13 +278,25 @@ function AbilitiesSection({
                     type="button"
                     onClick={() => toggle(ability.value)}
                     aria-expanded={isOpen}
-                    className="flex-1 flex items-center gap-2 text-left text-sm text-text-secondary hover:text-text-primary transition-colors py-0.5"
+                    className={`flex-1 flex items-center gap-2 text-left text-sm transition-colors py-0.5 ${
+                      spent
+                        ? 'text-text-muted'
+                        : 'text-text-secondary hover:text-text-primary'
+                    }`}
                   >
-                    <span className="flex-1">{ability.name}</span>
-                    {cost && (
-                      <span className="text-xs text-red-400/70 shrink-0">
-                        {cost}
+                    <span className={`flex-1 ${spent && 'line-through'}`}>
+                      {ability.name}
+                    </span>
+                    {spent ? (
+                      <span className="text-[10px] uppercase tracking-wider text-text-muted shrink-0">
+                        Spent
                       </span>
+                    ) : (
+                      cost && (
+                        <span className="text-xs text-red-400/70 shrink-0">
+                          {cost}
+                        </span>
+                      )
                     )}
                   </button>
                 </div>

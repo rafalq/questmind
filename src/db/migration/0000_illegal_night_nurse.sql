@@ -10,6 +10,7 @@ CREATE TYPE "public"."npc_role" AS ENUM('faction_leader', 'npc_major', 'npc_mino
 CREATE TABLE "campaigns" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
+	"language" text DEFAULT 'en' NOT NULL,
 	"name" text NOT NULL,
 	"genre" "genre" NOT NULL,
 	"description" text,
@@ -25,7 +26,9 @@ CREATE TABLE "campaign_characters" (
 	"current_hp" integer NOT NULL,
 	"max_hp" integer NOT NULL,
 	"status" "campaign_character_status" DEFAULT 'active' NOT NULL,
-	"joined_at" timestamp DEFAULT now() NOT NULL
+	"capstone_used" boolean DEFAULT false NOT NULL,
+	"joined_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "campaign_characters_campaign_id_character_id_unique" UNIQUE("campaign_id","character_id")
 );
 --> statement-breakpoint
 CREATE TABLE "character_attributes" (
@@ -46,7 +49,6 @@ CREATE TABLE "characters" (
 	"race" text NOT NULL,
 	"character_class" text NOT NULL,
 	"gender" text,
-	"background_story" text,
 	"avatar_url" text,
 	"level" integer DEFAULT 1 NOT NULL,
 	"character_xp" integer DEFAULT 0 NOT NULL,
