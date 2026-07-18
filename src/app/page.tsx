@@ -1,48 +1,31 @@
 import Divider from '@/components/ui/divider'
 import { ROUTES } from '@/constants/routes'
+import { Dices, HeartPulse, ScrollText, type LucideIcon } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
-const features = [
+const features: {
+  icon: LucideIcon
+  title: string
+  description: string
+}[] = [
   {
-    icon: '✦',
+    icon: Dices,
     title: 'AI Game Master',
     description:
       'Claude narrates your adventure and tracks every decision. No human GM required — just you and the story.',
   },
   {
-    icon: '⚔',
+    icon: HeartPulse,
     title: 'Live Character Stats',
     description:
       'HP, gold, inventory and quest flags update in real time as the story unfolds. No spreadsheets.',
   },
   {
-    icon: '📜',
+    icon: ScrollText,
     title: 'Persistent Campaigns',
     description:
       'Save your session and return where you left off. Your choices shape a world that remembers you.',
-  },
-]
-
-const demoMessages = [
-  {
-    role: 'gm',
-    text: 'You push open the heavy tavern door. The smell of ale and woodsmoke fills your lungs. A cloaked figure in the corner catches your eye — they seem to be watching you.',
-  },
-  {
-    role: 'player',
-    text: 'I walk over to the cloaked figure and sit across from them. "I heard you might have work for someone like me."',
-  },
-  {
-    role: 'gm',
-    text: 'The figure leans forward, revealing sharp elven features beneath the hood. "Word travels fast," she says, sliding a rolled parchment across the table. "The job pays 500 gold — if you survive."',
-  },
-  {
-    role: 'player',
-    text: 'I unroll the parchment and read it.',
-  },
-  {
-    role: 'gm',
-    text: 'The parchment shows a hand-drawn map of the Blackwood Forest, with a red mark deep in its heart. Beneath it: "Recover the Ember Seal. Do not open it." Your HP: 24/24 · Gold: 12 · Quest accepted.',
   },
 ]
 
@@ -67,7 +50,7 @@ const heroImages = [
 
 function Hero() {
   return (
-    <section className="relative h-screen flex flex-col items-center text-center px-6 overflow-hidden">
+    <section className="relative flex min-h-svh flex-col items-center overflow-hidden px-4 text-center sm:px-6">
       {/* Three-strip image background */}
       <div className="absolute inset-0 flex flex-col">
         {heroImages.map((src) => (
@@ -83,27 +66,27 @@ function Hero() {
       <div className="absolute inset-0 bg-black/70" />
 
       {/* Hero text */}
-      <div className="relative flex flex-col items-center justify-center z-10 text-center h-full">
-        <p className="text-xs tracking-[0.4em] text-accent mb-6 uppercase border border-accent px-4 py-2">
+      <div className="relative z-10 flex h-full min-h-svh flex-col items-center justify-center py-24 text-center">
+        <p className="mb-6 border border-accent px-3 py-2 text-[10px] uppercase tracking-[0.3em] text-accent sm:px-4 sm:text-xs sm:tracking-[0.4em]">
           AI-Powered Tabletop RPG
         </p>
-        <h1 className="text-5xl md:text-7xl font-bold tracking-wide leading-tight mb-6 max-w-4xl">
+        <h1 className="mb-6 max-w-4xl text-4xl font-bold leading-tight tracking-wide sm:text-5xl md:text-6xl lg:text-7xl">
           Your Story, <span className="text-accent">Told by AI</span>
         </h1>
-        <p className="text-xl text-text-secondary max-w-xl mb-10 leading-relaxed italic">
+        <p className="mb-10 max-w-xl text-base italic leading-relaxed text-text-secondary sm:text-lg md:text-xl">
           QuestMind is an AI Game Master that narrates your adventure, tracks
           your character, and adapts to every choice you make.
         </p>
-        <div className="flex flex-col justify-center items-center sm:flex-row gap-4">
+        <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
           <Link
             href={ROUTES.signUp}
-            className="px-8 py-3 bg-accent text-accent-fg font-bold tracking-widest text-sm hover:bg-accent-hover transition-colors"
+            className="w-full max-w-xs bg-accent px-8 py-3 text-center text-sm font-bold tracking-widest text-accent-fg transition-colors hover:bg-accent-hover sm:w-auto sm:max-w-none"
           >
             BEGIN YOUR QUEST
           </Link>
           <a
             href="#demo"
-            className="px-8 py-3 border border-border text-text-secondary text-sm tracking-widest hover:border-accent hover:text-accent transition-all"
+            className="w-full max-w-xs border border-border px-8 py-3 text-center text-sm tracking-widest text-text-secondary transition-all hover:border-accent hover:text-accent sm:w-auto sm:max-w-none"
           >
             SEE IT IN ACTION
           </a>
@@ -116,7 +99,7 @@ function Hero() {
 // ----- Features -----
 function Features() {
   return (
-    <section className="px-8 md:px-24 py-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <section className="grid grid-cols-1 gap-6 px-4 py-16 sm:px-8 sm:gap-8 sm:py-20 md:grid-cols-3 md:px-12 lg:px-24">
       {features.map((f) => (
         <Feature
           key={f.title}
@@ -130,21 +113,25 @@ function Features() {
 }
 
 function Feature({
-  icon,
+  icon: Icon,
   title,
   description,
 }: {
-  icon: React.ReactNode
+  icon: LucideIcon
   title: string
   description: string
 }) {
   return (
-    <div className="border border-border p-8 hover:border-accent/40 transition-colors group">
-      <div className="text-accent text-2xl mb-4">{icon}</div>
-      <h3 className="text-base tracking-widest mb-3 font-bold">
-        {title.toUpperCase()}
-      </h3>
-      <p className="font-(family-name:--font-im-fell) text-text-muted text-base leading-relaxed italic group-hover:text-text-secondary transition-colors">
+    <div className="group border border-border p-6 transition-colors hover:border-accent/40 sm:p-8">
+      <div className="mb-4 flex items-center gap-4">
+        <div className="mb-5 inline-flex h-12 w-12 items-center justify-center border border-accent/30 text-accent transition-colors group-hover:border-accent">
+          <Icon className="h-6 w-6" strokeWidth={1.5} aria-hidden="true" />
+        </div>
+        <h3 className="mb-3 text-base font-bold tracking-widest">
+          {title.toUpperCase()}
+        </h3>
+      </div>
+      <p className="font-(family-name:--font-im-fell) text-base italic leading-relaxed text-text-muted transition-colors group-hover:text-text-secondary">
         {description}
       </p>
     </div>
@@ -152,60 +139,58 @@ function Feature({
 }
 
 // ----- Demo -----
+
+// Podmień na prawdziwy zrzut ekranu sesji, np. '/images/demo/session-preview.jpg'.
+// Dopóki jest null, sekcja renderuje stylowany placeholder.
+const DEMO_IMAGE: string | null = null
+
 function Demo() {
   return (
     <section
       id="demo"
-      className="px-8 md:px-24 pb-24 pt-12 flex flex-col justify-center items-center"
+      className="flex scroll-mt-20 flex-col items-center justify-center px-4 pb-20 pt-12 sm:px-8 sm:pb-24 md:px-12 lg:px-24"
     >
-      <p className="text-xs tracking-[0.4em] text-accent mb-3 uppercase">
+      <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-accent sm:text-xs sm:tracking-[0.4em]">
         Live Session Demo
       </p>
-      <h2 className="text-2xl md:text-3xl font-bold tracking-wide mb-10">
+      <h2 className="mb-8 text-center text-2xl font-bold tracking-wide sm:mb-10 md:text-3xl">
         What a session looks like
       </h2>
 
-      <div className="border border-border bg-bg-surface max-w-2xl w-full">
+      <div className="w-full max-w-3xl border border-border bg-bg-surface">
         {/* Terminal bar */}
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#8a3a1a]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-[#6a6a1a]" />
-          <span className="w-2.5 h-2.5 rounded-full bg-[#1a5a2a]" />
-          <span className="ml-3 text-xs text-text-muted tracking-widest">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#8a3a1a]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#6a6a1a]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#1a5a2a]" />
+          <span className="ml-3 truncate text-[10px] tracking-widest text-text-muted sm:text-xs">
             THE BROKEN FLAGON TAVERN · SESSION 1
           </span>
         </div>
 
-        {/* Messages */}
-        <div className="p-6 flex flex-col gap-5">
-          {demoMessages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex gap-3 items-start ${msg.role === 'player' ? 'flex-row-reverse' : ''}`}
-            >
-              <div className="shrink-0 w-7 h-7 flex items-center justify-center border border-border text-xs text-accent">
-                {msg.role === 'gm' ? '⚔' : '◈'}
-              </div>
-              <div
-                className={`max-w-sm px-4 py-3 text-sm leading-relaxed font-(family-name:--font-im-fell) italic border border-border ${
-                  msg.role === 'gm'
-                    ? 'bg-[#201a11] text-[#c8b88a]'
-                    : 'bg-bg-surface text-text-muted text-right'
-                }`}
-              >
-                {msg.text}
-              </div>
+        {/* Screenshot / placeholder */}
+        <div className="relative aspect-16/10 w-full">
+          {DEMO_IMAGE ? (
+            <Image
+              src={DEMO_IMAGE}
+              alt="QuestMind live session — AI Game Master narration with the stats panel updating in real time"
+              fill
+              className="object-cover object-top"
+              sizes="(min-width: 768px) 768px, 100vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 border-t-0 bg-[#201a11]/40 px-6 text-center">
+              <span className="text-3xl text-accent" aria-hidden="true">
+                ⚔
+              </span>
+              <p className="text-xs tracking-[0.3em] text-text-muted">
+                SESSION SCREENSHOT
+              </p>
+              <p className="font-(family-name:--font-im-fell) max-w-sm text-sm italic text-text-muted">
+                A preview of a live QuestMind session will appear here.
+              </p>
             </div>
-          ))}
-        </div>
-        {/* Input bar */}
-        <div className="px-6 pb-6">
-          <div className="flex items-center gap-3 border border-border px-4 py-3">
-            <span className="text-text-muted text-xs tracking-widest flex-1">
-              What do you do next?
-            </span>
-            <span className="text-accent text-xs">↵</span>
-          </div>
+          )}
         </div>
       </div>
     </section>
@@ -215,16 +200,16 @@ function Demo() {
 // ----- CTA -----
 function CTA() {
   return (
-    <section className="border-t border-border px-8 py-20 text-center">
-      <h2 className="text-3xl md:text-4xl font-bold tracking-wide mb-4">
+    <section className="border-t border-border px-4 py-16 text-center sm:px-8 sm:py-20">
+      <h2 className="mb-4 text-2xl font-bold tracking-wide sm:text-3xl md:text-4xl">
         Ready to play?
       </h2>
-      <p className="font-(family-name:--font-im-fell) text-text-muted italic text-lg mb-8">
+      <p className="font-(family-name:--font-im-fell) mb-8 text-base italic text-text-muted sm:text-lg">
         Create a free account and start your first campaign in minutes.
       </p>
       <Link
         href={ROUTES.signUp}
-        className="inline-block px-10 py-4 bg-accent text-accent-fg font-bold tracking-widest text-sm hover:bg-accent-hover transition-colors"
+        className="inline-block w-full max-w-xs bg-accent px-10 py-4 text-sm font-bold tracking-widest text-accent-fg transition-colors hover:bg-accent-hover sm:w-auto sm:max-w-none"
       >
         CREATE FREE ACCOUNT
       </Link>
