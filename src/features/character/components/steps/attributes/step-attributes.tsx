@@ -1,8 +1,5 @@
 // steps/attributes/step-attributes.tsx
 import {
-  CLASSES_BY_WORLD,
-  ATTRIBUTE_LABELS_BY_WORLD,
-  WORLD_GENDER_OPTIONS,
   POINT_BUY_TOTAL,
   ATTRIBUTE_MIN,
   ATTRIBUTE_MAX,

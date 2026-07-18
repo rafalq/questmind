@@ -137,7 +137,13 @@ export default function CreateCharacterWizard() {
   const isLastStep = stepIndex === activeSteps.length - 1
 
   return (
-    <div>
+    // The page container this sits in is shrink-to-fit, so a percentage width
+    // (w-full) resolves against a parent that is itself sized by content —
+    // which is why steps with portraits (race/class) were wide and the
+    // Attributes step was narrow. An explicit width breaks that dependency:
+    // the container grows to 64rem and every step matches. max-w-full keeps
+    // it from overflowing on small screens. Tune 64rem to taste.
+    <div className="w-[64rem] max-w-full mx-auto">
       <WizardProgressBar steps={activeSteps} currentStepId={currentStep.id} />
 
       <div className="min-h-100">
