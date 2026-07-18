@@ -58,9 +58,16 @@ export default function RootLayout({
         lang="en"
         className={`${rajdhani.variable} ${imFellEnglish.variable} ${exo2.variable} ${shareTechMono.variable}`}
       >
-        <body className="bg-bg-base text-text-primary">
+        {/*
+          Sticky footer:
+          - body jest kolumną flex o wysokości min. całego viewportu (min-h-dvh
+            radzi sobie z paskiem adresu na mobile lepiej niż min-h-screen)
+          - <main> dostaje flex-1, więc rozpycha się i spycha Footer na sam dół
+            nawet gdy strona nie ma prawie żadnego contentu
+        */}
+        <body className="bg-bg-base text-text-primary flex min-h-dvh flex-col">
           <Navbar />
-          {children}
+          <main className="flex flex-1 flex-col">{children}</main>
           <Footer />
           <Toaster richColors />
         </body>
