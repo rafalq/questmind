@@ -72,6 +72,18 @@ export function getRaceLabel(world: string, race: string): string {
   return getWorld(world).races.find((r) => r.value === race)?.label ?? race
 }
 
+/**
+ * Resolves an attribute key to the world's display name ('strength' →
+ * 'Brawn' in The Drift, 'Body' in Neon Warszawa). Same rule as class and
+ * race labels: raw keys are data, never something a player should read.
+ * Every step of the wizard must agree with the Attributes and Summary
+ * steps, so they all resolve through here rather than printing the key.
+ */
+export function getAttributeLabel(world: string, attr: string): string {
+  const labels = getWorld(world).attributeLabels as Record<string, string>
+  return labels[attr] ?? attr
+}
+
 export function getRace(worldValue: string, raceValue: string) {
   const race = getWorld(worldValue).races.find((r) => r.value === raceValue)
   if (!race) {

@@ -1,9 +1,20 @@
+// steps/modifier-badge.tsx
+import { getAttributeLabel } from '@/worlds'
+
+/**
+ * Shared attribute-modifier chip used by the Race, Sex and Class steps.
+ * `world` is required because the attribute display names are world-specific
+ * ('strength' is Brawn in The Drift, Body in Neon Warszawa) — printing the
+ * raw key here would contradict the Attributes and Summary steps.
+ */
 export default function ModifierBadge({
   attr,
   val,
+  world,
 }: {
   attr: string
   val: number
+  world: string
 }) {
   return (
     <span
@@ -14,7 +25,7 @@ export default function ModifierBadge({
       }`}
     >
       {val > 0 ? '+' : ''}
-      {val} {attr}
+      {val} {getAttributeLabel(world, attr)}
     </span>
   )
 }

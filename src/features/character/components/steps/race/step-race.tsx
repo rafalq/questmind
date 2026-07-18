@@ -10,7 +10,10 @@ export default function StepRace({
   onChange: (patch: Partial<FormData>) => void
 }) {
   if (!data.world) return null
-  const races = getWorld(data.world).races
+  // Hoisted so the narrowing survives into the map callback below —
+  // same pattern as step-class.tsx.
+  const world = data.world
+  const races = getWorld(world).races
 
   return (
     <div className="flex flex-col gap-4">
@@ -22,6 +25,7 @@ export default function StepRace({
         <RaceCard
           key={race.value}
           race={race}
+          world={world}
           selected={data.race === race.value}
           onSelect={() =>
             onChange({

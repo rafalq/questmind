@@ -44,7 +44,12 @@ export default function ClassCard({
         <p className="text-text-muted text-sm">{cls.description}</p>
         <div className="flex flex-wrap gap-2 mt-1">
           {Object.entries(cls.modifiers).map(([attr, val]) => (
-            <ModifierBadge key={attr} attr={attr} val={val ?? 0} />
+            <ModifierBadge
+              key={attr}
+              attr={attr}
+              val={val ?? 0}
+              world={world}
+            />
           ))}
         </div>
         {/* Abilities: names and tiers only. The player is comparing four

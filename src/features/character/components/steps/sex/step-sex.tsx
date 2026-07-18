@@ -1,20 +1,6 @@
 import { getWorld } from '@/worlds'
+import ModifierBadge from '@/features/character/components/steps/modifier-badge'
 import type { FormData } from '../../../types/wizard-types'
-
-function ModifierBadge({ attr, val }: { attr: string; val: number }) {
-  return (
-    <span
-      className={`text-xs px-2 py-0.5 border whitespace-nowrap ${
-        val > 0
-          ? 'border-emerald-700 text-emerald-500'
-          : 'border-red-800 text-red-500'
-      }`}
-    >
-      {val > 0 ? '+' : ''}
-      {val} {attr}
-    </span>
-  )
-}
 
 export default function StepSex({
   data,
@@ -24,7 +10,10 @@ export default function StepSex({
   onChange: (patch: Partial<FormData>) => void
 }) {
   if (!data.world) return null
-  const options = getWorld(data.world).genderOptions
+  // Hoisted so the narrowing survives into the map callback below —
+  // same pattern as step-class.tsx.
+  const world = data.world
+  const options = getWorld(world).genderOptions
 
   return (
     <div className="flex flex-col gap-4">
@@ -51,7 +40,12 @@ export default function StepSex({
             </p>
             <div className="flex flex-col gap-1 shrink-0">
               {Object.entries(option.statModifiers).map(([attr, val]) => (
-                <ModifierBadge key={attr} attr={attr} val={val ?? 0} />
+                <ModifierBadge
+                  key={attr}
+                  attr={attr}
+                  val={val ?? 0}
+                  world={world}
+                />
               ))}
             </div>
           </div>

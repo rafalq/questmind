@@ -4,10 +4,12 @@ import type { RaceDefinition } from '@/worlds/schema'
 
 export default function RaceCard({
   race,
+  world,
   selected,
   onSelect,
 }: {
   race: RaceDefinition
+  world: string
   selected: boolean
   onSelect: () => void
 }) {
@@ -32,7 +34,12 @@ export default function RaceCard({
         <p className="text-text-muted text-sm">{race.description}</p>
         <div className="flex flex-wrap gap-2 mt-1">
           {Object.entries(race.modifiers).map(([attr, val]) => (
-            <ModifierBadge key={attr} attr={attr} val={val ?? 0} />
+            <ModifierBadge
+              key={attr}
+              attr={attr}
+              val={val ?? 0}
+              world={world}
+            />
           ))}
         </div>
         {race.startingEquipment.length > 0 && (
