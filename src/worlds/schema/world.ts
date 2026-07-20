@@ -3,16 +3,14 @@
 // ---------------------------------------------------------------------------
 
 import z from 'zod'
-import {
-  AttributeLabelsSchema,
-  ClassDefinitionSchema,
-  GenderOptionSchema,
-  GenreSchema,
-  ItemDefinitionSchema,
-  RaceDefinitionSchema,
-  ScenarioSchema,
-  WorldPromptSchema,
-} from '../schema'
+import { AttributeLabelsSchema } from './attribute'
+import { ClassDefinitionSchema } from './class'
+import { GenderOptionSchema } from './gender'
+import { GenreSchema } from './primitives'
+import { ItemDefinitionSchema } from './item'
+import { RaceDefinitionSchema } from './race'
+import { ScenarioSchema } from './scenario'
+import { WorldPromptSchema } from './prompt'
 
 export const WorldDefinitionSchema = z
   .object({

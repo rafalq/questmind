@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { ModifiersSchema, StartingItemSchema } from '../schema'
+import { ModifiersSchema } from './attribute'
+import { StartingItemSchema } from './item'
 
 // ---------------------------------------------------------------------------
 // Races — shape of RaceDefinition from shared.ts

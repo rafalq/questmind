@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import z from 'zod'
-import { CampaignBriefSchema } from '../schema/'
+import { CampaignBriefSchema } from './campaign-brief'
 
 export const ScenarioSchema = z.object({
   id: z.string().min(1),

@@ -3,7 +3,8 @@
 // ---------------------------------------------------------------------------
 
 import z from 'zod'
-import { ModifiersSchema, StartingItemSchema } from '../schema/'
+import { ModifiersSchema } from './attribute'
+import { StartingItemSchema } from './item'
 // src/worlds/schema/class.ts  — dodaj do istniejącego ClassDefinitionSchema
 import { AbilityDefinitionSchema } from './ability'
 

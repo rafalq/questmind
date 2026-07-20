@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ModifiersSchema } from '../schema/'
+import { ModifiersSchema } from './attribute'
 
 // ---------------------------------------------------------------------------
 // Genders — shape of GenderOption from gender.ts
