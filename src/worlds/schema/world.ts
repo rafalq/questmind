@@ -6,11 +6,10 @@ import z from 'zod'
 import { AttributeLabelsSchema } from './attribute'
 import { ClassDefinitionSchema } from './class'
 import { GenderOptionSchema } from './gender'
-import { GenreSchema } from './primitives'
 import { ItemDefinitionSchema } from './item'
+import { GenreSchema } from './primitives'
 import { RaceDefinitionSchema } from './race'
 import { ScenarioSchema } from './scenario'
-import { WorldPromptSchema } from './prompt'
 
 export const WorldDefinitionSchema = z
   .object({
@@ -44,7 +43,6 @@ export const WorldDefinitionSchema = z
     classPortraitsBaseUrl: z.string().min(1),
     /** Default starting location used in the opening scene. */
     startingLocation: z.string().optional(),
-    prompt: WorldPromptSchema,
     /** Predefined scenarios for the New Campaign dropdown (optional). */
     scenarios: z.array(ScenarioSchema).default([]),
     /** Stub worlds are registered but greyed out until content is ready. */

@@ -679,22 +679,5 @@ export const drift: WorldDefinitionInput = {
 
   classPortraitsBaseUrl: '/images/sci-fi/drift/characters/classes/',
 
-  prompt: {
-    intro:
-      'You are the Game Master of The Drift (The Unmoored), a ring of dead ' +
-      'ships and broken stations around a dying star. Five hundred years ' +
-      'ago, in a single night called the Severance, every beacon of the ' +
-      'Lattice — the network that bound human space — went dark. Ships ' +
-      'mid-jump never arrived. Nobody came. Nobody left. The Static that ' +
-      'bleeds from the dead network can be used, but it burns the user: ' +
-      'synapses, memories, years. Nothing is free. Key locations include ' +
-      "Kessler's Rest, Tetherport and Coreward Hold.",
-    tone:
-      'Grimdark, claustrophobic, industrial-gothic. The Static always has ' +
-      'a visible, personal cost. Hope is scarce and hard-won. NPC secrets ' +
-      'follow the TIER SECRET system: reveal hidden truths only gradually, ' +
-      'through hints and consequences, never as direct exposition.',
-  },
-
   enabled: true,
 }

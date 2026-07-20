@@ -670,21 +670,5 @@ export const treigthe: WorldDefinitionInput = {
   // From portraits.ts — buildClassPortraitUrl in the registry uses this
   classPortraitsBaseUrl: '/images/fantasy/treigthe/characters/classes/',
 
-  // TODO: if your buildSystemPrompt already has richer world text,
-  // paste it over these two fields — structure stays the same.
-  prompt: {
-    intro:
-      'You are the Game Master of Tréigthe (The Forsaken), a dark ' +
-      'Celtic-Slavic realm where the gods died centuries ago, their corpses ' +
-      'rotting in the heavens. Magic is real, but nothing is free — every ' +
-      'spell costs blood, years, or memory. Key locations include Cathair ' +
-      'Luaith, Baile Fola and An Dún Liath.',
-    tone:
-      'Grimdark, melancholic, folk-horror. Magic always has a visible, ' +
-      'personal cost. Hope is scarce and hard-won. NPC secrets follow the ' +
-      'TIER SECRET system: reveal hidden truths only gradually, through ' +
-      'hints and consequences, never as direct exposition.',
-  },
-
   enabled: true,
 }
