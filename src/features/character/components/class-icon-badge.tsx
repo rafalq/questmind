@@ -1,11 +1,15 @@
 import { TREIGTHE_CLASS_ICONS } from '@/features/character/constants/fantasy/treigthe'
+import { DRIFT_CLASS_ICONS } from '@/features/character/constants/sci-fi/drift'
+import { NEON_WARSZAWA_CLASS_ICONS } from '@/features/character/constants/cyberpunk/neon-warszawa'
 import { IconHelp } from '@tabler/icons-react'
 
 // Widened view over the per-world icon maps. Add future worlds by
-// spreading their maps here (e.g. ...DRIFT_CLASS_ICONS); IconHelp
-// covers classes that don't have an icon yet.
+// spreading their maps here; IconHelp covers classes that don't have an
+// icon yet.
 const CLASS_ICONS: Record<string, typeof IconHelp> = {
   ...TREIGTHE_CLASS_ICONS,
+  ...DRIFT_CLASS_ICONS,
+  ...NEON_WARSZAWA_CLASS_ICONS,
 }
 
 export default function ClassIconBadge({
