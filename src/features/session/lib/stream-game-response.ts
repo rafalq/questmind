@@ -9,6 +9,7 @@ import { eq, and } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
+import { repairSnapshot } from './snapshot-schema'
 import { SNAPSHOT_DELIMITER } from './stream-protocol'
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
@@ -186,7 +187,58 @@ export function streamGameResponse({
       if (separatorIndex !== -1) {
         const jsonStr = fullText.slice(separatorIndex + SEPARATOR.length).trim()
         try {
-          snapshot = JSON.parse(jsonStr)
+          // Two independent failures live here. JSON.parse catches malformed
+          // syntax — a stream cut mid-object. repairSnapshot catches the
+          // quieter one: syntactically valid JSON with the wrong shape
+          // ("inventory" as a string, hp as text), which parses cleanly and
+          // only explodes later, in the UI or in the database.
+          //
+          // A bad field does not cost the turn. Each field is validated on its
+          // own and reverts to its previous value when it fails, so one fumbled
+          // field degrades to "nothing changed there" rather than to a turn
+          // that mechanically never happened. Repairs are logged individually:
+          // a field that fails repeatedly is a prompt problem, and this is the
+          // only place that is visible.
+          const raw = JSON.parse(jsonStr)
+
+          const repairs: string[] = []
+          const repaired = repairSnapshot(
+            raw,
+            {
+              hp: lastSnapshot?.hp ?? 0,
+              maxHp: lastSnapshot?.maxHp ?? 0,
+              inventory: lastSnapshot?.inventory ?? [],
+              quests: lastSnapshot?.quests ?? [],
+              npcMet: [],
+              location: null,
+              abilityUsed: undefined,
+              sceneTag: lastSnapshot?.sceneTag ?? 'default',
+            },
+            (field, received) => {
+              repairs.push(field)
+              console.error(
+                `Snapshot field repaired: ${field} for session ${sessionId} —`,
+                JSON.stringify(received)?.slice(0, 200)
+              )
+            }
+          )
+
+          if (repaired) {
+            snapshot = repaired as GameSnapshot
+
+            if (repairs.length > 0) {
+              console.error(
+                `Snapshot repaired (${repairs.join(', ')}) for session ${sessionId}`
+              )
+            }
+          } else {
+            // Not an object at all — an array, a string, a number. Nothing to
+            // salvage field by field, so the turn is dropped like a parse error.
+            console.error(
+              `Snapshot was not an object for session ${sessionId}:`,
+              jsonStr.slice(0, 200)
+            )
+          }
         } catch {
           console.error('Failed to parse game snapshot:', jsonStr)
         }
