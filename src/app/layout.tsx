@@ -56,16 +56,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="en"
+        suppressHydrationWarning
         className={`${rajdhani.variable} ${imFellEnglish.variable} ${exo2.variable} ${shareTechMono.variable}`}
       >
-        {/*
-          Sticky footer:
-          - body jest kolumną flex o wysokości min. całego viewportu (min-h-dvh
-            radzi sobie z paskiem adresu na mobile lepiej niż min-h-screen)
-          - <main> dostaje flex-1, więc rozpycha się i spycha Footer na sam dół
-            nawet gdy strona nie ma prawie żadnego contentu
-        */}
         <body className="bg-bg-base text-text-primary flex min-h-dvh flex-col">
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var k='questmind-theme';var s=localStorage.getItem(k);var t=(s==='dark'||s==='light')?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var r=document.documentElement;r.classList.toggle('dark',t==='dark');r.classList.toggle('light',t==='light');r.style.colorScheme=t;}catch(e){}})();`,
+            }}
+          />
           <Navbar />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />

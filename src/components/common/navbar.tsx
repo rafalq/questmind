@@ -1,16 +1,19 @@
-import Link from 'next/link'
-import { connection } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { UserButton } from '@clerk/nextjs'
-import { Suspense } from 'react'
-import Spinner from '../ui/loader/spinner'
 import { ROUTES } from '@/constants/routes'
-import NavLink from '../ui/nav-link'
+import { UserButton } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import {
   IconLayoutDashboard,
   IconLogin2,
+  IconSquareLetterI,
   IconUserPlus,
+  IconWorldMap,
 } from '@tabler/icons-react'
+import Link from 'next/link'
+import { connection } from 'next/server'
+import { Suspense } from 'react'
+import Spinner from '../ui/loader/spinner'
+import NavLink from '../ui/nav-link'
+import ThemeToggle from '../ui/theme/theme-toggle'
 
 async function NavAuth() {
   await connection()
@@ -41,13 +44,24 @@ async function NavAuth() {
 export default function Navbar() {
   return (
     <nav className="flex items-center justify-between px-8 py-5 border-b border-border">
-      <Link
-        href={ROUTES.home}
-        className="text-xl tracking-widest text-accent hover:text-accent-hover font-bold"
-      >
-        QUESTMIND
-      </Link>
-      <div className="flex gap-4 items-center">
+      <div className="flex items-center justify-between gap-8">
+        <Link
+          href={ROUTES.home}
+          className="text-xl tracking-widest text-accent hover:text-accent-hover font-bold"
+        >
+          QUESTMIND
+        </Link>
+        <ThemeToggle />
+      </div>
+      <div className="flex gap-6 items-center">
+        <NavLink href={ROUTES.about} className="hidden sm:inline-flex">
+          <IconSquareLetterI stroke={2} size={16} />
+          About{' '}
+        </NavLink>
+        <NavLink href={ROUTES.worlds} className="hidden sm:inline-flex">
+          <IconWorldMap stroke={2} size={16} />
+          Worlds
+        </NavLink>
         <Suspense fallback={<Spinner size="md" />}>
           <NavAuth />
         </Suspense>

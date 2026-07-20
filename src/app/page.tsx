@@ -71,7 +71,8 @@ function Hero() {
           AI-Powered Tabletop RPG
         </p>
         <h1 className="mb-6 max-w-4xl text-4xl font-bold leading-tight tracking-wide sm:text-5xl md:text-6xl lg:text-7xl">
-          Your Story, <span className="text-accent">Told by AI</span>
+          <span className="text-white/85">Your Story</span>,{' '}
+          <span className="text-accent">Told by AI</span>
         </h1>
         <p className="mb-10 max-w-xl text-base italic leading-relaxed text-text-secondary sm:text-lg md:text-xl">
           QuestMind is an AI Game Master that narrates your adventure, tracks
@@ -80,13 +81,13 @@ function Hero() {
         <div className="flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
           <Link
             href={ROUTES.signUp}
-            className="w-full max-w-xs bg-accent px-8 py-3 text-center text-sm font-bold tracking-widest text-accent-fg transition-colors hover:bg-accent-hover sm:w-auto sm:max-w-none"
+            className="w-full max-w-xs bg-[#c9a74a] px-8 py-3 text-center text-sm font-bold tracking-widest text-[#0a0805] transition-colors hover:bg-[#debb6a] sm:w-auto sm:max-w-none"
           >
             BEGIN YOUR QUEST
           </Link>
           <a
             href="#demo"
-            className="w-full max-w-xs border border-border px-8 py-3 text-center text-sm tracking-widest text-text-secondary transition-all hover:border-accent hover:text-accent sm:w-auto sm:max-w-none"
+            className="w-full max-w-xs border px-8 py-3 text-center text-sm tracking-widest text-[#9a8a6a] transition-all hover:border-[#c9a74a] hover:text-[#c9a74a]  sm:w-auto sm:max-w-none"
           >
             SEE IT IN ACTION
           </a>

@@ -1,53 +1,102 @@
 @import url('tailwindcss');
 
+/*
+ * The `dark:` variant is driven by a class on <html> instead of the default
+ * prefers-color-scheme. Without this line, `dark:*` in Tailwind v4 still
+ * follows the OS setting and ignores the toggle.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Raw theme variables use their own prefix (--qm-*), and @theme inline only
+ * maps them onto Tailwind tokens. Previously this was
+ * --color-bg-base: var(--color-bg-base), a variable pointing at itself —
+ * a cycle that breaks down as soon as values are overridden.
+ */
 @theme inline {
-  --color-bg-base: var(--color-bg-base);
-  --color-bg-surface: var(--color-bg-surface);
-  --color-bg-elevated: var(--color-bg-elevated);
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-muted: var(--color-text-muted);
-  --color-accent: var(--color-accent);
-  --color-accent-hover: var(--color-accent-hover);
-  --color-accent-fg: var(--color-accent-fg);
-  --color-border: var(--color-border);
-  --color-border-subtle: var(--color-border-subtle);
+  --color-bg-base: var(--qm-bg-base);
+  --color-bg-surface: var(--qm-bg-surface);
+  --color-bg-elevated: var(--qm-bg-elevated);
+  --color-text-primary: var(--qm-text-primary);
+  --color-text-secondary: var(--qm-text-secondary);
+  --color-text-muted: var(--qm-text-muted);
+  --color-accent: var(--qm-accent);
+  --color-accent-hover: var(--qm-accent-hover);
+  --color-accent-fg: var(--qm-accent-fg);
+  --color-border: var(--qm-border);
+  --color-border-subtle: var(--qm-border-subtle);
 }
 
-:root {
-  /* Dark mode (default) */
-  --color-bg-base: #0a0805;
-  --color-bg-surface: #0d0b07;
-  --color-bg-elevated: #130f08;
-  --color-text-primary: #e8dcc8;
-  --color-text-secondary: #a89878;
-  --color-text-muted: #9a8a6a;
-  --color-accent: #c9a84c;
-  --color-accent-hover: #debb6a;
-  --color-accent-fg: #0a0805;
-  --color-border: #2a2016;
-  --color-border-subtle: #1a1508;
+/*
+ * DARK — the default QuestMind theme.
+ * :root covers the moment before the class is set; .dark is an explicit choice.
+ */
+:root,
+.dark {
+  --qm-bg-base: #0a0805;
+  --qm-bg-surface: #0d0b07;
+  --qm-bg-elevated: #130f08;
+  --qm-text-primary: #e8dcc8;
+  --qm-text-secondary: #a89878;
+  --qm-text-muted: #9a8a6a;
+  --qm-accent: #c9a84c;
+  --qm-accent-hover: #debb6a;
+  --qm-accent-fg: #0a0805;
+  --qm-border: #2a2016;
+  --qm-border-subtle: #1a1508;
+
+  /* Image dimming in the hero — stronger in dark */
+  --qm-image-overlay: 0 0 0 / 0.7;
+
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg-base: #faf6ef;
-    --color-bg-surface: #f2ebe0;
-    --color-bg-elevated: #fff;
-    --color-text-primary: #1a1508;
-    --color-text-secondary: #7a5e30; /* was #5a4a2a — lighter, more readable */
-    --color-text-muted: #a08848; /* was #8a7a5a — warmer gold tone */
-    --color-accent: #c49535; /* was #a07830 — brighter gold */
-    --color-accent-hover: #d4aa4a; /* was #c9a84c — slightly lighter */
-    --color-accent-fg: #fff;
-    --color-border: #d4c4a0;
-    --color-border-subtle: #e8dcc8;
-  }
+/*
+ * LIGHT — the same values as the previous @media (prefers-color-scheme: light)
+ * block, moved under the .light class so they respond to the toggle.
+ */
+.light {
+  --qm-bg-base: #faf6ef;
+  --qm-bg-surface: #f2ebe0;
+  --qm-bg-elevated: #fff;
+  --qm-text-primary: #1a1508;
+  --qm-text-secondary: #7a5e30;
+  --qm-text-muted: #a08848;
+  --qm-accent: #c49535;
+  --qm-accent-hover: #d4aa4a;
+  --qm-accent-fg: #fff;
+  --qm-border: #d4c4a0;
+  --qm-border-subtle: #e8dcc8;
+
+  /* Dim images less in the light theme */
+  --qm-image-overlay: 0 0 0 / 0.5;
+
+  color-scheme: light;
+}
+
+/*
+ * .on-media — for content sitting ON TOP of an image (hero, world cards).
+ * The background there is always dark regardless of the theme, so the text
+ * has to stay light. Override the --color-* tokens directly, NOT --qm-*:
+ * --color-text-primary is already substituted at :root, so descendants
+ * inherit the resolved value and changing --qm-* here would do nothing.
+ */
+.on-media {
+  --color-text-primary: #f4ecdb;
+  --color-text-secondary: #d8cbb0;
+  --color-text-muted: #b3a488;
+  --color-accent: #dcb75f;
+  --color-accent-hover: #ecc97c;
+  --color-accent-fg: #14100a;
+  --color-border: #6b5d43;
+  --color-border-subtle: #4a4030;
+
+  color-scheme: dark;
 }
 
 @layer base {
   * {
-    scrollbar-color: var(--color-border) transparent;
+    scrollbar-color: var(--qm-border) transparent;
     scrollbar-width: thin;
   }
 
@@ -62,15 +111,15 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
+    background-color: var(--qm-border);
     border-radius: 4px;
   }
 }
 
 body {
   font-family: var(--font-rajdhani), sans-serif;
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-base);
+  color: var(--qm-text-primary);
+  background-color: var(--qm-bg-base);
 }
 
 /* Genre-styled scrollbar for chat panels */
@@ -80,15 +129,15 @@ body {
 }
 
 .scrollbar-genre::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--qm-border);
   border-radius: 0;
 }
 
 .scrollbar-genre::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+  background: var(--qm-accent);
 }
 
 .scrollbar-subtle {
-  scrollbar-color: var(--color-border) transparent;
+  scrollbar-color: var(--qm-border) transparent;
   scrollbar-width: thin;
 }

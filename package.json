@@ -22,7 +22,12 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "seed:treigthe": "tsx --env-file=.env.local src/db/seed/treigthe.ts",
-    "seed:baile-fola": "tsx --env-file=.env.local src/db/seed/baile-fola.ts"
+    "seed:baile-fola": "tsx --env-file=.env.local src/db/seed/baile-fola.ts",
+    "seed:drift": "tsx --env-file=.env.local src/db/seed/drift.ts",
+    "seed:tetherport": "tsx --env-file=.env.local src/db/seed/tetherport.ts",
+    "seed:neon-warszawa": "tsx --env-file=.env.local src/db/seed/neon-warszawa.ts",
+    "seed:praga": "tsx --env-file=.env.local src/db/seed/praga.ts",
+    "seed:all": "pnpm seed:treigthe && pnpm seed:baile-fola && pnpm seed:drift && pnpm seed:tetherport && pnpm seed:neon-warszawa && pnpm seed:praga"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
@@ -37,6 +42,7 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "lodash-es": "^4.18.1",
+    "lucide-react": "^1.25.0",
     "next": "^16.2.6",
     "next-safe-action": "^8.5.5",
     "postcss": "^8.5.15",
