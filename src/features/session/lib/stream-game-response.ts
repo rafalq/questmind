@@ -26,7 +26,7 @@ import {
 } from '@/features/character/constants/progression'
 import { calculateMaxHp } from '@/features/character/lib/hp'
 import { persistLoreState } from '@/features/session/lib/lore-writer/persist-lore'
-import { Genre } from '@/features/campaign/constants/genres'
+import { Genre } from '@/worlds/schema/primitives'
 
 const client = new Anthropic()
 
@@ -341,7 +341,7 @@ export function streamGameResponse({
       if (snapshot) {
         await persistLoreState({
           campaignId: campaign.id,
-          genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
+          genre: campaign.genre as Genre,
           snapshot,
         })
       }

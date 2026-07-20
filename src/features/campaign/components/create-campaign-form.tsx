@@ -10,10 +10,11 @@ import { toast } from 'sonner'
 import Button from '@/components/ui/button'
 import { LanguageCode, LANGUAGES } from '../constants/languages'
 import { useState } from 'react'
+import { GenreSchema } from '@/worlds/schema/primitives'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
-  genre: z.enum(['fantasy', 'sci-fi', 'cyberpunk']),
+  genre: GenreSchema,
 })
 
 type FormValues = z.infer<typeof schema>

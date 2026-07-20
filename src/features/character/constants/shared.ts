@@ -13,7 +13,7 @@ export type Attribute =
   | 'perception'
 
 // Genre identifiers — extend as new genres are added
-export type Genre = 'fantasy' | 'sci-fi' | 'cyberpunk'
+export type { Genre } from '@/worlds/schema/primitives'
 
 export type RaceDefinition<TRace extends string = string> = {
   value: TRace

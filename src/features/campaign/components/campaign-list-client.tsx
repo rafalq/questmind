@@ -5,6 +5,7 @@ import CampaignCard from './campaign-card'
 import SearchInput from '@/components/ui/search-input'
 import FilterSelect from '@/components/ui/filter-select'
 import { WorldLore } from '@/features/lore/queries/get-world-lore'
+import { Genre } from '@/worlds/schema/primitives'
 
 type Character = {
   id: string
@@ -21,7 +22,7 @@ type ActiveSession = {
 type Campaign = {
   id: string
   name: string
-  genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
+  genre: Genre
   description: string | null
   lastPlayedAt: Date | null
   createdAt: Date

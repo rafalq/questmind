@@ -1,4 +1,3 @@
-// src/features/session/lib/lore-writer/persist-lore-state.ts
 // The write half of the RAG loop: consumes GameSnapshot.npcMet and .location,
 // updates campaignLoreState. resolveLore reads the result on the next turn.
 
@@ -12,10 +11,11 @@ import {
 import { eq, and } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { resolveNpcIds, mergeUnique } from './resolve'
+import { Genre } from '@/worlds/schema/primitives'
 
 type PersistInput = {
   campaignId: string
-  genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
+  genre: Genre
   snapshot: GameSnapshot
 }
 

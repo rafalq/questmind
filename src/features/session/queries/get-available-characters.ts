@@ -2,8 +2,9 @@ import { db } from '@/db'
 import { sessionsTable, charactersTable } from '@/db/schema'
 import { eq, and, notInArray } from 'drizzle-orm'
 import { auth } from '@clerk/nextjs/server'
+import { Genre } from '@/worlds/schema/primitives'
 
-export async function getAvailableCharacters(genre: 'fantasy' | 'sci-fi' | 'cyberpunk') {
+export async function getAvailableCharacters(genre: Genre) {
   const { userId } = await auth()
   if (!userId) return []
 
@@ -26,5 +27,8 @@ export async function getAvailableCharacters(genre: 'fantasy' | 'sci-fi' | 'cybe
     conditions.push(notInArray(charactersTable.id, busyCharacterIds))
   }
 
-  return db.select().from(charactersTable).where(and(...conditions))
+  return db
+    .select()
+    .from(charactersTable)
+    .where(and(...conditions))
 }

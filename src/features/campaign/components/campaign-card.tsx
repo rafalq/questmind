@@ -9,11 +9,12 @@ import { toast } from 'sonner'
 import { deleteCampaign } from '../actions/delete-campaign'
 import CampaignEditableTitle from './campaign-editable-title'
 import { genreCardImage } from '@/lib/genre-card-image'
+import { Genre } from '@/worlds/schema/primitives'
 
 type Campaign = {
   id: string
   name: string
-  genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
+  genre: Genre
   lastPlayedAt: Date | null
   createdAt: Date
 }

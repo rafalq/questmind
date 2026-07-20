@@ -9,10 +9,11 @@ import { getStartingLocationByGenre } from '@/worlds/get-starting-location'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { LANGUAGE_CODES } from '../constants/languages'
+import { GenreSchema } from '@/worlds/schema/primitives'
 
 const schema = z.object({
   name: z.string().min(1).max(100),
-  genre: z.enum(['fantasy', 'sci-fi', 'cyberpunk']),
+  genre: GenreSchema,
   description: z.string().max(500).optional(),
   language: z.enum(LANGUAGE_CODES),
 })

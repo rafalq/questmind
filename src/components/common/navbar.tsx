@@ -14,6 +14,7 @@ import {
   IconUserPlus,
   IconWorldMap,
 } from '@tabler/icons-react'
+import ThemeToggle from '../ui/theme/theme-toggle'
 
 async function NavAuth() {
   await connection()
@@ -53,13 +54,15 @@ async function NavAuth() {
 export default function Navbar() {
   return (
     <nav className="relative flex items-center justify-between gap-3 px-4 py-4 sm:px-8 sm:py-5 border-b border-border">
-      <Link
-        href={ROUTES.home}
-        className="text-lg sm:text-xl tracking-widest text-accent hover:text-accent-hover font-bold whitespace-nowrap"
-      >
-        QUESTMIND
-      </Link>
-
+      <div className="flex gap-3 sm:gap-6 items-center">
+        <Link
+          href={ROUTES.home}
+          className="text-lg sm:text-xl tracking-widest text-accent hover:text-accent-hover font-bold whitespace-nowrap"
+        >
+          QUESTMIND
+        </Link>
+        <ThemeToggle />
+      </div>
       <div className="flex gap-3 sm:gap-6 items-center">
         <NavLink href={ROUTES.about} className="hidden sm:inline-flex">
           <IconSquareLetterI stroke={2} size={16} />
