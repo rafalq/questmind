@@ -22,7 +22,7 @@ export default function ButtonIcon({
   return (
     <Tooltip content={tooltip}>
       <button
-        className={`transition-colors ${variantClasses[variant]} ${className}`}
+        className={`p-2 -m-2 transition-colors ${variantClasses[variant]} ${className}`}
         {...props}
       >
         {icon}

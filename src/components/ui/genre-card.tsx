@@ -48,7 +48,7 @@ export default function GenreCard({
     <>
       <div
         onClick={onClick}
-        className={`p-6 border border-border flex flex-col gap-2 relative group bg-cover ${className || ''}`}
+        className={`p-4 sm:p-6 border border-border flex flex-col gap-2 relative group bg-cover ${className || ''}`}
         style={{
           fontFamily: genreFont[genre],
           backgroundColor: genreBg[genre],
@@ -77,13 +77,15 @@ export default function GenreCard({
                 e.stopPropagation()
                 setIsDialogOpen(true)
               }}
-              className="opacity-0 group-hover:opacity-100"
+              className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
             />
           )}
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-text-primary">{title}</h2>
+          <h2 className="text-base sm:text-lg font-bold text-text-primary">
+            {title}
+          </h2>
           {avatar && <div className="shrink-0">{avatar}</div>}
         </div>
 
