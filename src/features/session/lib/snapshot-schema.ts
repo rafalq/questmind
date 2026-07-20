@@ -87,15 +87,11 @@ export function repairSnapshot(
 }
 
 /**
- * Scene tags are world-scoped, so they cannot live in the schema above: a tag
- * that is valid in Neon Warszawa is a hallucination in Tréigthe. These three
- * belong to no single location and are valid everywhere.
- */
-export const UNIVERSAL_SCENE_TAGS = ['battle', 'camp_night', 'default'] as const
-
-/**
- * An unknown tag would resolve to a missing background image, so it reverts to
- * the previous scene rather than leaving the UI pointing at a dead path.
+ * Scene tags are world-scoped, so the allowed set cannot live in the schema
+ * above: a tag that is valid in Neon Warszawa is a hallucination in Tréigthe.
+ * The caller passes the set built from this campaign's lore. An unknown tag
+ * would resolve to a background image that isn't there, so it reverts to the
+ * scene the player was already in.
  */
 export function resolveSceneTag(
   tag: string,

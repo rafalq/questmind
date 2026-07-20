@@ -79,6 +79,9 @@ export function streamGameResponse({
         },
         language: campaign.language,
       })
+      // TODO - delete this log once the prompt is stable and the model is behaving. It is
+      console.log('VALID SCENE TAGS:', [...validSceneTags].join(', '))
+
       // Base prompt + optional current-state blob (both English).
       const baseSystem = lastSnapshot
         ? `${systemPrompt}\n\nCurrent game state:\n${JSON.stringify(lastSnapshot)}`

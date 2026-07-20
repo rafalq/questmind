@@ -46,7 +46,7 @@ export { SEPARATOR } from './game-master-instructions'
 import { buildGameMasterInstructions } from './game-master-instructions'
 import { resolveLore } from './lore-resolver'
 import { buildPlayerBlock, buildSecretBlock } from './section-builders'
-import { UNIVERSAL_SCENE_TAGS } from '../snapshot-schema'
+import { UNIVERSAL_SCENE_TAGS } from '@/worlds/schema/scenes'
 
 export async function buildSystemPrompt(
   options: BuildPromptOptions
