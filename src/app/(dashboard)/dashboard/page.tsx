@@ -7,39 +7,38 @@ import { Suspense } from 'react'
 export default function DashboardPage() {
   return (
     <>
-      <section className="max-w-5xl mx-auto px-8 py-12">
-        <div className="flex items-center justify-between mb-10">
+      <section className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-10">
           <div>
-            <h1 className="text-3xl font-bold text-text-primary">
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
               Welcome back, Adventurer
             </h1>
             <p className="text-text-secondary mt-1">Your campaigns await.</p>
           </div>
-          <ButtonLink href={ROUTES.newCampaign}>+ New Campaign</ButtonLink>
+          <div className="shrink-0">
+            <ButtonLink href={ROUTES.newCampaign}>+ New Campaign</ButtonLink>
+          </div>
         </div>
         <Suspense
           fallback={<div className="text-text-muted">Loading campaigns...</div>}
         >
-          <Suspense
-            fallback={
-              <div className="text-text-muted">Loading campaigns...</div>
-            }
-          >
-            <CampaignListServer />
-          </Suspense>
+          <CampaignListServer />
         </Suspense>
       </section>
-      <section className="max-w-5xl mx-auto px-8 py-12">
-        <div className="flex items-center justify-between mb-10">
+
+      <section className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-10">
           <div>
-            <h1 className="text-3xl font-bold text-text-primary">
+            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
               Your Characters
             </h1>
             <p className="text-text-secondary mt-1">
               Manage your adventurers across all genres.
             </p>
           </div>
-          <ButtonLink href={ROUTES.newCharacter}>+ New Character</ButtonLink>
+          <div className="shrink-0">
+            <ButtonLink href={ROUTES.newCharacter}>+ New Character</ButtonLink>
+          </div>
         </div>
         <Suspense
           fallback={
