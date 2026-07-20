@@ -43,7 +43,7 @@ export interface ResolvedLore {
 
 export { SEPARATOR } from './game-master-instructions'
 
-import { GAME_MASTER_INSTRUCTIONS } from './game-master-instructions'
+import { buildGameMasterInstructions } from './game-master-instructions'
 import { resolveLore } from './lore-resolver'
 import { buildPlayerBlock, buildSecretBlock } from './section-builders'
 import { UNIVERSAL_SCENE_TAGS } from '../snapshot-schema'
@@ -72,6 +72,8 @@ export async function buildSystemPrompt(
     ? `## SESSION HISTORY\n${sessionSummary}`
     : ''
 
+  const validSceneTags = new Set([...lore.sceneTags, ...UNIVERSAL_SCENE_TAGS])
+
   const prompt = [
     lore.worldCore,
     lore.locationBlock,
@@ -83,13 +85,13 @@ export async function buildSystemPrompt(
     secretBlock,
     continuityBlock,
     languageBlock,
-    GAME_MASTER_INSTRUCTIONS,
+    buildGameMasterInstructions([...validSceneTags]),
   ]
     .filter(Boolean)
     .join('\n\n---\n\n')
 
   return {
     prompt,
-    validSceneTags: new Set([...lore.sceneTags, ...UNIVERSAL_SCENE_TAGS]),
+    validSceneTags,
   }
 }

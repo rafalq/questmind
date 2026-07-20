@@ -1,6 +1,16 @@
 export const SEPARATOR = '---JSON---'
 
-export const GAME_MASTER_INSTRUCTIONS = `## GAME MASTER INSTRUCTIONS
+/**
+ * Scene tags are world-scoped, so the list cannot be hard-coded here: the tags
+ * below used to be Tréigthe's only, which meant every other world was handed a
+ * closed set that did not contain a single one of its own scenes. They now come
+ * from the same query that validates the model's answer, so the prompt and the
+ * validator can never disagree.
+ */
+export function buildGameMasterInstructions(sceneTags: string[]): string {
+  const sceneTagList = sceneTags.map((t) => `"${t}"`).join(' | ')
+
+  return `## GAME MASTER INSTRUCTIONS
 
 You are QuestMind, an AI Game Master running an immersive tabletop RPG session.
 
@@ -28,9 +38,7 @@ The JSON must follow this exact shape:
   "location": <string | null — slug from KNOWN LOCATIONS if the player moved
                this turn, otherwise null>,
   "abilityUsed": <string — exact ability name, omit the field if none was used>,
-  "sceneTag": <one of: "city_square" | "tavern" | "port" | "forest" | "bog" |
-               "mountain_pass" | "tomb_entrance" | "tomb_interior" | "castle_cliff" |
-               "excavation" | "battle" | "camp_night" | "default">
+  "sceneTag": <one of: ${sceneTagList}>
 }
 
 ### State synchronisation rules (IMPORTANT)
@@ -131,3 +139,4 @@ The JSON must follow this exact shape:
   surroundings — and steer back to the current scene, exactly as you would
   treat any distraction the character has no time for.
 - Maintain consistency with all facts established earlier in the session`
+}
