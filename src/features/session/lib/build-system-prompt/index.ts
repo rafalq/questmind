@@ -2,7 +2,7 @@
 // Main entry point — composes lore sections into the final system prompt.
 import { resolveAbilities } from '@/features/character/lib/progression'
 import { buildAbilitiesSection } from '@/features/session/lib/build-system-prompt/abilities-section'
-import { AbilityDefinition, getWorld } from '@/worlds'
+import { AbilityDefinition, Genre, getWorld } from '@/worlds'
 import { buildLanguageSection } from './language-section'
 
 export interface PlayerContext {
@@ -16,10 +16,16 @@ export interface PlayerContext {
 }
 
 export interface BuildPromptOptions {
-  genre: 'fantasy' | 'sci-fi' | 'cyberpunk'
+  genre: Genre
   player: PlayerContext
   language: string
   sessionSummary?: string
+}
+
+export interface BuiltPrompt {
+  prompt: string
+  /** Scene tags this campaign's world allows, including the universal ones. */
+  validSceneTags: Set<string>
 }
 
 // Shape returned by lore-resolver — all optional since a session
@@ -32,6 +38,7 @@ export interface ResolvedLore {
   eventsBlock: string
   secretLore: string[]
   droppedSecretHints: string[]
+  sceneTags: string[]
 }
 
 export { SEPARATOR } from './game-master-instructions'
@@ -39,10 +46,11 @@ export { SEPARATOR } from './game-master-instructions'
 import { GAME_MASTER_INSTRUCTIONS } from './game-master-instructions'
 import { resolveLore } from './lore-resolver'
 import { buildPlayerBlock, buildSecretBlock } from './section-builders'
+import { UNIVERSAL_SCENE_TAGS } from '../snapshot-schema'
 
 export async function buildSystemPrompt(
   options: BuildPromptOptions
-): Promise<string> {
+): Promise<BuiltPrompt> {
   const { player, sessionSummary, language } = options
   const lore = await resolveLore(options)
   const secretBlock = buildSecretBlock(lore.secretLore, lore.droppedSecretHints)
@@ -64,7 +72,7 @@ export async function buildSystemPrompt(
     ? `## SESSION HISTORY\n${sessionSummary}`
     : ''
 
-  return [
+  const prompt = [
     lore.worldCore,
     lore.locationBlock,
     lore.knownLocationsBlock,
@@ -79,4 +87,9 @@ export async function buildSystemPrompt(
   ]
     .filter(Boolean)
     .join('\n\n---\n\n')
+
+  return {
+    prompt,
+    validSceneTags: new Set([...lore.sceneTags, ...UNIVERSAL_SCENE_TAGS]),
+  }
 }

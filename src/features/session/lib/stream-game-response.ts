@@ -9,7 +9,7 @@ import { eq, and } from 'drizzle-orm'
 import { type GameSnapshot } from '@/db/schema/session'
 import { type SessionContext } from './validate-session'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
-import { repairSnapshot } from './snapshot-schema'
+import { repairSnapshot, resolveSceneTag } from './snapshot-schema'
 import { SNAPSHOT_DELIMITER } from './stream-protocol'
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
@@ -26,6 +26,7 @@ import {
 } from '@/features/character/constants/progression'
 import { calculateMaxHp } from '@/features/character/lib/hp'
 import { persistLoreState } from '@/features/session/lib/lore-writer/persist-lore'
+import { Genre } from '@/features/campaign/constants/genres'
 
 const client = new Anthropic()
 
@@ -65,8 +66,8 @@ export function streamGameResponse({
       if (campaignCharacter.capstoneUsed) {
         activeAbilities = activeAbilities.filter((a) => !a.capstone)
       }
-      const systemPrompt = await buildSystemPrompt({
-        genre: campaign.genre as 'fantasy' | 'sci-fi' | 'cyberpunk',
+      const { prompt: systemPrompt, validSceneTags } = await buildSystemPrompt({
+        genre: campaign.genre as Genre,
         player: {
           campaignId: campaign.id,
           characterName: character.name,
@@ -225,6 +226,20 @@ export function streamGameResponse({
 
           if (repaired) {
             snapshot = repaired as GameSnapshot
+
+            // World-scoped, so it can't live in the schema: a tag that is valid
+            // in Neon Warszawa is a hallucination in Tréigthe. An unknown tag
+            // would point the UI at a background image that doesn't exist, so
+            // it reverts to the scene the player was already in.
+            snapshot.sceneTag = resolveSceneTag(
+              snapshot.sceneTag,
+              validSceneTags,
+              lastSnapshot?.sceneTag ?? 'default',
+              (tag) =>
+                console.error(
+                  `Unknown sceneTag "${tag}" for session ${sessionId}`
+                )
+            )
 
             if (repairs.length > 0) {
               console.error(

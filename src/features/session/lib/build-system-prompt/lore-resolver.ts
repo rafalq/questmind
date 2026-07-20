@@ -142,5 +142,6 @@ export async function resolveLore(
     eventsBlock,
     secretLore,
     droppedSecretHints,
+    sceneTags: [...new Set(worldLocations.map((l) => l.sceneTag))],
   }
 }
