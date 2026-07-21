@@ -27,6 +27,7 @@ import {
 import { calculateMaxHp } from '@/features/character/lib/hp'
 import { persistLoreState } from '@/features/session/lib/lore-writer/persist-lore'
 import { Genre } from '@/worlds/schema/primitives'
+import { recoverSnapshot } from './recover-snapshot'
 
 const client = new Anthropic()
 
@@ -79,8 +80,12 @@ export function streamGameResponse({
         },
         language: campaign.language,
       })
-      // TODO - delete this log once the prompt is stable and the model is behaving. It is
-      console.log('VALID SCENE TAGS:', [...validSceneTags].join(', '))
+
+      // Dev-only: the tag list is generated per world now, and reading it here
+      // is the fastest way to catch a world seeded with tags nothing renders.
+      if (process.env.NODE_ENV === 'development') {
+        console.log('VALID SCENE TAGS:', [...validSceneTags].join(', '))
+      }
 
       // Base prompt + optional current-state blob (both English).
       const baseSystem = lastSnapshot
@@ -114,6 +119,20 @@ export function streamGameResponse({
 
       const fullSystem = baseSystem + languageDirective + formatDirective
 
+      // The system prompt ends with the format contract, but "the end of the
+      // system prompt" is still before every message in the transcript. Recency
+      // belongs to the tail of the conversation, so the contract is repeated
+      // there — one short line, on the last thing the model reads. Cheap
+      // insurance against the failure the else-branch below has to clean up.
+      const messagesWithContract = claudeMessages.map((m, i) =>
+        i === claudeMessages.length - 1 && m.role === 'user'
+          ? {
+              ...m,
+              content: `${m.content}\n\n[Format reminder: end your reply with "${SEPARATOR}" on its own line, followed by the JSON state block.]`,
+            }
+          : m
+      )
+
       let fullText = ''
 
       // Track how many characters of narrative we have already sent
@@ -124,7 +143,7 @@ export function streamGameResponse({
         model: AI_MODEL,
         max_tokens: MAX_TOKENS.turn,
         system: fullSystem,
-        messages: claudeMessages,
+        messages: messagesWithContract,
       })
 
       for await (const chunk of stream) {
@@ -188,83 +207,24 @@ export function streamGameResponse({
         sentUpTo = fullText.length
       }
 
+      // Three ways to end up without usable state, handled separately below:
+      // malformed JSON, no state block at all, or well-formed JSON of the wrong
+      // shape. Only the last one is silent, and only the last one used to reach
+      // the database intact.
+      let rawSnapshot: unknown = null
+
       if (separatorIndex !== -1) {
         const jsonStr = fullText.slice(separatorIndex + SEPARATOR.length).trim()
         try {
-          // Two independent failures live here. JSON.parse catches malformed
-          // syntax — a stream cut mid-object. repairSnapshot catches the
-          // quieter one: syntactically valid JSON with the wrong shape
-          // ("inventory" as a string, hp as text), which parses cleanly and
-          // only explodes later, in the UI or in the database.
-          //
-          // A bad field does not cost the turn. Each field is validated on its
-          // own and reverts to its previous value when it fails, so one fumbled
-          // field degrades to "nothing changed there" rather than to a turn
-          // that mechanically never happened. Repairs are logged individually:
-          // a field that fails repeatedly is a prompt problem, and this is the
-          // only place that is visible.
-          const raw = JSON.parse(jsonStr)
-
-          const repairs: string[] = []
-          const repaired = repairSnapshot(
-            raw,
-            {
-              hp: lastSnapshot?.hp ?? 0,
-              maxHp: lastSnapshot?.maxHp ?? 0,
-              inventory: lastSnapshot?.inventory ?? [],
-              quests: lastSnapshot?.quests ?? [],
-              npcMet: [],
-              location: null,
-              abilityUsed: undefined,
-              sceneTag: lastSnapshot?.sceneTag ?? 'default',
-            },
-            (field, received) => {
-              repairs.push(field)
-              console.error(
-                `Snapshot field repaired: ${field} for session ${sessionId} —`,
-                JSON.stringify(received)?.slice(0, 200)
-              )
-            }
-          )
-
-          if (repaired) {
-            snapshot = repaired as GameSnapshot
-
-            // World-scoped, so it can't live in the schema: a tag that is valid
-            // in Neon Warszawa is a hallucination in Tréigthe. An unknown tag
-            // would point the UI at a background image that doesn't exist, so
-            // it reverts to the scene the player was already in.
-            snapshot.sceneTag = resolveSceneTag(
-              snapshot.sceneTag,
-              validSceneTags,
-              lastSnapshot?.sceneTag ?? 'default',
-              (tag) =>
-                console.error(
-                  `Unknown sceneTag "${tag}" for session ${sessionId}`
-                )
-            )
-
-            if (repairs.length > 0) {
-              console.error(
-                `Snapshot repaired (${repairs.join(', ')}) for session ${sessionId}`
-              )
-            }
-          } else {
-            // Not an object at all — an array, a string, a number. Nothing to
-            // salvage field by field, so the turn is dropped like a parse error.
-            console.error(
-              `Snapshot was not an object for session ${sessionId}:`,
-              jsonStr.slice(0, 200)
-            )
-          }
+          rawSnapshot = JSON.parse(jsonStr)
         } catch {
           console.error('Failed to parse game snapshot:', jsonStr)
         }
       } else {
         // No separator at all. The model never emitted the state block, so this
-        // turn silently updates nothing — no HP, no abilityUsed, no XP — because
-        // snapshot stays null. The visible symptom is prose ending mid-word; the
-        // invisible one is a turn that mechanically never happened.
+        // turn would silently update nothing — no HP, no abilityUsed, no XP.
+        // The visible symptom is prose ending mid-word; the invisible one is a
+        // turn that mechanically never happened.
         console.error(
           `No separator in model output (${fullText.length} chars) for session ${sessionId}. Snapshot lost.`
         )
@@ -273,6 +233,89 @@ export function streamGameResponse({
         // (—JSON—) would be invisible to indexOf while looking correct to a
         // human reading the log.
         console.error('TAIL:', JSON.stringify(fullText.slice(-150)))
+
+        // Second chance. Regenerating the turn would rewrite prose the player
+        // has already read, so ask only for the state that prose implies. One
+        // extra call in a rare case, against a turn that otherwise never
+        // happened mechanically. Returns unvalidated JSON — it goes through the
+        // same repair pass below as a normal turn — and never throws.
+        rawSnapshot = await recoverSnapshot({
+          client,
+          model: AI_MODEL,
+          maxTokens: MAX_TOKENS.turn,
+          narrative: fullText.trim(),
+          lastSnapshot,
+          sessionId,
+        })
+
+        if (rawSnapshot) {
+          console.error(
+            `Snapshot recovered by follow-up call for session ${sessionId}`
+          )
+        }
+      }
+
+      if (rawSnapshot) {
+        // JSON.parse above catches malformed syntax. This catches the quieter
+        // failure: syntactically valid JSON with the wrong shape ("inventory"
+        // as a string, hp as text), which parses cleanly and only explodes
+        // later, in the UI or in the database.
+        //
+        // A bad field does not cost the turn. Each field is validated on its
+        // own and reverts to its previous value when it fails, so one fumbled
+        // field degrades to "nothing changed there" rather than to a turn that
+        // mechanically never happened. Repairs are logged individually: a field
+        // that fails repeatedly is a prompt problem, and this is the only place
+        // that is visible.
+        const repairs: string[] = []
+        const repaired = repairSnapshot(
+          rawSnapshot,
+          {
+            hp: lastSnapshot?.hp ?? 0,
+            maxHp: lastSnapshot?.maxHp ?? 0,
+            inventory: lastSnapshot?.inventory ?? [],
+            quests: lastSnapshot?.quests ?? [],
+            npcMet: [],
+            location: null,
+            abilityUsed: undefined,
+            sceneTag: lastSnapshot?.sceneTag ?? 'default',
+          },
+          (field, received) => {
+            repairs.push(field)
+            console.error(
+              `Snapshot field repaired: ${field} for session ${sessionId} —`,
+              JSON.stringify(received)?.slice(0, 200)
+            )
+          }
+        )
+
+        if (repaired) {
+          snapshot = repaired as GameSnapshot
+
+          // World-scoped, so it can't live in the schema: a tag that is valid
+          // in Neon Warszawa is a hallucination in Tréigthe. An unknown tag
+          // would point the UI at a background image that doesn't exist, so
+          // it reverts to the scene the player was already in.
+          snapshot.sceneTag = resolveSceneTag(
+            snapshot.sceneTag,
+            validSceneTags,
+            lastSnapshot?.sceneTag ?? 'default',
+            (tag) =>
+              console.error(
+                `Unknown sceneTag "${tag}" for session ${sessionId}`
+              )
+          )
+
+          if (repairs.length > 0) {
+            console.error(
+              `Snapshot repaired (${repairs.join(', ')}) for session ${sessionId}`
+            )
+          }
+        } else {
+          // Not an object at all — an array, a string, a number. Nothing to
+          // salvage field by field, so the turn is dropped like a parse error.
+          console.error(`Snapshot was not an object for session ${sessionId}`)
+        }
       }
 
       // Default the mirror as soon as we have a snapshot: the server-authoritative
