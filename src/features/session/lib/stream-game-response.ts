@@ -184,10 +184,14 @@ export function streamGameResponse({
       }
 
       const final = await stream.finalMessage()
+
+      // TODO delete this log once the model is reliably producing a separator and JSON every time. The model has been trained on thousands of turns that end with a separator, so it should never stop without one — but it does, and the only way to catch it is to log the stop reason here.
       console.log(
         'STOP REASON:',
         final.stop_reason,
-        '| tokens:',
+        '| in:',
+        final.usage.input_tokens,
+        '| out:',
         final.usage.output_tokens
       )
 
