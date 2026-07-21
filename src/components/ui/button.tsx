@@ -1,4 +1,5 @@
 import { type ButtonHTMLAttributes } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 type Variant = 'outline' | 'ghost' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
@@ -38,12 +39,13 @@ export default function Button({
   return (
     <button
       disabled={disabled || loading}
-      className={`
-        tracking-wider transition-all disabled:cursor-not-allowed cursor-pointer
-        ${variantClasses[variant]}
-        ${sizeClasses[size]}
-        ${className}
-      `}
+      className={twMerge(
+        'cursor-pointer tracking-wider transition-all disabled:cursor-not-allowed',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        variantClasses[variant],
+        sizeClasses[size],
+        className
+      )}
       {...props}
     >
       {loading && loadingText ? loadingText : children}

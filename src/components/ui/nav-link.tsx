@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { twMerge } from 'tailwind-merge'
 
 type NavLinkProps = {
   href: string
@@ -14,7 +15,11 @@ export default function NavLink({
   return (
     <Link
       href={href}
-      className={`text-sm tracking-wider text-text-secondary hover:text-accent transition-colors ${className} flex items-center gap-2`}
+      className={twMerge(
+        'flex items-center gap-2 text-sm tracking-wider text-text-secondary transition-colors hover:text-accent',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        className
+      )}
     >
       {children}
     </Link>
