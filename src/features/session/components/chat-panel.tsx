@@ -110,17 +110,15 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
 
   return (
     <div
-      className="flex flex-col flex-1 min-h-0 relative"
-      style={{
-        fontFamily: genreFont[genre],
-        backgroundColor: genreBg[genre],
-      }}
+      data-genre={genre}
+      className="relative flex min-h-0 flex-1 flex-col bg-bg-chat"
+      style={{ fontFamily: genreFont[genre] }}
     >
       {/* Message list */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-6 py-8 scrollbar-subtle"
+        className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 scrollbar-subtle"
       >
         {/* Shared column: narration and player turns sit on the same axis,
             so collapsing the stats panel adds margin, not sprawl. */}
@@ -167,10 +165,10 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
             isAtBottomRef.current = true
             setIsAtBottom(true)
           }}
-          className="absolute bottom-24 right-1/2 flex items-center gap-2 p-1 text-xs bg-bg-surface border border-accent text-text-primary hover:bg-bg-elevated hover:border-accent-hover transition-colors rounded-full"
+          className="absolute bottom-28 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border border-accent bg-bg-surface p-1.5 text-xs text-accent transition-colors hover:border-accent-hover hover:bg-bg-elevated"
           aria-label="Jump to bottom"
         >
-          <IconArrowNarrowDownDashed stroke={2} color="#c9a84c" />
+          <IconArrowNarrowDownDashed stroke={2} />
         </button>
       )}
 
@@ -193,7 +191,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
             disabled={!input.trim() || isStreaming}
             loading={isStreaming}
             loadingText="..."
-            className="self-end shrink-0 py-4.5 px-8"
+            className="self-end shrink-0 px-4 py-3 sm:px-8 sm:py-4.5"
             aria-label="Send action"
             title="Send (Enter)"
           >
