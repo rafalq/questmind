@@ -28,6 +28,7 @@ import {
 } from '@tabler/icons-react'
 import { useState } from 'react'
 import CollapsibleSection from '@/components/ui/collapsible-section'
+import { SceneBanner } from './scene-banner'
 
 type Character = typeof charactersTable.$inferSelect
 
@@ -68,6 +69,7 @@ export default function StatsPanel({
   const inventory = snapshot?.inventory ?? []
   const quests = snapshot?.quests ?? []
   const hpPercent = Math.max(0, Math.min(100, (hp / maxHp) * 100))
+  const genre = getWorld(character.world).genre
 
   const hpColor =
     hpPercent > 60
@@ -108,7 +110,8 @@ export default function StatsPanel({
           Level {level} · Tier {tier}
         </p>
       </div>
-
+      {/* Scene images */}
+      <SceneBanner genre={genre} sceneTag={snapshot?.sceneTag ?? null} />
       {/* HP bar */}
       <div>
         <div className="flex items-baseline justify-between mb-2">
