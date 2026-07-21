@@ -1,10 +1,8 @@
 // src/features/game/lib/build-system-prompt/index.ts
 // Main entry point — composes lore sections into the final system prompt.
-import { resolveAbilities } from '@/features/character/lib/progression'
 import { buildAbilitiesSection } from '@/features/session/lib/build-system-prompt/abilities-section'
 import { AbilityDefinition, Genre, getWorld } from '@/worlds'
 import { buildLanguageSection } from './language-section'
-import { genreSceneTags } from '@/worlds/schema/scenes'
 
 export interface PlayerContext {
   campaignId: string
@@ -44,6 +42,7 @@ export interface ResolvedLore {
 
 export { SEPARATOR } from './game-master-instructions'
 
+import { genreSceneTags } from '@/worlds/schema/scenes'
 import { buildGameMasterInstructions } from './game-master-instructions'
 import { resolveLore } from './lore-resolver'
 import { buildPlayerBlock, buildSecretBlock } from './section-builders'
