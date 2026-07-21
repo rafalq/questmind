@@ -37,7 +37,14 @@ const fieldSchemas = {
   quests: z.array(questSchema),
   npcMet: z.array(z.string()),
   location: z.string().nullable(),
-  abilityUsed: z.string().optional(),
+  // The model sends null when no ability was used — accept it and normalise to
+  // undefined, so the "omit the field entirely" instruction and the null it
+  // actually sends both land in the same place. Without this, every ordinary
+  // turn logged a repair and drowned out the ones that matter.
+  abilityUsed: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? undefined),
   sceneTag: z.string().min(1),
 } as const
 
