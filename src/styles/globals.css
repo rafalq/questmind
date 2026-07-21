@@ -35,6 +35,7 @@
   --color-accent-fg: var(--qm-accent-fg);
   --color-border: var(--qm-border);
   --color-border-subtle: var(--qm-border-subtle);
+  --breakpoint-xs: 25rem;
 }
 
 /*

@@ -7,11 +7,19 @@ export const genreFont: Record<Genre, string> = {
   cyberpunk: 'var(--font-share-tech-mono)',
 }
 
-export const genreBg: Record<Genre, string> = {
-  fantasy: '#1a1208',
-  'sci-fi': '#080f1a',
-  cyberpunk: '#12081a',
-}
+/*
+ * genreBg used to live here as a single hex value per genre, applied as an
+ * inline backgroundColor. Inline styles sit outside the token system, so every
+ * surface using it — chat panel, cards, both modals — stayed dark when the
+ * theme toggle switched to light, while the text on top of it turned dark too.
+ *
+ * The tint is now --qm-bg-genre in globals.css, with a value per genre per
+ * theme, scoped by a data-genre attribute. Usage:
+ *
+ *   <div data-genre={genre} className="bg-bg-genre">
+ *
+ * The font stays here because a typeface does not change with the theme.
+ */
 
 // prywatna mapa — na zewnątrz używaj <GenreIcon>, nie surowej mapy
 const genreIconMap: Record<Genre, React.FC<{ size?: number }>> = {

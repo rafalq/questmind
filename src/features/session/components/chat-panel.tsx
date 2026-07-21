@@ -10,7 +10,7 @@ import {
 } from 'react'
 import MessageBubble from './message-bubble'
 import Button from '@/components/ui/button'
-import { genreFont, genreBg } from '@/lib/genre-theme'
+import { genreFont } from '@/lib/genre-theme'
 import { Genre } from '@/worlds/'
 import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
 import { diffSnapshots } from '../lib/snapshot-diff'
@@ -111,7 +111,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
   return (
     <div
       data-genre={genre}
-      className="relative flex min-h-0 flex-1 flex-col bg-bg-chat"
+      className="relative flex min-h-0 flex-1 flex-col bg-bg-genre"
       style={{ fontFamily: genreFont[genre] }}
     >
       {/* Message list */}

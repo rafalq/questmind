@@ -1,7 +1,7 @@
 'use client'
 
-import { genreBg, genreFont, GenreIcon } from '@/lib/genre-theme'
-import { useEffect, useState } from 'react'
+import { genreFont, GenreIcon } from '@/lib/genre-theme'
+import { useEffect, useId, useRef, useState } from 'react'
 import {
   computeTier,
   effectiveAttributes,
@@ -79,7 +79,7 @@ function SectionLabel({
   label: string
 }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-text-muted uppercase tracking-widest mb-3">
+    <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary">
       {icon}
       {label}
     </div>
@@ -94,14 +94,15 @@ function ModalHeader({
   onClose: () => void
 }) {
   return (
-    <div className="flex items-center justify-between p-6 border-b border-border/50">
-      <div className="flex items-center gap-2 text-xs text-text-muted uppercase tracking-widest">
+    <div className="flex items-center justify-between border-b border-border/50 p-4 sm:p-6">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-text-secondary">
         <GenreIcon genre={genre} />
         {genre}
       </div>
       <button
+        type="button"
         onClick={onClose}
-        className="text-text-muted hover:text-text-primary transition-colors"
+        className="-m-2 p-2 text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-label="Close"
       >
         <IconX size={18} />
@@ -114,21 +115,34 @@ function CharacterSummary({
   character,
   level,
   tier,
+  titleId,
 }: {
   character: CharacterDetail
   level: number
   tier: number
+  titleId: string
 }) {
   return (
     <div>
-      <h2 className="text-2xl font-bold text-text-primary">{character.name}</h2>
-      <p className="text-sm text-text-secondary mt-1">
+      <h2
+        id={titleId}
+        className="wrap-break-word text-xl font-bold text-text-primary sm:text-2xl"
+      >
+        {character.name}
+      </h2>
+      <p className="mt-1 text-sm text-text-secondary">
         {getRaceLabel(character.world, character.race)} ·{' '}
         {getClassLabel(character.world, character.characterClass)}
       </p>
-      <p className="text-xs text-text-muted mt-1">
+      <p className="mt-1 text-xs text-text-muted">
         Level {level} · Tier {tier} · {character.characterXp} XP ·{' '}
-        <span className={character.isAlive ? 'text-accent' : 'text-red-500'}>
+        <span
+          className={
+            character.isAlive
+              ? 'text-accent'
+              : 'font-semibold text-red-600 dark:text-red-400'
+          }
+        >
           {character.isAlive ? 'Alive' : 'Dead'}
         </span>
       </p>
@@ -150,7 +164,9 @@ function AttributeGrid({
   return (
     <div>
       <SectionLabel icon={<IconStar size={13} />} label="Attributes" />
-      <div className="grid grid-cols-2 gap-2">
+      {/* One column on the narrowest phones: two 3-character labels plus a
+          number do not fit side by side at 360px without truncating. */}
+      <div className="grid grid-cols-1 gap-2 xs:grid-cols-2 sm:grid-cols-2">
         {/* Iterate the registry's labels, not the object built from DB rows:
             that gives the world's intended order rather than Postgres's. */}
         {(Object.keys(labels) as Attribute[]).map((key) => {
@@ -161,19 +177,21 @@ function AttributeGrid({
           return (
             <div
               key={key}
-              className={`flex items-center justify-between px-3 py-2 border ${
-                isKey ? 'border-accent/40' : 'border-border/50'
+              className={`flex items-center justify-between gap-2 border px-3 py-2 ${
+                isKey ? 'border-accent/40 bg-accent/5' : 'border-border/50'
               }`}
             >
               <span
-                className={`text-xs ${
+                className={`truncate text-xs ${
                   isKey ? 'text-accent' : 'text-text-secondary'
                 }`}
               >
                 {labels[key]}
               </span>
+              {/* tabular-nums so the column of values does not jitter between
+                  one- and two-digit scores. */}
               <span
-                className={`text-sm font-bold ${
+                className={`shrink-0 text-sm font-bold tabular-nums ${
                   isKey ? 'text-accent' : 'text-text-primary'
                 }`}
               >
@@ -185,12 +203,12 @@ function AttributeGrid({
       </div>
 
       {/* Derived, not stored: maxHp follows endurance, which grows per level. */}
-      <div className="flex items-center justify-between px-3 py-2 mt-2 border border-border/50">
+      <div className="mt-2 flex items-center justify-between gap-2 border border-border/50 px-3 py-2">
         <span className="flex items-center gap-1.5 text-xs text-text-secondary">
           <IconHeart size={12} />
           Max HP
         </span>
-        <span className="text-sm font-bold text-text-primary tabular-nums">
+        <span className="shrink-0 text-sm font-bold tabular-nums text-text-primary">
           {maxHp}
         </span>
       </div>
@@ -228,19 +246,19 @@ function AbilityList({ abilities }: { abilities: AbilityDefinition[] }) {
                   type="button"
                   onClick={() => toggle(ability.value)}
                   aria-expanded={isOpen}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
                 >
-                  <IconBolt size={13} className="shrink-0 text-accent/60" />
+                  <IconBolt size={13} className="shrink-0 text-accent" />
                   <span className="flex-1">{ability.name}</span>
                   {cost && (
-                    <span className="text-xs text-red-400/70 shrink-0">
+                    <span className="shrink-0 text-xs text-red-600 dark:text-red-400">
                       {cost}
                     </span>
                   )}
                 </button>
 
                 {isOpen && (
-                  <p className="text-xs text-text-muted px-3 pb-2 pl-8 leading-snug">
+                  <p className="px-3 pb-2 pl-8 text-xs leading-snug text-text-muted">
                     {ability.description}
                   </p>
                 )}
@@ -256,6 +274,9 @@ function AbilityList({ abilities }: { abilities: AbilityDefinition[] }) {
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 export default function CharacterDetailModal({ character, onClose }: Props) {
+  const titleId = useId()
+  const dialogRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -263,6 +284,13 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
+
+  // Move focus into the dialog on open, so keyboard and screen-reader users
+  // land inside it rather than continuing from the card behind. Reading and
+  // calling a DOM method is an external-system effect, not derived state.
+  useEffect(() => {
+    dialogRef.current?.focus()
+  }, [])
 
   // Everything below derives from characterXp. Nothing about progression is
   // stored, so a levelled character shows its current numbers rather than its
@@ -291,23 +319,38 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
   const maxHp = calculateMaxHp(attributes.endurance)
 
   return (
+    // The scrim is black in both themes on purpose — it is a dimmer, not a
+    // surface, so it does not follow the palette.
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto border border-border flex flex-col"
-        style={{
-          fontFamily: genreFont[character.genre],
-          backgroundColor: genreBg[character.genre],
-        }}
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        // data-genre scopes --qm-bg-genre, which has a value per theme. This
+        // is deliberately NOT .on-media: unlike a card, the sheet has no
+        // artwork under it, so it should be a light surface in the light
+        // theme and take the ordinary text tokens. The old inline
+        // backgroundColor from genreBg pinned it dark in both themes, which is
+        // what left near-black text sitting on a near-black panel.
+        data-genre={character.genre}
+        className="relative flex max-h-[90dvh] w-full max-w-lg flex-col overflow-y-auto border border-border bg-bg-genre shadow-xl focus:outline-none"
+        style={{ fontFamily: genreFont[character.genre] }}
         onClick={(e) => e.stopPropagation()}
       >
         <ModalHeader genre={character.genre} onClose={onClose} />
 
-        <div className="p-6 flex flex-col gap-6">
-          <CharacterSummary character={character} level={level} tier={tier} />
+        <div className="flex flex-col gap-6 p-4 sm:p-6">
+          <CharacterSummary
+            character={character}
+            level={level}
+            tier={tier}
+            titleId={titleId}
+          />
 
           <AttributeGrid
             attributes={attributes}
