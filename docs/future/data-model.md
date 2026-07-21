@@ -240,3 +240,22 @@ Also worth covering: the streaming hold-back that withholds `SEPARATOR.length - 
 **Fix:** add `namingExamples` (or a short `namingGuidance` string) to `WorldDefinitionSchema`, populate it per world, and turn `NARRATIVE_RULES` into `buildNarrativeRules(world)`. The rest of the block is genuinely world-agnostic and stays as it is.
 
 **Trigger:** the first session played in Polish in The Drift or Neon Warszawa. If the model handles the names cleanly there, this stays deferred; if it starts translating Syrenka or declining "the Static" into something unreadable, it moves up.
+
+## 15. 🔲 Player notebook in the session screen
+
+**Idea:** a persistent, player-authored notes panel in the game screen — a place to record NPC names, rumours, unresolved threads and intentions ("go back to the smith in Cathair Luaith"). In solo tabletop play this is what the paper notepad next to the table does; QuestMind currently has no equivalent, and the chat log is the only place that information lives.
+
+**Why the chat log is not enough:** it is chronological and unsearchable. A session past ~40 exchanges buries an NPC name mentioned once in turn 6 under thousands of tokens of narrative the player has already read. The information is present but not retrievable, which is functionally the same as absent.
+
+**Why it was deferred:** it maps to no FR or NFR in the requirements specification. Adding it before submission would spend the visual-layer and testing weeks on scope that the report cannot claim delivery credit for, at the cost of the styling pass that every screen — the chat screen especially — visibly needs.
+
+**Two versions, and the distance between them is the whole point:**
+
+1. **Local notebook** — a textarea persisted per campaign, invisible to the model. Small: one column (or one table, if entries are to be discrete and timestamped), one panel, autosave. No prompt surface, no schema risk.
+2. **Notebook the GM can read** — notes injected into the system prompt as declared player intent and player-held knowledge. This is a different feature. It touches `buildSystemPrompt`, competes for the same token budget the lore resolver already spends 1,500–2,500 tokens of, and hands the model a free-form, player-controlled text channel directly into its instructions — which is a prompt-injection surface as much as a gameplay one ("the smith gives me his sword").
+
+The temptation once (1) exists is to slide into (2). That slide is the actual risk, because it lands on the prompt and validation path late, after the state pipeline is stable and tested.
+
+**Where it connects to work already done:** the FR-006 token measurements (Drift session: 4,738 → 11,829 input tokens over 14 turns, ~546/turn) established that full history fits comfortably inside the 200k window and that cost, not context, is the practical limit. A player notebook is the interesting counter-proposal to full history: a compressed, human-curated summary of what matters, at a fraction of the tokens — and unlike automatic summarisation, the compression is done by the person who knows which details were significant. Worth stating in **Further Development** as the natural continuation of that finding rather than as a UI nicety.
+
+**Trigger:** post-submission, and only in version (1) first. Version (2) should not be attempted until the state block has migrated to tool use (item 11), since that is what makes the prompt path safe to extend.
