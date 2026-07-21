@@ -4,6 +4,7 @@ import { resolveAbilities } from '@/features/character/lib/progression'
 import { buildAbilitiesSection } from '@/features/session/lib/build-system-prompt/abilities-section'
 import { AbilityDefinition, Genre, getWorld } from '@/worlds'
 import { buildLanguageSection } from './language-section'
+import { genreSceneTags } from '@/worlds/schema/scenes'
 
 export interface PlayerContext {
   campaignId: string
@@ -46,7 +47,6 @@ export { SEPARATOR } from './game-master-instructions'
 import { buildGameMasterInstructions } from './game-master-instructions'
 import { resolveLore } from './lore-resolver'
 import { buildPlayerBlock, buildSecretBlock } from './section-builders'
-import { UNIVERSAL_SCENE_TAGS } from '@/worlds/schema/scenes'
 
 export async function buildSystemPrompt(
   options: BuildPromptOptions
@@ -72,7 +72,10 @@ export async function buildSystemPrompt(
     ? `## SESSION HISTORY\n${sessionSummary}`
     : ''
 
-  const validSceneTags = new Set([...lore.sceneTags, ...UNIVERSAL_SCENE_TAGS])
+  const validSceneTags = new Set([
+    ...lore.sceneTags,
+    ...genreSceneTags(options.genre),
+  ])
 
   const prompt = [
     lore.worldCore,

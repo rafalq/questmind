@@ -6,15 +6,7 @@ import { type Genre } from './primitives'
  * tags are NOT listed here — they live on locationsTable.sceneTag, seeded per
  * world, and are read back by the lore resolver. One tag, one source.
  */
-export const UNIVERSAL_SCENE_TAGS = [
-  'default',
-  'battle',
-  'camp_night',
-  'tavern',
-  'forest',
-  'bog',
-  'tomb_interior',
-] as const
+export const UNIVERSAL_SCENE_TAGS = ['default'] as const
 
 /** tag → background image, per genre. Missing entries fall back to default. */
 export const SCENE_IMAGES: Record<Genre, Record<string, string>> = {
