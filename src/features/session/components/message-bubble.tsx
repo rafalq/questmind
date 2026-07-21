@@ -27,7 +27,7 @@ export default function MessageBubble({
 
   return (
     <div
-      className={`flex ${isAssistant ? 'justify-start' : 'justify-end'} mb-4`}
+      className={`flex ${isAssistant ? 'justify-start' : 'justify-end'} ${isNarration ? 'mb-8' : 'my-10'}`}
       style={{ fontFamily: genreFont[genre] }}
     >
       <div
