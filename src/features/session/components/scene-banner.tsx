@@ -26,17 +26,17 @@ export function SceneBanner({
         alt=""
         aria-hidden
         fill
-        sizes="288px"
+        // The panel is a drawer below lg (up to 20rem) and a fixed 18rem
+        // column above it, so the intrinsic width differs by breakpoint.
+        sizes="(max-width: 1024px) 20rem, 18rem"
         priority={false}
-        className="object-cover"
-        style={{ animation: 'scene-fade 500ms ease-out' }}
+        className="animate-scene-fade object-cover"
       />
 
-      {/* Bottom fade so the panel below reads as part of the same surface */}
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-background to-transparent" />
-      <style>{`
-        @keyframes scene-fade { from { opacity: 0 } to { opacity: 1 } }
-      `}</style>
+      {/* Bottom fade so the panel below reads as part of the same surface.
+          Must match the panel's own background token — a hardcoded or
+          non-existent colour here breaks the seam in one of the themes. */}
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-bg-surface to-transparent" />
     </div>
   )
 }

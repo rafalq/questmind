@@ -36,7 +36,7 @@ export default function MessageBubble({
             ? 'w-full text-base leading-loose text-text-secondary'
             : `max-w-[85%] px-4 py-3 text-sm leading-relaxed ${
                 isAssistant
-                  ? 'bg-surface border border-border text-text-primary'
+                  ? 'bg-bg-surface border border-border text-text-primary'
                   : 'bg-accent text-accent-fg'
               }`
         }
@@ -47,7 +47,7 @@ export default function MessageBubble({
           </div>
         )}
         {!isNarration && !isAssistant && (
-          <div className="text-xs text-accent-fg/70 mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
+          <div className="text-xs text-accent-fg/85 mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
             <IconUser size={16} /> {characterName ?? 'You'}
           </div>
         )}

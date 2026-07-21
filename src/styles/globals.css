@@ -17,6 +17,7 @@
   --color-bg-base: var(--qm-bg-base);
   --color-bg-surface: var(--qm-bg-surface);
   --color-bg-elevated: var(--qm-bg-elevated);
+  --color-bg-chat: var(--qm-bg-chat);
   --color-text-primary: var(--qm-text-primary);
   --color-text-secondary: var(--qm-text-secondary);
   --color-text-muted: var(--qm-text-muted);
@@ -44,6 +45,7 @@
   --qm-accent-fg: #0a0805;
   --qm-border: #2a2016;
   --qm-border-subtle: #1a1508;
+  --qm-bg-chat: var(--qm-bg-base);
 
   /* Image dimming in the hero — stronger in dark */
   --qm-image-overlay: 0 0 0 / 0.7;
@@ -60,9 +62,9 @@
   --qm-bg-surface: #f2ebe0;
   --qm-bg-elevated: #fff;
   --qm-text-primary: #1a1508;
-  --qm-text-secondary: #7a5e30;
-  --qm-text-muted: #a08848;
-  --qm-accent: #c49535;
+  --qm-text-secondary: #5a4520;
+  --qm-text-muted: #6b5836;
+  --qm-accent: #8a6a1e;
   --qm-accent-hover: #d4aa4a;
   --qm-accent-fg: #fff;
   --qm-border: #d4c4a0;
@@ -140,4 +142,49 @@ body {
 .scrollbar-subtle {
   scrollbar-color: var(--qm-border) transparent;
   scrollbar-width: thin;
+}
+
+/*
+ * Genre tints for the session screen. The chat surface is tinted per world,
+ * but the tint has to exist in both themes — a single hardcoded value is what
+ * made the chat panel ignore the toggle.
+ */
+.dark [data-genre='fantasy'] {
+  --qm-bg-chat: #0d0a06;
+}
+
+.dark [data-genre='sci-fi'] {
+  --qm-bg-chat: #070b0e;
+}
+
+.dark [data-genre='cyberpunk'] {
+  --qm-bg-chat: #0d0710;
+}
+
+.light [data-genre='fantasy'] {
+  --qm-bg-chat: #f8f2e6;
+}
+
+.light [data-genre='sci-fi'] {
+  --qm-bg-chat: #eef3f6;
+}
+
+.light [data-genre='cyberpunk'] {
+  --qm-bg-chat: #f6eef8;
+}
+
+/* Scene banner cross-fade — the <img> is remounted on scene change, so a
+   plain entry animation is enough; no transition state to manage. */
+@keyframes scene-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-scene-fade {
+  animation: scene-fade 500ms ease-out;
 }

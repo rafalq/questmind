@@ -20,7 +20,7 @@ export default function CollapsibleSection({
         type="button"
         onClick={() => setIsOpen((v) => !v)}
         aria-expanded={isOpen}
-        className="w-full flex items-center justify-between text-[10px] text-text-muted/60 hover:text-text-muted uppercase tracking-widest transition-colors mb-2"
+        className="mb-2 flex w-full items-center justify-between text-[10px] uppercase tracking-widest text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {label}
         <IconChevronDown
