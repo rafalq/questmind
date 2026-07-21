@@ -55,6 +55,10 @@ The JSON must follow this exact shape:
   using up, giving away, losing, or destroying an item, that item MUST be
   omitted from "inventory" — narrating its loss is not enough; the array itself
   must reflect it.
+  - Items can transform: when the narrative changes what an item IS — a folded
+  note that is read becomes "Note from D.", a sealed vial that is opened
+  becomes an empty vial — remove the old name and add the new one in the same
+  turn. The inventory always names things as the character now knows them.
 - "quests" is likewise the complete current quest list. A quest the player has
   finished has status "completed"; a newly started quest is added with status
   "active".
@@ -130,8 +134,15 @@ export const NARRATIVE_RULES = `## NARRATION RULES
 - Decline any name for grammatical case where the language requires it — Polish:
   "dla Duskborna", "wychodzisz z Baile Fola", "słowa Szarej Matki". If a kept
   name resists declension, leave it in the nominative rather than mangle it.
-- 2–4 paragraphs unless the action demands more
-- Engage at least two senses beyond sight in scene
+- Match the length and register of the reply to what the player did. A new
+  scene, a journey, a confrontation: 2–4 paragraphs, senses engaged, the world
+  present. A question, a quick look, a short exchange of words: answer it in
+  1–2 paragraphs and stop. Not every reply needs the weather.
+- When you do set a scene, engage at least two senses beyond sight — but
+  re-describe a place only when something about it has changed. The player is
+  still standing where you left them.
+- Do not open a reply with ambience when the player asked a direct question.
+  Answer first; let atmosphere follow if there is room for it.
 - Grammatical gender: keep gender agreement consistent for every character. In
   gendered languages (e.g. Polish), once you introduce an NPC as male or female,
   keep that gender for the rest of the session — a female character must never
