@@ -32,32 +32,34 @@ export default function CharacterCard({ character }: Props) {
   })
 
   const badge = (
+    // The card is a dark media surface in both themes, so a dark red would
+    // disappear here — red-400 reads on the overlay the way red-700 does not.
+    // The wrapper div that only held one flex child has gone: it added a
+    // nesting level and no layout.
     <div
-      className={`flex justify-center items-center gap-1.5 text-[0.625rem] px-2 py-0.5 ${
-        character.isAlive ? 'text-accent' : 'text-red-700'
+      className={`flex items-center gap-1.5 truncate text-[0.625rem] ${
+        character.isAlive ? 'text-accent' : 'text-red-400'
       }`}
     >
-      <div className="flex items-center gap-1">
-        {character.isAlive ? (
-          character.activeCampaign && (
-            <div className="flex items-center justify-start gap-1">
-              <Tooltip content="Active campaign" position="top">
-                {character.activeCampaign?.campaignName}
-              </Tooltip>
-            </div>
-          )
-        ) : (
-          <IconSkull stroke={2} size={12} color="red" />
-        )}
-      </div>
+      {character.isAlive ? (
+        character.activeCampaign && (
+          <Tooltip content="Active campaign" position="top">
+            {character.activeCampaign.campaignName}
+          </Tooltip>
+        )
+      ) : (
+        <IconSkull stroke={2} size={12} aria-label="Dead" />
+      )}
     </div>
   )
 
   const level = levelFromXp(character.characterXp)
 
   const footer = (
-    <div className="flex items-center justify-between">
-      <p className="text-text-muted text-xs">
+    // Wraps instead of overflowing: the resume button carries a campaign name
+    // of unknown length, and at 360px it will not sit beside the level line.
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <p className="whitespace-nowrap text-xs text-text-muted">
         Level {level} · {character.characterXp} XP
       </p>
       {character.activeCampaign && (
@@ -69,7 +71,9 @@ export default function CharacterCard({ character }: Props) {
           }}
           isActiveSession={!!character.activeCampaign}
         >
-          &quot;{character.activeCampaign.campaignName}&quot;{' '}
+          <span className="max-w-[12ch] truncate">
+            &quot;{character.activeCampaign.campaignName}&quot;
+          </span>
           <IconPlayerPlay stroke={2} size={12} />
         </ButtonPlayResume>
       )}
@@ -82,7 +86,11 @@ export default function CharacterCard({ character }: Props) {
     ] ?? IconUser
 
   const avatar = (
-    <div className="shrink-0 w-10 h-10 rounded-full border border-border flex items-center justify-center text-accent bg-bg-base/40">
+    // bg-bg-base/40 resolved to a translucent cream in the light theme — the
+    // pale disc visible over the artwork. The backing has to be dark in both
+    // themes, like everything else on this surface, so it is stated literally
+    // rather than taken from a theme token.
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-black/40 text-accent">
       <ClassIcon size={18} />
     </div>
   )

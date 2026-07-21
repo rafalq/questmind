@@ -64,16 +64,22 @@ export default function CampaignCard({
         lore ? <WorldLoreModal genre={campaign.genre} lore={lore} /> : undefined
       }
       meta={
-        <div className="flex items-center justify-center gap-1 text-accent">
+        // whitespace-nowrap on the row and a non-breaking space before the
+        // date: "Last played:" and the date belong on one line, and the meta
+        // slot is the narrowest thing in the header. justify-center was doing
+        // nothing useful here — the slot is sized by its content.
+        <div className="flex items-center gap-1 whitespace-nowrap text-accent">
           {campaign.lastPlayedAt ? (
             <>
-              <span>Last played: </span>
+              {/* The label is the first thing worth dropping on a narrow
+                  card; the date alone still reads. */}
+              <span className="hidden sm:inline">Last played:</span>
               <span className="font-medium">
                 {new Date(campaign.lastPlayedAt).toLocaleDateString('en-IE')}
               </span>
             </>
           ) : (
-            'Never played'
+            <span>Never played</span>
           )}
         </div>
       }

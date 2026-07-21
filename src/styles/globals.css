@@ -12,12 +12,21 @@
  * maps them onto Tailwind tokens. Previously this was
  * --color-bg-base: var(--color-bg-base), a variable pointing at itself —
  * a cycle that breaks down as soon as values are overridden.
+ *
+ * Worth knowing what `inline` means here, because it decides how theme
+ * overrides have to be written: Tailwind substitutes these mappings at build
+ * time, so the utility `text-text-primary` compiles to
+ * `color: var(--qm-text-primary)` — NOT `var(--color-text-primary)`.
+ * Nothing at runtime ever reads --color-*. Any scoped theme override must
+ * therefore redefine --qm-*, which utilities do read, and which cascades to
+ * descendants like any other custom property. See .on-media below.
  */
 @theme inline {
   --color-bg-base: var(--qm-bg-base);
   --color-bg-surface: var(--qm-bg-surface);
   --color-bg-elevated: var(--qm-bg-elevated);
   --color-bg-chat: var(--qm-bg-chat);
+  --color-bg-genre: var(--qm-bg-genre);
   --color-text-primary: var(--qm-text-primary);
   --color-text-secondary: var(--qm-text-secondary);
   --color-text-muted: var(--qm-text-muted);
@@ -45,10 +54,15 @@
   --qm-accent-fg: #0a0805;
   --qm-border: #2a2016;
   --qm-border-subtle: #1a1508;
-  --qm-bg-chat: var(--qm-bg-base);
 
-  /* Image dimming in the hero — stronger in dark */
-  --qm-image-overlay: 0 0 0 / 0.7;
+  /* Genre tints fall back to the page background until [data-genre] scopes
+     them; see the tint block near the end of this file. */
+  --qm-bg-chat: var(--qm-bg-base);
+  --qm-bg-genre: var(--qm-bg-base);
+
+  /* Scrim over artwork. Space-separated channels, no rgb() wrapper, so it can
+     be composed as rgb(var(--qm-image-overlay)) at the call site. */
+  --qm-image-overlay: 0 0 0 / 0.72;
 
   color-scheme: dark;
 }
@@ -56,6 +70,10 @@
 /*
  * LIGHT — the same values as the previous @media (prefers-color-scheme: light)
  * block, moved under the .light class so they respond to the toggle.
+ *
+ * Text and accent are darker than the original palette: the first pass used
+ * values picked against dark surfaces, which measured 2.3–2.4:1 on cream and
+ * failed WCAG AA. These clear 4.5:1 for body text and 4.9:1 for the accent.
  */
 .light {
   --qm-bg-base: #faf6ef;
@@ -65,33 +83,44 @@
   --qm-text-secondary: #5a4520;
   --qm-text-muted: #6b5836;
   --qm-accent: #8a6a1e;
-  --qm-accent-hover: #d4aa4a;
+
+  /* Darker than --qm-accent, not lighter: on a pale surface "stronger" reads
+     as darker, so the hover state has to move away from the background. */
+  --qm-accent-hover: #6f5416;
   --qm-accent-fg: #fff;
   --qm-border: #d4c4a0;
   --qm-border-subtle: #e8dcc8;
+  --qm-bg-chat: var(--qm-bg-base);
+  --qm-bg-genre: var(--qm-bg-base);
 
-  /* Dim images less in the light theme */
-  --qm-image-overlay: 0 0 0 / 0.5;
+  /* Slightly stronger than in dark. The artwork keeps light text on top of it
+     in both themes (see .on-media), so a lighter scrim here would cut contrast
+     rather than improve it — the opposite of the usual instinct. */
+  --qm-image-overlay: 0 0 0 / 0.78;
 
   color-scheme: light;
 }
 
 /*
- * .on-media — for content sitting ON TOP of an image (hero, world cards).
- * The background there is always dark regardless of the theme, so the text
- * has to stay light. Override the --color-* tokens directly, NOT --qm-*:
- * --color-text-primary is already substituted at :root, so descendants
- * inherit the resolved value and changing --qm-* here would do nothing.
+ * .on-media — for content sitting ON TOP of an image (hero, campaign and
+ * character cards, lore headers). The surface under it is dark in both
+ * themes, so the text has to stay light even while the rest of the page is
+ * in the light theme.
+ *
+ * These override --qm-*, not --color-*. Because of `@theme inline` above,
+ * utilities compile down to var(--qm-*) and never read --color-*, so
+ * redefining --color-* here would be inert — which is exactly why the cards
+ * kept rendering near-black text on dark artwork in the light theme.
  */
 .on-media {
-  --color-text-primary: #f4ecdb;
-  --color-text-secondary: #d8cbb0;
-  --color-text-muted: #b3a488;
-  --color-accent: #dcb75f;
-  --color-accent-hover: #ecc97c;
-  --color-accent-fg: #14100a;
-  --color-border: #6b5d43;
-  --color-border-subtle: #4a4030;
+  --qm-text-primary: #f4ecdb;
+  --qm-text-secondary: #d8cbb0;
+  --qm-text-muted: #b3a488;
+  --qm-accent: #dcb75f;
+  --qm-accent-hover: #ecc97c;
+  --qm-accent-fg: #14100a;
+  --qm-border: #6b5d43;
+  --qm-border-subtle: #4a4030;
 
   color-scheme: dark;
 }
@@ -145,32 +174,60 @@ body {
 }
 
 /*
- * Genre tints for the session screen. The chat surface is tinted per world,
- * but the tint has to exist in both themes — a single hardcoded value is what
- * made the chat panel ignore the toggle.
+ * Genre tints. Any element carrying data-genre becomes the tint scope for
+ * itself and its descendants: the chat surface (--qm-bg-chat) and the card
+ * backing behind artwork (--qm-bg-genre). Two values per genre, because a
+ * single hardcoded colour is what made these ignore the theme toggle.
+ *
+ * The dark values are the ones the old genreBg map used, so the dark theme
+ * looks exactly as it did before this refactor.
  */
 .dark [data-genre='fantasy'] {
   --qm-bg-chat: #0d0a06;
+  --qm-bg-genre: #1a1208;
 }
 
 .dark [data-genre='sci-fi'] {
   --qm-bg-chat: #070b0e;
+  --qm-bg-genre: #080f1a;
 }
 
 .dark [data-genre='cyberpunk'] {
   --qm-bg-chat: #0d0710;
+  --qm-bg-genre: #12081a;
 }
 
 .light [data-genre='fantasy'] {
   --qm-bg-chat: #f8f2e6;
+  --qm-bg-genre: #f8f2e6;
 }
 
 .light [data-genre='sci-fi'] {
   --qm-bg-chat: #eef3f6;
+  --qm-bg-genre: #eef3f6;
 }
 
 .light [data-genre='cyberpunk'] {
   --qm-bg-chat: #f6eef8;
+  --qm-bg-genre: #f6eef8;
+}
+
+/*
+ * A card is both a tint scope and a media surface. The tint only shows while
+ * artwork is missing or still loading, so it must not repaint the text — hence
+ * .on-media wins for text and border, and the tint applies to background only.
+ * Stated explicitly because the two rules above and .on-media have the same
+ * specificity, and relying on source order for that would be fragile.
+ */
+.on-media[data-genre] {
+  --qm-text-primary: #f4ecdb;
+  --qm-text-secondary: #d8cbb0;
+  --qm-text-muted: #b3a488;
+  --qm-accent: #dcb75f;
+  --qm-accent-hover: #ecc97c;
+  --qm-accent-fg: #14100a;
+  --qm-border: #6b5d43;
+  --qm-border-subtle: #4a4030;
 }
 
 /* Scene banner cross-fade — the <img> is remounted on scene change, so a
@@ -187,4 +244,10 @@ body {
 
 .animate-scene-fade {
   animation: scene-fade 500ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-scene-fade {
+    animation: none;
+  }
 }
