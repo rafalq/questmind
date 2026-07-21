@@ -1,4 +1,4 @@
-// src/features/game/lib/build-system-prompt/index.ts
+// src/features/session/lib/build-system-prompt/index.ts
 // Main entry point — composes lore sections into the final system prompt.
 import { buildAbilitiesSection } from '@/features/session/lib/build-system-prompt/abilities-section'
 import { AbilityDefinition, Genre, getWorld } from '@/worlds'
@@ -19,6 +19,13 @@ export interface BuildPromptOptions {
   player: PlayerContext
   language: string
   sessionSummary?: string
+  /**
+   * 'opening' omits the output contract: that message is prose only, with no
+   * separator and no state block. It still gets the lore and the narration
+   * rules, which is the whole point — the opening used to build its own prompt
+   * from the genre alone and invented a city that exists nowhere in the seed.
+   */
+  variant?: 'turn' | 'opening'
 }
 
 export interface BuiltPrompt {
@@ -43,14 +50,17 @@ export interface ResolvedLore {
 export { SEPARATOR } from './game-master-instructions'
 
 import { genreSceneTags } from '@/worlds/schema/scenes'
-import { buildGameMasterInstructions } from './game-master-instructions'
+import {
+  NARRATIVE_RULES,
+  buildGameMasterInstructions,
+} from './game-master-instructions'
 import { resolveLore } from './lore-resolver'
 import { buildPlayerBlock, buildSecretBlock } from './section-builders'
 
 export async function buildSystemPrompt(
   options: BuildPromptOptions
 ): Promise<BuiltPrompt> {
-  const { player, sessionSummary, language } = options
+  const { player, sessionSummary, language, variant = 'turn' } = options
   const lore = await resolveLore(options)
   const secretBlock = buildSecretBlock(lore.secretLore, lore.droppedSecretHints)
   const playerBlock = buildPlayerBlock(player)
@@ -66,15 +76,23 @@ export async function buildSystemPrompt(
       ? buildAbilitiesSection(classDef.label, player.abilities)
       : ''
 
-  const languageBlock = buildLanguageSection(language)
+  const languageBlock = buildLanguageSection(language, variant)
   const continuityBlock = sessionSummary
     ? `## SESSION HISTORY\n${sessionSummary}`
     : ''
 
+  // Location tags come from the seeded lore; the rest are whatever this genre
+  // has artwork for. Both sides of the same set: the prompt tells the model
+  // what it may say, and the caller validates the answer against it.
   const validSceneTags = new Set([
     ...lore.sceneTags,
     ...genreSceneTags(options.genre),
   ])
+
+  const instructionsBlock =
+    variant === 'opening'
+      ? NARRATIVE_RULES
+      : buildGameMasterInstructions([...validSceneTags])
 
   const prompt = [
     lore.worldCore,
@@ -87,11 +105,13 @@ export async function buildSystemPrompt(
     secretBlock,
     continuityBlock,
     languageBlock,
-    buildGameMasterInstructions([...validSceneTags]),
+    instructionsBlock,
   ]
     .filter(Boolean)
     .join('\n\n---\n\n')
 
+  // Returned even for the opening variant: harmless there, and it keeps the
+  // return shape the same for both callers.
   return {
     prompt,
     validSceneTags,

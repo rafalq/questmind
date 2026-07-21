@@ -4,8 +4,10 @@ import { messagesTable } from '@/db/schema'
 import { type GameSnapshot } from '@/db/schema/session'
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { genderToGrammar } from './build-system-prompt/section-builders'
+import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
 import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
 import { AbilityDefinition } from '@/worlds/schema'
+import { type Genre } from '@/worlds/schema/primitives'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -18,7 +20,9 @@ type Message = {
 
 type OpeningInput = {
   sessionId: string
-  genre: string
+  campaignId: string
+  world: string
+  genre: Genre
   language: string
   characterName: string
   characterClass: string
@@ -51,6 +55,8 @@ function genderLine(gender: string | null, characterName: string): string {
 export async function generateOpening(input: OpeningInput): Promise<string> {
   const {
     sessionId,
+    campaignId,
+    world,
     genre,
     language,
     characterName,
@@ -68,9 +74,36 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
   // real signal that play has begun.
   const isNewSession = !history.some((m) => m.role === 'user')
 
-  const prompt = isNewSession
-    ? buildIntroPrompt(
-        genre,
+  // The opening reads the same lore pipeline as the turn loop. It used to build
+  // its own prompt from `genre` alone, which meant the model had no world to
+  // open in and improvised one: it named a city that exists nowhere in the
+  // seed, and invented a war in a setting whose catastrophe is the death of the
+  // gods. The very next turn — which does go through this pipeline — correctly
+  // used the real city, which is what made the cause obvious.
+  //
+  // That mattered more than an ordinary hallucination: the opening sets the
+  // tone of the whole session and is the first thing a new player reads.
+  //
+  // variant: 'opening' omits the output contract. This message is prose only —
+  // no separator, no state block — and handing the model a JSON contract it is
+  // then told to ignore is a contradiction, not an instruction.
+  const { prompt: lorePrompt } = await buildSystemPrompt({
+    genre,
+    player: {
+      campaignId,
+      characterName,
+      race: characterRace,
+      characterClass,
+      gender,
+      world,
+      abilities,
+    },
+    language,
+    variant: 'opening',
+  })
+
+  const task = isNewSession
+    ? buildIntroTask(
         language,
         characterName,
         characterClass,
@@ -79,14 +112,7 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
         abilities,
         lastSnapshot
       )
-    : buildRecapPrompt(
-        genre,
-        language,
-        characterName,
-        gender,
-        history,
-        lastSnapshot
-      )
+    : buildRecapTask(language, characterName, gender, history, lastSnapshot)
 
   const response = await client.messages.create({
     model: AI_MODEL,
@@ -94,25 +120,45 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     // languages (e.g. Polish) overrun a 400-token ceiling and get cut
     // mid-sentence before the opening finishes.
     max_tokens: MAX_TOKENS.opening,
-    messages: [{ role: 'user', content: prompt }],
+    system: lorePrompt,
+    messages: [{ role: 'user', content: task }],
   })
 
-  const text =
-    response.content[0].type === 'text' ? response.content[0].text : ''
+  const text = response.content
+    .map((block) => (block.type === 'text' ? block.text : ''))
+    .join('')
 
-  // Save as assistant message without snapshot
+  // Belt and braces. The opening is prose only, and nothing in its prompt now
+  // describes a state block — but the model has been trained on thousands of
+  // turns that end with one, and it will occasionally produce a separator plus
+  // a JSON object of its own invention (`session`, `playerCharacter`,
+  // `active_npcs`: none of which the parser has ever heard of). Whatever
+  // follows the separator here is noise by definition, so it is cut before it
+  // reaches the database and the player's first screen.
+  const separatorIndex = text.indexOf(SEPARATOR)
+  const prose = (
+    separatorIndex === -1 ? text : text.slice(0, separatorIndex)
+  ).trim()
+
+  if (separatorIndex !== -1) {
+    console.error(
+      `Opening emitted a state block for session ${sessionId} — stripped.`
+    )
+  }
+
+  // Saved without a snapshot: the opening establishes the scene, not the state.
+  // The starting snapshot was written at session creation.
   await db.insert(messagesTable).values({
     sessionId,
     role: 'assistant',
-    content: text,
+    content: prose,
     snapshot: null,
   })
 
-  return text
+  return prose
 }
 
-function buildIntroPrompt(
-  genre: string,
+function buildIntroTask(
   language: string,
   characterName: string,
   characterClass: string,
@@ -135,17 +181,18 @@ function buildIntroPrompt(
       ? `${characterName} is capable of: ${abilities.map((a) => a.name).join(', ')}. Let this colour who they are; do not have them use these powers in the opening.`
       : ''
 
-  return `You are QuestMind, an AI Game Master. Write a short atmospheric opening for a new ${genre}". 
+  return `Write a short atmospheric opening for a new session in the world described above.
 The player's character is ${characterName}, a ${characterRace} ${characterClass}. ${equipmentText} ${abilitiesText}
+Set the scene in the starting location given above. Use only places, factions and events established in the world description — never invent a city, region or historical event of your own. If you need somewhere specific for the character to stand, choose a corner of an established location rather than a new one.
 Begin with a single short evocative title line using "# " (one line only), then write 2-3 paragraphs in the style of a book opening — set the scene, establish the mood, and end with the character ready to act.
 Formatting: use only plain prose, plus that one "# " title line and *italic* for occasional emphasis. Do not use bold, headers beyond the single title, lists, tables, links, or any other markdown.
-Do not ask the player what they want to do. Do not include any JSON. Do not state any numbers, stats or mechanical values in the prose. Keep the prose under 200 words.
+Your reply ends when the prose ends. Do not append a separator line, a JSON object, or any machine-readable block of any kind — this message is narration only.
+Do not ask the player what they want to do. Do not state any numbers, stats or mechanical values in the prose. Keep the prose under 200 words.
 ${genderLine(gender, characterName)}
 ${languageLine(language)}`
 }
 
-function buildRecapPrompt(
-  genre: string,
+function buildRecapTask(
   language: string,
   characterName: string,
   gender: string | null,
@@ -159,6 +206,7 @@ function buildRecapPrompt(
         `${m.role === 'user' ? characterName : 'Game Master'}: ${m.content}`
     )
     .join('\n')
+
   const stateText = lastSnapshot
     ? `Current state — HP: ${lastSnapshot.hp}/${lastSnapshot.maxHp}, Inventory: ${lastSnapshot.inventory.join(', ') || 'nothing'}, Active quests: ${
         lastSnapshot.quests
@@ -168,8 +216,8 @@ function buildRecapPrompt(
       }.`
     : ''
 
-  return `You are QuestMind, an AI Game Master running a ${genre}".
-The player is returning after a break. Write a short recap of what happened so far — like a "previously on..." summary.
+  return `The player is returning after a break. Write a short recap of what happened so far — like a "previously on..." summary.
+Draw only on the session history below and the world described above. Do not introduce events, places or characters that appear in neither.
 Write plain prose only. No markdown whatsoever: no asterisks, no hash symbols,
 no headers, no bold or italic markers, no title or heading line. Begin directly
 with the opening prose.
@@ -179,7 +227,7 @@ ${stateText}
 Session history:
 ${historyText}
 
-Do not include any JSON. Do not ask what the player wants to do.
+Your reply ends when the prose ends. Do not append a separator line, a JSON object, or any machine-readable block of any kind. Do not ask what the player wants to do.
 ${genderLine(gender, characterName)}
 ${languageLine(language)}`
 }

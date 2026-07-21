@@ -50,6 +50,8 @@ export default async function PlayPage({ params, searchParams }: Props) {
 
     await generateOpening({
       sessionId,
+      campaignId: campaign.id,
+      world: character.world,
       genre: campaign.genre,
       language: campaign.language,
       characterName: character.name,

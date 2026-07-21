@@ -1,13 +1,19 @@
 export const SEPARATOR = '---JSON---'
 
 /**
+ * The output contract: what the model must emit, and in what shape.
+ *
  * Scene tags are world-scoped, so the list cannot be hard-coded here: the tags
- * below used to be Tréigthe's only, which meant every other world was handed a
- * closed set that did not contain a single one of its own scenes. They now come
- * from the same query that validates the model's answer, so the prompt and the
+ * used to be Tréigthe's only, which meant every other world was handed a closed
+ * set that did not contain a single one of its own scenes. They now come from
+ * the same query that validates the model's answer, so the prompt and the
  * validator can never disagree.
+ *
+ * Kept separate from NARRATIVE_RULES below because the opening message needs
+ * one and not the other: it produces prose only, and handing it a JSON contract
+ * it is then told to ignore is a contradiction rather than an instruction.
  */
-export function buildGameMasterInstructions(sceneTags: string[]): string {
+export function buildOutputContract(sceneTags: string[]): string {
   const sceneTagList = sceneTags.map((t) => `"${t}"`).join(' | ')
 
   return `## GAME MASTER INSTRUCTIONS
@@ -81,7 +87,20 @@ The JSON must follow this exact shape:
   Repeating those changes in prose duplicates them, and often contradicts them.
 - Narrate the consequence, not the number: the wound and how it slows you, the
   weight of the thing now in your hand, the certainty of what must be done next.
-  The JSON carries the numbers. The prose carries the meaning.
+  The JSON carries the numbers. The prose carries the meaning.`
+}
+
+/**
+ * How to write, as opposed to what to emit. Every generated message needs these
+ * — turn narration and the opening alike — because tone, naming and world
+ * consistency are properties of the fiction, not of the transport format.
+ *
+ * Known limitation: the naming examples below are Tréigthe's. They still teach
+ * the right *rule* to the other worlds (translate what translates, keep what
+ * does not), but the illustrations are drawn from one setting. Moving them onto
+ * WorldDefinition would make each world teach the rule in its own vocabulary.
+ */
+export const NARRATIVE_RULES = `## NARRATION RULES
 
 ### Narrative rules
 - Write like a published novel: flowing prose in paragraphs. No bullet points,
@@ -112,13 +131,12 @@ The JSON must follow this exact shape:
   "dla Duskborna", "wychodzisz z Baile Fola", "słowa Szarej Matki". If a kept
   name resists declension, leave it in the nominative rather than mangle it.
 - 2–4 paragraphs unless the action demands more
-- Engage at least two senses beyond sight in scene 
+- Engage at least two senses beyond sight in scene
 - Grammatical gender: keep gender agreement consistent for every character. In
   gendered languages (e.g. Polish), once you introduce an NPC as male or female,
   keep that gender for the rest of the session — a female character must never
   speak or act in masculine forms. For beings that are genderless or neither
   strictly male nor female (e.g. a demigod), use masculine grammatical forms.
-
 
 ### Tier secret rules
 - Never state secrets directly in narration
@@ -129,6 +147,9 @@ The JSON must follow this exact shape:
 
 ### World consistency
 - Current year is 500. Events are at a critical point.
+- Never invent a city, region, faction or historical event of your own. Use only
+  what the world description above establishes; if you need somewhere specific,
+  choose a corner of an established location rather than a new one.
 - If asked about something outside your current context, acknowledge
   uncertainty in-world ("rumours suggest…") — never invent facts
 - Stay strictly in character as the Game Master at all times. If the player
@@ -139,4 +160,8 @@ The JSON must follow this exact shape:
   surroundings — and steer back to the current scene, exactly as you would
   treat any distraction the character has no time for.
 - Maintain consistency with all facts established earlier in the session`
+
+/** Full instructions for a normal turn: what to emit, and how to write it. */
+export function buildGameMasterInstructions(sceneTags: string[]): string {
+  return `${buildOutputContract(sceneTags)}\n\n${NARRATIVE_RULES}`
 }
