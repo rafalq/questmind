@@ -28,6 +28,12 @@ export default function PlayButton({
   const { execute, isPending } = useAction(createSession, {
     onSuccess: ({ data }) => {
       if (!data?.sessionId) return
+      // Closed before the push, not after. The modal is the last thing the
+      // player sees while the route loads, and leaving it up with a disabled
+      // "Starting…" button reads as a hang — the session screen's loading
+      // skeleton is the better place for that feedback, and it cannot show
+      // while a modal is covering it.
+      setShowModal(false)
       toast.success('Session started!')
       router.push(ROUTES.play(campaignId, data.sessionId))
     },
@@ -44,11 +50,21 @@ export default function PlayButton({
     setShowModal(true)
   }
 
+  // Resume is a known URL before the click, so the route can be fetched while
+  // the pointer is still over the button. New sessions cannot do this: their
+  // sessionId does not exist until the action has run.
+  const prefetchResume = () => {
+    if (activeSessionId)
+      router.prefetch(ROUTES.play(campaignId, activeSessionId))
+  }
+
   return (
     <>
       <div className="flex justify-end-safe">
         <ButtonPlayResume
           onClick={handlePlay}
+          onMouseEnter={prefetchResume}
+          onFocus={prefetchResume}
           isActiveSession={!!activeSessionId}
         />
       </div>
