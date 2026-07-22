@@ -7,7 +7,7 @@ import { POINT_BUY_TOTAL } from '@/features/character/constants'
 import { getWorld } from '@/worlds'
 import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
   type FormData,
@@ -52,6 +52,33 @@ export default function CreateCharacterWizard() {
   const router = useRouter()
   const [stepIndex, setStepIndex] = useState(0)
   const [data, setData] = useState<FormData>(INITIAL_DATA)
+
+  const topRef = useRef<HTMLDivElement>(null)
+  const stepRef = useRef<HTMLDivElement>(null)
+  const isFirstRender = useRef(true)
+
+  // The nav buttons sit at the bottom of a tall step, so advancing used to
+  // drop the player into the middle of the next one. Scroll back to the
+  // progress bar and move focus into the step, so keyboard and screen-reader
+  // users land in the same place as everyone else.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches
+
+    topRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      block: 'start',
+    })
+    // preventScroll: the scrollIntoView above owns the scrolling; letting
+    // focus() scroll as well fights it and lands somewhere in between.
+    stepRef.current?.focus({ preventScroll: true })
+  }, [stepIndex])
 
   // The "sex" step only exists for races that have one — genderless races
   // (e.g. demigod) skip straight from Race to Class.
@@ -143,10 +170,21 @@ export default function CreateCharacterWizard() {
     // Attributes step was narrow. An explicit width breaks that dependency:
     // the container grows to 64rem and every step matches. max-w-full keeps
     // it from overflowing on small screens. Tune 64rem to taste.
-    <div className="w-[64rem] max-w-full mx-auto">
+    //
+    // scroll-mt-24 keeps the progress bar clear of the fixed navbar when the
+    // step change scrolls back up here.
+    <div ref={topRef} className="w-5xl max-w-full mx-auto scroll-mt-24">
       <WizardProgressBar steps={activeSteps} currentStepId={currentStep.id} />
 
-      <div className="min-h-100">
+      {/* tabIndex -1 makes the step focusable programmatically without adding
+          it to the tab order; outline-none hides the ring, since the scroll
+          already shows where we are. */}
+      <div
+        ref={stepRef}
+        tabIndex={-1}
+        aria-label={`Step ${stepIndex + 1} of ${activeSteps.length}: ${currentStep.label}`}
+        className="min-h-100 outline-none"
+      >
         <StepComponent data={data} onChange={onChange} />
       </div>
 
@@ -163,12 +201,11 @@ export default function CreateCharacterWizard() {
           {stepIndex > 0 && (
             <Button
               variant="danger"
-              size="sm"
               onClick={handleReset}
               disabled={isPending}
               className="flex items-center gap-2"
             >
-              <IconRefresh stroke={2} size={14} />
+              <IconRefresh stroke={2} size={16} />
               Reset
             </Button>
           )}
