@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   type messagesTable,
   type campaignsTable,
@@ -35,6 +35,11 @@ type Props = {
   // Base values from the DB: point-buy plus race/class/gender modifiers.
   // Per-level growth is applied on read, in the panel.
   baseAttributes: Record<Attribute, number>
+  // True when the session has no narrative assistant message yet. The page
+  // used to generate the opening before rendering, which meant the browser sat
+  // on the previous screen for the whole model call; the opening is now
+  // fetched from here and streamed in, like every other turn.
+  needsOpening: boolean
 }
 
 export default function GameScreen({
@@ -43,6 +48,7 @@ export default function GameScreen({
   campaign,
   character,
   baseAttributes,
+  needsOpening,
 }: Props) {
   // Reading mode: hides the stats panel so prose gets the full width.
   //
@@ -96,6 +102,94 @@ export default function GameScreen({
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(lastSnapshot)
   const [isStreaming, setIsStreaming] = useState(false)
 
+  // Reads a plain-text stream into the last assistant message, one chunk at a
+  // time. `onChunk` returns the prose that should be visible for the text
+  // received so far, which is where the two callers differ: a turn has to stop
+  // rendering at the snapshot delimiter, an opening is prose to the last
+  // character. Returns everything that was read.
+  const consumeStream = async (
+    res: Response,
+    onChunk: (raw: string) => string
+  ): Promise<string> => {
+    const reader = res.body!.getReader()
+    const decoder = new TextDecoder()
+    let raw = ''
+
+    // Empty assistant message to stream into.
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      raw += decoder.decode(value, { stream: true })
+      const visible = onChunk(raw)
+
+      setMessages((prev) => {
+        const updated = [...prev]
+        updated[updated.length - 1] = {
+          role: 'assistant',
+          content: visible,
+        }
+        return updated
+      })
+    }
+
+    return raw
+  }
+
+  // The opening is requested exactly once per mount. Without the ref, React's
+  // development StrictMode double-invokes the effect and two openings race;
+  // the server refuses the second, but the client would still have opened two
+  // empty bubbles.
+  const openingRequested = useRef(false)
+
+  useEffect(() => {
+    if (!needsOpening || openingRequested.current) return
+    openingRequested.current = true
+
+    let cancelled = false
+
+    const run = async () => {
+      setIsStreaming(true)
+      try {
+        const res = await fetch('/api/game/opening', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        })
+
+        // 204: the opening already exists — a refresh landed here, or a
+        // previous request finished writing it. Nothing to render.
+        if (res.status === 204) return
+        if (!res.ok || !res.body) throw new Error('Opening stream failed')
+
+        // The opening carries no state block; the starting snapshot was
+        // written at session creation, so everything received is prose.
+        await consumeStream(res, (raw) => raw)
+      } catch {
+        if (!cancelled) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content:
+                'The Game Master is gathering their thoughts. Refresh to begin.',
+            },
+          ])
+        }
+      } finally {
+        if (!cancelled) setIsStreaming(false)
+      }
+    }
+
+    void run()
+
+    return () => {
+      cancelled = true
+    }
+  }, [needsOpening, sessionId])
+
   const sendMessage = async (message: string) => {
     if (isStreaming) return
 
@@ -112,33 +206,12 @@ export default function GameScreen({
 
       if (!res.ok || !res.body) throw new Error('Stream failed')
 
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let raw = ''
-
-      // Add empty assistant message to stream into
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        raw += decoder.decode(value, { stream: true })
-
-        // The server appends the game-state snapshot after SNAPSHOT_DELIMITER.
-        // Never render past it — narrative only, up to the delimiter.
-        const delimIdx = raw.indexOf(SNAPSHOT_DELIMITER)
-        const narrative = delimIdx === -1 ? raw : raw.slice(0, delimIdx)
-
-        setMessages((prev) => {
-          const updated = [...prev]
-          updated[updated.length - 1] = {
-            role: 'assistant',
-            content: narrative,
-          }
-          return updated
-        })
-      }
+      // The server appends the game-state snapshot after SNAPSHOT_DELIMITER.
+      // Never render past it — narrative only, up to the delimiter.
+      const raw = await consumeStream(res, (text) => {
+        const delimIdx = text.indexOf(SNAPSHOT_DELIMITER)
+        return delimIdx === -1 ? text : text.slice(0, delimIdx)
+      })
 
       // Apply the game-state snapshot straight away — no refetch, no cache.
       // Panel reflects the delta in the same second as the narrative (FR-005).

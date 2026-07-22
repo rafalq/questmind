@@ -18,7 +18,7 @@ type Message = {
   content: string
 }
 
-type OpeningInput = {
+export type OpeningInput = {
   sessionId: string
   campaignId: string
   world: string
@@ -52,9 +52,21 @@ function genderLine(gender: string | null, characterName: string): string {
   return `Grammatical gender: ${characterName} is ${grammar}; in gendered languages every verb, adjective and participle referring to ${characterName} must take ${grammar} forms.`
 }
 
-export async function generateOpening(input: OpeningInput): Promise<string> {
+/**
+ * Everything needed to call the model, without calling it.
+ *
+ * Split out of generateOpening so the streaming route can own the transport
+ * while prompt construction stays in one place. Both the blocking helper below
+ * and the streamed route build their request from this function, which is what
+ * keeps a streamed opening identical in wording to the one this project has
+ * been tuning since the interim report.
+ */
+export async function buildOpeningRequest(input: OpeningInput): Promise<{
+  system: string
+  task: string
+  isNewSession: boolean
+}> {
   const {
-    sessionId,
     campaignId,
     world,
     genre,
@@ -78,16 +90,12 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
   // its own prompt from `genre` alone, which meant the model had no world to
   // open in and improvised one: it named a city that exists nowhere in the
   // seed, and invented a war in a setting whose catastrophe is the death of the
-  // gods. The very next turn — which does go through this pipeline — correctly
-  // used the real city, which is what made the cause obvious.
-  //
-  // That mattered more than an ordinary hallucination: the opening sets the
-  // tone of the whole session and is the first thing a new player reads.
+  // gods.
   //
   // variant: 'opening' omits the output contract. This message is prose only —
   // no separator, no state block — and handing the model a JSON contract it is
   // then told to ignore is a contradiction, not an instruction.
-  const { prompt: lorePrompt } = await buildSystemPrompt({
+  const { prompt: system } = await buildSystemPrompt({
     genre,
     player: {
       campaignId,
@@ -114,13 +122,66 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
       )
     : buildRecapTask(language, characterName, gender, history, lastSnapshot)
 
+  return { system, task, isNewSession }
+}
+
+/**
+ * Belt and braces. The opening is prose only, and nothing in its prompt
+ * describes a state block — but the model has been trained on thousands of
+ * turns that end with one, and it will occasionally produce a separator plus a
+ * JSON object of its own invention (`session`, `playerCharacter`,
+ * `active_npcs`: none of which the parser has ever heard of). Whatever follows
+ * the separator is noise by definition, so it is cut before it reaches the
+ * database and the player's first screen.
+ */
+export function stripStateBlock(text: string, sessionId?: string): string {
+  const separatorIndex = text.indexOf(SEPARATOR)
+  if (separatorIndex !== -1 && sessionId) {
+    console.error(
+      `Opening emitted a state block for session ${sessionId} — stripped.`
+    )
+  }
+  return (separatorIndex === -1 ? text : text.slice(0, separatorIndex)).trim()
+}
+
+/**
+ * Saved without a snapshot: the opening establishes the scene, not the state.
+ * The starting snapshot was written at session creation.
+ *
+ * Empty prose is never written. A dropped connection mid-stream would
+ * otherwise persist a blank assistant message, which the "does this session
+ * have an opening?" check reads as an opening — leaving the session
+ * permanently without an intro.
+ */
+export async function persistOpening(
+  sessionId: string,
+  prose: string
+): Promise<void> {
+  if (!prose.trim()) return
+
+  await db.insert(messagesTable).values({
+    sessionId,
+    role: 'assistant',
+    content: prose,
+    snapshot: null,
+  })
+}
+
+/**
+ * Blocking, non-streamed opening. No longer on the page-render path — kept
+ * because it is the simplest way to produce an opening from a server context
+ * that has nowhere to stream to (scripts, seeding, tests).
+ */
+export async function generateOpening(input: OpeningInput): Promise<string> {
+  const { system, task } = await buildOpeningRequest(input)
+
   const response = await client.messages.create({
     model: AI_MODEL,
     // 700, not 400 — the prompt caps prose at ~200 words, but token-heavy
     // languages (e.g. Polish) overrun a 400-token ceiling and get cut
     // mid-sentence before the opening finishes.
     max_tokens: MAX_TOKENS.opening,
-    system: lorePrompt,
+    system,
     messages: [{ role: 'user', content: task }],
   })
 
@@ -128,32 +189,8 @@ export async function generateOpening(input: OpeningInput): Promise<string> {
     .map((block) => (block.type === 'text' ? block.text : ''))
     .join('')
 
-  // Belt and braces. The opening is prose only, and nothing in its prompt now
-  // describes a state block — but the model has been trained on thousands of
-  // turns that end with one, and it will occasionally produce a separator plus
-  // a JSON object of its own invention (`session`, `playerCharacter`,
-  // `active_npcs`: none of which the parser has ever heard of). Whatever
-  // follows the separator here is noise by definition, so it is cut before it
-  // reaches the database and the player's first screen.
-  const separatorIndex = text.indexOf(SEPARATOR)
-  const prose = (
-    separatorIndex === -1 ? text : text.slice(0, separatorIndex)
-  ).trim()
-
-  if (separatorIndex !== -1) {
-    console.error(
-      `Opening emitted a state block for session ${sessionId} — stripped.`
-    )
-  }
-
-  // Saved without a snapshot: the opening establishes the scene, not the state.
-  // The starting snapshot was written at session creation.
-  await db.insert(messagesTable).values({
-    sessionId,
-    role: 'assistant',
-    content: prose,
-    snapshot: null,
-  })
+  const prose = stripStateBlock(text, input.sessionId)
+  await persistOpening(input.sessionId, prose)
 
   return prose
 }
