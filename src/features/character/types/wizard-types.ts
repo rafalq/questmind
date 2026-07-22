@@ -1,9 +1,4 @@
-import type {
-  World,
-  Race,
-  CharacterClass,
-  Attribute,
-} from '@/features/character/constants'
+import type { Attribute } from '@/features/character/constants'
 
 export type FormData = {
   name: string

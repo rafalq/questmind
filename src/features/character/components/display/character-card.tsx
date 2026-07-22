@@ -1,5 +1,6 @@
 'use client'
 
+import type { CharacterDetail } from '@/features/character/types/character-detail'
 import ButtonPlayResume from '@/components/ui/button-play-resume'
 import GenreCard from '@/components/ui/genre-card'
 import { ROUTES } from '@/constants/routes'
@@ -11,9 +12,7 @@ import { toast } from 'sonner'
 import { deleteCharacter } from '@/features/character/actions/delete-character'
 import { levelFromXp } from '@/features/character/constants/progression'
 import { getClassLabel, getRaceLabel, getWorld } from '@/worlds'
-import CharacterDetailModal, {
-  type CharacterDetail,
-} from './character-detail-modal'
+import CharacterDetailModal from './character-detail-modal'
 import Tooltip from '@/components/ui/tooltip'
 import { TREIGTHE_CLASS_ICONS } from '@/features/character/constants/fantasy/treigthe'
 import { IconUser } from '@tabler/icons-react'

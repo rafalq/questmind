@@ -17,27 +17,7 @@ import type {
 } from '@/worlds/schema'
 import type { Genre } from '@/features/character/constants/'
 import { IconBolt, IconHeart, IconStar, IconX } from '@tabler/icons-react'
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-/**
- * A row as it comes out of characterAttributesTable. Not to be confused with
- * Attribute (the key: 'mind', 'strength', ...) imported from the registry.
- * `value` is baseValue: point-buy plus race, class and gender modifiers,
- * WITHOUT per-level growth, which is derived on read.
- */
-type AttributeRow = {
-  attributeName: string
-  value: number
-}
-
-type ActiveCampaign = {
-  campaignId: string | null
-  campaignName: string
-  currentHp: number
-  maxHp: number
-  sessionId: string
-}
+import { CharacterDetail } from '@/features/character/types/character-detail'
 
 /**
  * This modal is a character sheet, not a game-state view: who the character is,
@@ -50,19 +30,6 @@ type ActiveCampaign = {
  * activeCampaign stays on the type because CharacterCard uses it for the resume
  * button; the modal itself no longer touches it.
  */
-export type CharacterDetail = {
-  id: string
-  name: string
-  genre: Genre
-  world: string
-  race: string
-  characterClass: string
-  characterXp: number
-  isAlive: boolean
-  inventory: string[]
-  attributes: AttributeRow[]
-  activeCampaign: ActiveCampaign | null
-}
 
 type Props = {
   character: CharacterDetail
