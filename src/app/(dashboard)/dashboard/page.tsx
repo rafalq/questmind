@@ -2,7 +2,7 @@ import ButtonLink from '@/components/ui/button-link'
 import { ROUTES } from '@/constants/routes'
 import CampaignListServer from '@/features/campaign/components/campaign-list-server'
 import CampaignListSkeleton from '@/components/ui/loader/skeleton/campaign-list-skeleton'
-import CharacterList from '@/features/character/components/display/character-list'
+import CharacterList from '@/features/character/components/display/character-list-server'
 import CharacterListSkeleton from '@/components/ui/loader/skeleton/character-list-skeleton'
 import { Suspense } from 'react'
 

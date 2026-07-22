@@ -1,7 +1,7 @@
-import CharacterCard from '@/features/character/components/display/character-card'
+import CharacterListClient from '@/features/character/components/display/character-list-client'
 import { getCharacters } from '@/features/character/queries/get-characters'
 
-export default async function CharacterList() {
+export default async function CharacterListServer() {
   const characters = await getCharacters()
 
   if (characters.length === 0) {
@@ -15,11 +15,5 @@ export default async function CharacterList() {
     )
   }
 
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {characters.map((character) => (
-        <CharacterCard key={character.id} character={character} />
-      ))}
-    </div>
-  )
+  return <CharacterListClient characters={characters} />
 }
