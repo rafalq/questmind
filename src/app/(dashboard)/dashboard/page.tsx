@@ -1,7 +1,9 @@
 import ButtonLink from '@/components/ui/button-link'
 import { ROUTES } from '@/constants/routes'
 import CampaignListServer from '@/features/campaign/components/campaign-list-server'
+import CampaignListSkeleton from '@/components/ui/loader/skeleton/campaign-list-skeleton'
 import CharacterList from '@/features/character/components/display/character-list'
+import CharacterListSkeleton from '@/components/ui/loader/skeleton/character-list-skeleton'
 import { Suspense } from 'react'
 
 export default function DashboardPage() {
@@ -19,9 +21,11 @@ export default function DashboardPage() {
             <ButtonLink href={ROUTES.newCampaign}>+ New Campaign</ButtonLink>
           </div>
         </div>
-        <Suspense
-          fallback={<div className="text-text-muted">Loading campaigns...</div>}
-        >
+        {/* The fallback used to be a one-line "Loading campaigns..." standing in
+            for a three-column grid, so both sections jumped down the page when
+            the queries resolved. The skeleton occupies the space the cards are
+            about to take. */}
+        <Suspense fallback={<CampaignListSkeleton />}>
           <CampaignListServer />
         </Suspense>
       </section>
@@ -40,11 +44,7 @@ export default function DashboardPage() {
             <ButtonLink href={ROUTES.newCharacter}>+ New Character</ButtonLink>
           </div>
         </div>
-        <Suspense
-          fallback={
-            <div className="text-text-muted">Loading characters...</div>
-          }
-        >
+        <Suspense fallback={<CharacterListSkeleton />}>
           <CharacterList />
         </Suspense>
       </section>

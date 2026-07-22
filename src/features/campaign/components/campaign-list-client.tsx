@@ -56,12 +56,19 @@ export default function CampaignListClient({
 
   return (
     <>
-      <div className="flex items-center gap-4 mb-6">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search campaigns..."
-        />
+      {/* FilterSelect is w-full below sm, so in a single flex row it claimed
+          the whole width and squeezed the search input down to its intrinsic
+          size — the cramped search box visible on the dashboard at 360px.
+          The two controls stack on mobile and share the row from sm up, with
+          the search field taking the slack. */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex-1">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search campaigns..."
+          />
+        </div>
         <FilterSelect
           value={filter}
           onChange={setFilter}
