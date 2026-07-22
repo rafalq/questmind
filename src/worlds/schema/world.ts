@@ -23,6 +23,7 @@ export const WorldDefinitionSchema = z
     /** Shown on the world selection card. */
     description: z.string().min(1),
     cardImageUrl: z.string().min(1),
+    mapImageUrl: z.string().optional(),
     /** World-specific attribute display names (ATTRIBUTE_LABELS_BY_WORLD). */
     attributeLabels: AttributeLabelsSchema,
     attributeDescriptions: AttributeDescriptionsSchema.optional(),

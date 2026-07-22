@@ -1,16 +1,35 @@
 'use client'
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import Image from 'next/image'
 import { IconMap, IconX, IconBook } from '@tabler/icons-react'
 import type { WorldLore } from '@/features/lore/queries/get-world-lore'
 import type { Genre } from '@/features/character/constants/'
 import { genreFont } from '@/lib/genre-theme'
+import { getWorld } from '@/worlds'
+import { WORLD_GLOSSARIES } from '@/worlds/schema/glossary'
+import type { GlossaryEntry } from '@/worlds/schema/glossary'
 
 type Props = {
   genre: Genre
   lore: WorldLore
+  /** Rendered instead of the default text trigger — lets the session screen
+   *  open the same modal from an icon button without a second component. */
+  trigger?: (open: () => void) => React.ReactNode
 }
+
+// Section order is also reading order: what the world is, what happened,
+// who lives there, what you can be, where you can go, what the words mean.
+const SECTIONS = [
+  { id: 'world', label: 'The World' },
+  { id: 'history', label: 'History' },
+  { id: 'peoples', label: 'Peoples' },
+  { id: 'trades', label: 'Trades' },
+  { id: 'places', label: 'Places' },
+  { id: 'glossary', label: 'Glossary' },
+] as const
+
+type SectionId = (typeof SECTIONS)[number]['id']
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
@@ -96,6 +115,30 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** Jump list under the map. Scrolls the dialog body rather than following an
+ *  anchor: the panel is the scroll container, and a native #hash would move
+ *  the page behind it instead. */
+function TableOfContents({ onJump }: { onJump: (id: SectionId) => void }) {
+  return (
+    <nav
+      aria-label="Sections"
+      className="flex flex-wrap gap-x-4 gap-y-2 border-b border-border/50 px-4 pb-4 sm:px-6"
+    >
+      {SECTIONS.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          onClick={() => onJump(s.id)}
+          className="cursor-pointer text-[11px] uppercase tracking-widest text-text-muted underline-offset-4 transition-colors hover:text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          style={{ fontFamily: 'var(--font-rajdhani)' }}
+        >
+          {s.label}
+        </button>
+      ))}
+    </nav>
+  )
+}
+
 function WorldSection({ publicLore }: { publicLore: string }) {
   return (
     <section>
@@ -167,12 +210,208 @@ function TimelineSection({ events }: { events: WorldLore['events'] }) {
   )
 }
 
-function MapImage({ genre, regionName }: { genre: Genre; regionName: string }) {
-  const mapSrc: Partial<Record<Genre, string>> = {
-    fantasy: '/images/fantasy/treigthe/maps/treigthe.jpg',
-  }
+/** Shared layout for a named thing with a paragraph under it. Races, classes
+ *  and locations are the same shape on the page even though they come from
+ *  three different sources. */
+function LoreEntry({
+  name,
+  aside,
+  children,
+}: {
+  name: string
+  aside?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="border-l border-border/60 pl-3">
+      <p className="text-sm font-semibold text-text-primary">
+        {name}
+        {aside && (
+          <span className="ml-2 text-xs font-normal text-text-muted">
+            {aside}
+          </span>
+        )}
+      </p>
+      {children}
+    </div>
+  )
+}
 
-  const src = mapSrc[genre]
+/** Races and classes come from the world registry, not the database — the
+ *  same objects the character wizard renders, so the modal cannot drift out
+ *  of step with what a player can actually create. */
+function PeoplesSection({ worldSlug }: { worldSlug: string }) {
+  const races = getWorld(worldSlug).races
+
+  return (
+    <section>
+      <SectionHeading>Peoples</SectionHeading>
+      <div className="flex flex-col gap-4">
+        {races.map((race) => (
+          <LoreEntry
+            key={race.value}
+            name={race.label}
+            aside={race.genderless ? 'genderless' : undefined}
+          >
+            <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+              {race.description}
+            </p>
+          </LoreEntry>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function TradesSection({ worldSlug }: { worldSlug: string }) {
+  const classes = getWorld(worldSlug).classes
+
+  return (
+    <section>
+      <SectionHeading>Trades</SectionHeading>
+      <div className="flex flex-col gap-4">
+        {classes.map((cls) => (
+          <LoreEntry key={cls.value} name={cls.label}>
+            <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+              {cls.description}
+            </p>
+            {cls.abilities.length > 0 && (
+              // Names only. What each one does is the character sheet's job;
+              // here it is a sketch of what this trade is capable of.
+              <p
+                className="mt-1.5 text-[11px] uppercase tracking-wide text-text-muted"
+                style={{ fontFamily: 'var(--font-rajdhani)' }}
+              >
+                {cls.abilities
+                  .filter((a) => a.tier === 1)
+                  .map((a) => a.name)
+                  .join(' · ')}
+              </p>
+            )}
+          </LoreEntry>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function PlacesSection({ locations }: { locations: WorldLore['locations'] }) {
+  if (locations.length === 0) return null
+
+  return (
+    <section>
+      <SectionHeading>Places</SectionHeading>
+      <div className="flex flex-col gap-6">
+        {locations.map((loc) => (
+          <LoreEntry
+            key={loc.slug}
+            name={loc.name}
+            aside={loc.nameTranslation ? `— ${loc.nameTranslation}` : undefined}
+          >
+            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-text-secondary">
+              {loc.description}
+            </p>
+            {loc.subLocations.length > 0 && (
+              <ul className="mt-3 flex flex-col gap-2">
+                {loc.subLocations.map((sub) => (
+                  <li key={sub.name} className="text-sm">
+                    <span className="text-text-primary">{sub.name}</span>
+                    {sub.nameTranslation && (
+                      <span className="text-text-muted">
+                        {' '}
+                        — {sub.nameTranslation}
+                      </span>
+                    )}
+                    <span className="text-text-secondary">
+                      . {sub.description}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </LoreEntry>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const CATEGORY_LABELS: Record<GlossaryEntry['category'], string> = {
+  magic: 'The Cost',
+  history: 'History',
+  places: 'Places',
+  peoples: 'Peoples',
+  powers: 'Trades',
+  life: 'Daily Life',
+}
+
+const CATEGORY_ORDER: GlossaryEntry['category'][] = [
+  'magic',
+  'history',
+  'places',
+  'peoples',
+  'powers',
+  'life',
+]
+
+function GlossarySection({ worldSlug }: { worldSlug: string }) {
+  const entries = WORLD_GLOSSARIES[worldSlug]
+  if (!entries?.length) return null
+
+  return (
+    <section>
+      <SectionHeading>Glossary</SectionHeading>
+      <div className="flex flex-col gap-5">
+        {CATEGORY_ORDER.map((category) => {
+          const group = entries.filter((e) => e.category === category)
+          if (group.length === 0) return null
+
+          return (
+            <div key={category}>
+              <p
+                className="mb-2 text-[11px] uppercase tracking-widest text-text-muted"
+                style={{ fontFamily: 'var(--font-rajdhani)' }}
+              >
+                {CATEGORY_LABELS[category]}
+              </p>
+              <dl className="flex flex-col gap-2.5">
+                {group.map((entry) => (
+                  <div key={entry.term}>
+                    <dt className="text-sm font-semibold text-text-primary">
+                      {entry.term}
+                      {entry.translation && (
+                        <span className="ml-2 text-xs font-normal italic text-text-muted">
+                          {entry.translation}
+                        </span>
+                      )}
+                    </dt>
+                    <dd className="text-sm leading-relaxed text-text-secondary">
+                      {entry.definition}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function MapImage({
+  worldSlug,
+  regionName,
+}: {
+  worldSlug: string
+  regionName: string
+}) {
+  const maps: Record<string, string> = {
+    treigthe: '/images/fantasy/treigthe/maps/treigthe.jpg',
+    drift: '/images/sci-fi/drift/maps/drift.jpg',
+    neon_warszawa: '/images/cyberpunk/neon-warszawa/maps/neon-warszawa.jpg',
+  }
+  const src = maps[worldSlug]
 
   if (!src) {
     return (
@@ -208,10 +447,13 @@ function MapImage({ genre, regionName }: { genre: Genre; regionName: string }) {
 
 // ── Main component ─────────────────────────────────────────────────────────
 
-export default function WorldLoreModal({ genre, lore }: Props) {
+export default function WorldLoreModal({ genre, lore, trigger }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
+  const sectionRefs = useRef<Partial<Record<SectionId, HTMLDivElement | null>>>(
+    {}
+  )
 
   // Escape closes. Bound only while open, so there is no listener sitting on
   // every campaign card on the dashboard.
@@ -231,10 +473,19 @@ export default function WorldLoreModal({ genre, lore }: Props) {
   useEffect(() => {
     if (isOpen) dialogRef.current?.focus()
   }, [isOpen])
+  const jumpTo = useCallback((id: SectionId) => {
+    dialogRef.current
+      ?.querySelector(`[data-section="${id}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
 
   return (
     <>
-      <ModalTrigger name={lore.world.name} onOpen={() => setIsOpen(true)} />
+      {trigger ? (
+        trigger(() => setIsOpen(true))
+      ) : (
+        <ModalTrigger name={lore.world.name} onOpen={() => setIsOpen(true)} />
+      )}
 
       {isOpen && (
         <>
@@ -263,13 +514,36 @@ export default function WorldLoreModal({ genre, lore }: Props) {
                 titleId={titleId}
               />
               <MapImage
-                genre={genre}
+                worldSlug={lore.world.slug}
                 regionName={lore.region?.name ?? lore.world.name}
               />
+              <div className="pt-4 sm:pt-6">
+                <TableOfContents onJump={jumpTo} />
+              </div>
               <div className="flex flex-col gap-8 p-4 sm:p-6">
-                <WorldSection publicLore={lore.world.publicLore} />
-                {lore.region && <RegionSection region={lore.region} />}
-                <TimelineSection events={lore.events} />
+                <div data-section="world" className="scroll-mt-4">
+                  <WorldSection publicLore={lore.world.publicLore} />
+                  {lore.region && (
+                    <div className="mt-8">
+                      <RegionSection region={lore.region} />
+                    </div>
+                  )}
+                </div>
+                <div data-section="world" className="scroll-mt-4">
+                  <TimelineSection events={lore.events} />
+                </div>
+                <div data-section="peoples" className="scroll-mt-4">
+                  <PeoplesSection worldSlug={lore.world.slug} />
+                </div>
+                <div data-section="trades" className="scroll-mt-4">
+                  <TradesSection worldSlug={lore.world.slug} />
+                </div>
+                <div data-section="places" className="scroll-mt-4">
+                  <PlacesSection locations={lore.locations} />
+                </div>
+                <div data-section="glossary" className="scroll-mt-4">
+                  <GlossarySection worldSlug={lore.world.slug} />
+                </div>
               </div>
             </div>
           </div>

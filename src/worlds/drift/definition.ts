@@ -29,6 +29,7 @@ export const drift: WorldDefinitionInput = {
     'from the dead network can still be used, but it burns the user: ' +
     'synapses, memories, years.',
   cardImageUrl: '/images/sci-fi/drift/sci-fi-hero.jpg',
+  mapImageUrl: '/images/sci-fi/drift/maps/drift.jpg',
   startingLocation: 'kesslers-rest', // slug — must match locationsTable.slug in seed/drift.ts
 
   attributeLabels: {

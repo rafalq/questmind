@@ -33,6 +33,7 @@ export const treigthe: WorldDefinitionInput = {
     'corpses rotting in the heavens. Magic is real, but nothing is free — ' +
     'every spell costs blood, years, or memory.',
   cardImageUrl: '/images/fantasy/treigthe/fantasy-hero.jpg',
+  mapImageUrl: '/images/fantasy/treigthe/maps/treigthe.jpg',
   startingLocation: 'cathair-luaith', // slug — must match locationsTable.slug in seed/treigthe.ts
 
   // From TREIGTHE_ATTRIBUTE_LABELS

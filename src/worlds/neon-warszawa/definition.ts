@@ -33,6 +33,7 @@ export const neonWarszawa: WorldDefinitionInput = {
     'lights. Diving the Drowned Net still works. It costs synapses, ' +
     'memories, years. Nothing in this city is free.',
   cardImageUrl: '/images/cyberpunk/neon-warszawa/cyberpunk-hero.jpg',
+  mapImageUrl: '/images/cyberpunk/neon-warszawa/maps/neon-warszawa.jpg',
   startingLocation: 'srodmiescie', // slug — must match locationsTable.slug in seed/neon-warszawa.ts
 
   attributeLabels: {
