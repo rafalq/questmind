@@ -45,6 +45,22 @@ export const treigthe: WorldDefinitionInput = {
     perception: 'Awareness',
   },
 
+  // Shown under each attribute in the wizard's Attributes step. One line
+  // each — six multi-sentence blocks would turn the step into a wall of text.
+  attributeDescriptions: {
+    strength:
+      'Raw physical force — swinging steel, breaking down a door, hauling a wounded companion out of the mud.',
+    mind: 'Learning and reason — old tongues, ritual lore, and the arithmetic of what a spell will cost you.',
+    endurance:
+      'What your body survives — blood loss, cold, poison, and the years magic takes as payment.',
+    agility:
+      'Speed and precision of hand and foot — footwork in a duel, a lock picked quietly, a blade slipped between ribs.',
+    charisma:
+      'The weight you carry in a room — persuading, cowing, or holding the faith of people who have none left.',
+    perception:
+      'What you notice before it reaches you — the ambush, the lie, the wrongness in the shadow of a dead god.',
+  },
+
   // From gender.ts — WORLD_GENDER_OPTIONS.treigthe, verbatim
   genderOptions: [
     {

@@ -40,6 +40,22 @@ export const drift: WorldDefinitionInput = {
     perception: 'Acuity',
   },
 
+  // Shown under each attribute in the wizard's Attributes step. One line
+  // each — six multi-sentence blocks would turn the step into a wall of text.
+  attributeDescriptions: {
+    strength:
+      'Muscle under load — shifting cargo in failing gravity, forcing a seized bulkhead, holding a line as the deck pitches.',
+    mind: 'Systems literacy — salvage schematics, coaxing dead machinery back, and shaping the Static before it shapes you.',
+    endurance:
+      'How long you last — recycled air, radiation, short rations, and the years the Static takes as payment.',
+    agility:
+      'Balance and quick hands in tight spaces — crawlways, zero-g transfers, reaching the lock before it finishes cycling.',
+    charisma:
+      'Your standing among the unmoored — trading, talking down a mutiny, being believed when you report what you saw out there.',
+    perception:
+      'The small wrong thing — a tick in the hull, a stale smell on a sealed deck, a face that came aboard uninvited.',
+  },
+
   // Same asymmetry as Tréigthe — kept identical so balance carries over.
   genderOptions: [
     {

@@ -84,6 +84,22 @@ export function getAttributeLabel(world: string, attr: string): string {
   return labels[attr] ?? attr
 }
 
+/**
+ * Resolves an attribute key to the world's one-line explanation, shown under
+ * the label in the wizard's Attributes step. Returns undefined for worlds
+ * that have not been given descriptions yet, so the UI can simply skip the
+ * paragraph rather than render an empty node.
+ */
+export function getAttributeDescription(
+  world: string,
+  attr: string
+): string | undefined {
+  const descriptions = getWorld(world).attributeDescriptions as
+    | Record<string, string>
+    | undefined
+  return descriptions?.[attr]
+}
+
 export function getRace(worldValue: string, raceValue: string) {
   const race = getWorld(worldValue).races.find((r) => r.value === raceValue)
   if (!race) {

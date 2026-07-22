@@ -39,6 +39,25 @@ export const AttributeLabelsSchema = z.object({
 
 export type AttributeLabels = z.infer<typeof AttributeLabelsSchema>
 
+/**
+ * World-specific one-line explanations shown under each attribute in the
+ * character wizard. Kept separate from AttributeLabelsSchema so a world can
+ * be migrated to descriptions without touching its existing labels.
+ *
+ * Keep these to a single sentence — six multi-sentence blocks turn the
+ * Attributes step into a wall of text.
+ */
+export const AttributeDescriptionsSchema = z.object({
+  strength: z.string().min(1).max(160),
+  mind: z.string().min(1).max(160),
+  endurance: z.string().min(1).max(160),
+  agility: z.string().min(1).max(160),
+  charisma: z.string().min(1).max(160),
+  perception: z.string().min(1).max(160),
+})
+
+export type AttributeDescriptions = z.infer<typeof AttributeDescriptionsSchema>
+
 /** Attribute keys as a Zod enum — needed by keyAttribute and growth. */
 export const AttributeKeySchema = z.enum(ATTRIBUTES)
 export type AttributeKey = z.infer<typeof AttributeKeySchema>

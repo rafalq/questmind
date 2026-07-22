@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import z from 'zod'
-import { AttributeLabelsSchema } from './attribute'
+import { AttributeLabelsSchema, AttributeDescriptionsSchema } from './attribute'
 import { ClassDefinitionSchema } from './class'
 import { GenderOptionSchema } from './gender'
 import { ItemDefinitionSchema } from './item'
@@ -25,6 +25,7 @@ export const WorldDefinitionSchema = z
     cardImageUrl: z.string().min(1),
     /** World-specific attribute display names (ATTRIBUTE_LABELS_BY_WORLD). */
     attributeLabels: AttributeLabelsSchema,
+    attributeDescriptions: AttributeDescriptionsSchema.optional(),
     /** Sex options with stat modifiers (replaces WORLD_GENDER_OPTIONS). */
     genderOptions: z.array(GenderOptionSchema).min(1),
     races: z.array(RaceDefinitionSchema).min(1),

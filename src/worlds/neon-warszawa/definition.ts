@@ -44,6 +44,22 @@ export const neonWarszawa: WorldDefinitionInput = {
     perception: 'Instinct',
   },
 
+  // Shown under each attribute in the wizard's Attributes step. One line
+  // each — six multi-sentence blocks would turn the step into a wall of text.
+  attributeDescriptions: {
+    strength:
+      'Raw physique — hauling, brawling, and how much punishment you soak before the ripperdoc gets involved.',
+    mind: 'Neural bandwidth — diving the Drowned Net, cracking ICE, and running implants without cooking your own grey matter.',
+    endurance:
+      'Nerve and stamina — pain, interrogation, withdrawal, and the years the Net takes as payment.',
+    agility:
+      'Speed and precision — shooting, driving, and moving first when the room goes loud.',
+    charisma:
+      'Presence and leverage — negotiating, intimidating, reading a deal before it turns on you.',
+    perception:
+      'Street sense — spotting the tail, the ambush, the lie you were meant to swallow.',
+  },
+
   // Same asymmetry as Tréigthe and The Drift — balance carries over.
   genderOptions: [
     {

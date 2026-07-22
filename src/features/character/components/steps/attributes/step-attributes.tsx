@@ -32,6 +32,9 @@ export default function StepAttributes({
     ? world.genderOptions.find((g) => g.id === data.gender)
     : null
   const labels = world.attributeLabels
+  // Optional: a world may not have descriptions yet, in which case the rows
+  // simply render as before.
+  const descriptions = world.attributeDescriptions
 
   const totalSpent = Object.values(data.attributes).reduce((s, v) => s + v, 0)
   const remaining = POINT_BUY_TOTAL - totalSpent
@@ -81,6 +84,7 @@ export default function StepAttributes({
               key={attr}
               attr={attr}
               label={labels[attr]}
+              description={descriptions?.[attr]}
               value={data.attributes[attr]}
               raceMod={raceMod}
               classMod={classMod}
