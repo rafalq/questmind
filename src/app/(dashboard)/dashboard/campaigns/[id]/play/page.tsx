@@ -1,6 +1,7 @@
 import { getSession } from '@/features/session/queries/get-session'
 import GameScreen from '@/features/session/components/game-screen'
 import { notFound } from 'next/navigation'
+import { getWorldLore } from '@/features/lore/queries/get-world-lore'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -36,6 +37,8 @@ export default async function PlayPage({ params, searchParams }: Props) {
     (m) => m.role === 'assistant' && m.content !== ''
   )
 
+  const lore = await getWorldLore(campaign.genre)
+
   return (
     <GameScreen
       sessionId={sessionId}
@@ -45,6 +48,7 @@ export default async function PlayPage({ params, searchParams }: Props) {
       character={character}
       baseAttributes={baseAttributes}
       needsOpening={needsOpening}
+      lore={lore}
     />
   )
 }

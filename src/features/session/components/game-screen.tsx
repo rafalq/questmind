@@ -13,12 +13,15 @@ import { SNAPSHOT_DELIMITER } from '@/features/session/lib/stream-protocol'
 import { UIMessage } from '../lib/types'
 import {
   IconArrowLeft,
+  IconBook,
   IconLayoutSidebarRightCollapse,
   IconLayoutSidebarRightExpand,
 } from '@tabler/icons-react'
 import type { Attribute } from '@/worlds/schema'
 import { ROUTES } from '@/constants/routes'
 import Link from 'next/link'
+import WorldLoreModal from '@/features/lore/components/world-lore-modal'
+import { WorldLore } from '@/features/lore/queries/get-world-lore'
 
 type DbMessage = typeof messagesTable.$inferSelect
 type Campaign = typeof campaignsTable.$inferSelect
@@ -40,6 +43,7 @@ type Props = {
   // on the previous screen for the whole model call; the opening is now
   // fetched from here and streamed in, like every other turn.
   needsOpening: boolean
+  lore: WorldLore | null
 }
 
 export default function GameScreen({
@@ -49,6 +53,7 @@ export default function GameScreen({
   character,
   baseAttributes,
   needsOpening,
+  lore,
 }: Props) {
   // Reading mode: hides the stats panel so prose gets the full width.
   //
@@ -271,9 +276,28 @@ export default function GameScreen({
           >
             <IconArrowLeft size={20} />
           </Link>
-          <h2 className="truncate text-base font-bold text-text-primary sm:text-lg">
-            {campaign.name}
-          </h2>
+          <div className="flex items-center justify-center gap-2">
+            {lore && (
+              <div className="">
+                <WorldLoreModal
+                  genre={campaign.genre}
+                  lore={lore}
+                  trigger={(open) => (
+                    <button
+                      onClick={open}
+                      aria-label="World lore"
+                      className="shrink-0 p-1.5 text-text-muted transition-colors hover:text-accent cursor-pointer"
+                    >
+                      <IconBook size={20} />
+                    </button>
+                  )}
+                />
+              </div>
+            )}
+            <h2 className="truncate text-base font-bold text-text-primary sm:text-lg">
+              {campaign.name}
+            </h2>
+          </div>
           <button
             type="button"
             onClick={togglePanel}
