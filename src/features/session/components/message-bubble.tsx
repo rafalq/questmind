@@ -3,6 +3,8 @@ import type { Genre } from '@/worlds/'
 import { IconEye, IconUser } from '@tabler/icons-react'
 import { SnapshotChange } from '../lib/snapshot-diff'
 import SnapshotDelta from './snapshot-delta'
+import NpcIntroductions from '@/features/session/components/npc-introduction'
+import type { NpcPortrait } from '@/features/lore/queries/get-npc-portraits'
 
 type Props = {
   role: 'user' | 'assistant'
@@ -12,6 +14,7 @@ type Props = {
   characterName?: string
   genre: Genre
   changes?: SnapshotChange[]
+  npcs?: NpcPortrait[]
 }
 
 export default function MessageBubble({
@@ -22,6 +25,7 @@ export default function MessageBubble({
   characterName,
   genre,
   changes,
+  npcs,
 }: Props) {
   const isAssistant = role === 'assistant'
 
@@ -53,6 +57,7 @@ export default function MessageBubble({
         )}
         <div>{renderContent(content)}</div>
         {changes && changes.length > 0 && <SnapshotDelta changes={changes} />}
+        {npcs && npcs.length > 0 && <NpcIntroductions npcs={npcs} />}
         {isStreaming && isAssistant && (
           <span className="inline-flex gap-1 mt-2">
             <span className="w-1 h-1 bg-accent rounded-full animate-bounce [animation-delay:0ms]" />

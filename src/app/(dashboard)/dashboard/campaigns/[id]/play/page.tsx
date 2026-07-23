@@ -2,6 +2,7 @@ import { getSession } from '@/features/session/queries/get-session'
 import GameScreen from '@/features/session/components/game-screen'
 import { notFound } from 'next/navigation'
 import { getWorldLore } from '@/features/lore/queries/get-world-lore'
+import { getNpcPortraits } from '@/features/lore/queries/get-npc-portraits'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -37,7 +38,13 @@ export default async function PlayPage({ params, searchParams }: Props) {
     (m) => m.role === 'assistant' && m.content !== ''
   )
 
-  const lore = await getWorldLore(campaign.genre)
+  // Both are world-level reference data, unchanged for the life of a session,
+  // so they are fetched once here rather than per message. Parallel because
+  // neither depends on the other.
+  const [lore, npcPortraits] = await Promise.all([
+    getWorldLore(campaign.genre),
+    getNpcPortraits(campaign.genre),
+  ])
 
   return (
     <GameScreen
@@ -49,6 +56,7 @@ export default async function PlayPage({ params, searchParams }: Props) {
       baseAttributes={baseAttributes}
       needsOpening={needsOpening}
       lore={lore}
+      npcPortraits={npcPortraits}
     />
   )
 }
