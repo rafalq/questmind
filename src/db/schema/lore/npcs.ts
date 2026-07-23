@@ -36,6 +36,7 @@ export const npcCharactersTable = pgTable('npc_characters', {
   race: text('race').notNull(), // matches your race enum values
   age: integer('age'),
   ageNote: text('age_note'), // "appears 28, actual age unknown"
+  portraitUrl: text('portrait_url'),
 
   // Core fields — always injected when NPC is active in a scene.
   appearance: text('appearance').notNull(),

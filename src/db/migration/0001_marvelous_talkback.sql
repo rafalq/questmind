@@ -1,0 +1,1 @@
+ALTER TABLE "npc_characters" ADD COLUMN "portrait_url" text;
