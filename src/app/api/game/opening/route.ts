@@ -23,6 +23,19 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const schema = z.object({ sessionId: z.string().uuid() })
 
+/**
+ * Length of the trailing run of characters that could still grow into
+ * SEPARATOR. Returns 0 for anything that cannot possibly be mid-separator,
+ * which is every ordinary chunk of prose.
+ */
+function pendingPrefixLength(text: string): number {
+  const max = Math.min(SEPARATOR.length - 1, text.length)
+  for (let n = max; n > 0; n--) {
+    if (text.endsWith(SEPARATOR.slice(0, n))) return n
+  }
+  return 0
+}
+
 // Serverless instances do not share this, so it is not a distributed lock —
 // the database check below is what actually prevents a duplicate opening. This
 // only stops the cheap, common case: React's development StrictMode mounting
@@ -145,11 +158,17 @@ export async function POST(req: Request) {
             continue
           }
 
-          // Hold back the last SEPARATOR.length characters. A separator can
-          // arrive split across two deltas, and once a fragment of it has been
-          // painted on screen it cannot be taken back — the player would watch
+          // Hold back only what could still turn out to be a separator. One
+          // can arrive split across two deltas, and a fragment already painted
+          // on screen cannot be taken back — the player would watch stray
           // punctuation appear under the opening paragraph.
-          flush(Math.max(0, full.length - SEPARATOR.length))
+          //
+          // Withholding the last SEPARATOR.length characters unconditionally
+          // was too blunt: it kept the visible text a fixed distance behind
+          // the model on every delta, so the prose looked like it had stopped
+          // short of where it had actually reached. The tail is now withheld
+          // only when it really is a prefix of the separator.
+          flush(full.length - pendingPrefixLength(full))
         }
 
         // Stream finished: release whatever was being held back.

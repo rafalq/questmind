@@ -43,7 +43,8 @@ The JSON must follow this exact shape:
   "npcMet": <string[] — names of NPCs encountered for the FIRST time this turn>,
   "location": <string | null — slug from KNOWN LOCATIONS if the player moved
                this turn, otherwise null>,
-  "abilityUsed": <string — exact ability name, omit the field if none was used>,
+  "abilityUsed": <string — exact ability name, only on the turn it is activated;
+                  omit the field otherwise>,
   "sceneTag": <one of: ${sceneTagList}>
 }
 
@@ -65,11 +66,14 @@ The JSON must follow this exact shape:
 - Only change hp, inventory, or quests when the story justifies it. If nothing
   changed this turn, return the same values as the current game state.
 - sceneTag must reflect the current scene — used by the UI to pick a background.
-- abilityUsed: if the character used one of their listed abilities this turn,
-  set this to that ability's exact name, copied character-for-character from the
-  Abilities section. Omit the field entirely if no ability was used. Never
-  invent a name, never abbreviate, and never translate it — even when narrating
-  in another language.
+- abilityUsed: set this only on the turn the character ACTIVATES one of their
+  listed abilities — the moment they invoke it. Copy that ability's exact name
+  character-for-character from the Abilities section. Omit the field entirely on
+  every other turn, including turns where an already-active ability merely
+  continues, is described as fading, wearing off, being dropped, or coming to an
+  end. An ability that ends this turn was not used this turn. Never invent a
+  name, never abbreviate, and never translate it — even when narrating in
+  another language.
 
 ### World-state rules (IMPORTANT)
 - "npcMet" contains only NPCs the player meets for the first time in this turn.

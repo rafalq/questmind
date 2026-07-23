@@ -22,6 +22,7 @@ import { ROUTES } from '@/constants/routes'
 import Link from 'next/link'
 import WorldLoreModal from '@/features/lore/components/world-lore-modal'
 import { WorldLore } from '@/features/lore/queries/get-world-lore'
+import type { NpcPortrait } from '@/features/lore/queries/get-npc-portraits'
 
 type DbMessage = typeof messagesTable.$inferSelect
 type Campaign = typeof campaignsTable.$inferSelect
@@ -44,6 +45,9 @@ type Props = {
   // fetched from here and streamed in, like every other turn.
   needsOpening: boolean
   lore: WorldLore | null
+  /** Authored cast of this world, keyed by lower-cased name. Passed straight
+   *  through to the chat, which resolves it against each turn's `npcMet`. */
+  npcPortraits: Record<string, NpcPortrait>
 }
 
 export default function GameScreen({
@@ -54,6 +58,7 @@ export default function GameScreen({
   baseAttributes,
   needsOpening,
   lore,
+  npcPortraits,
 }: Props) {
   // Reading mode: hides the stats panel so prose gets the full width.
   //
@@ -105,7 +110,12 @@ export default function GameScreen({
     ?.snapshot as GameSnapshot | null
 
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(lastSnapshot)
-  const [isStreaming, setIsStreaming] = useState(false)
+  // Seeded from needsOpening, not false. The opening request is fired in an
+  // effect, so with a false initial value the first paint showed an empty
+  // chat carrying the "Your adventure begins" placeholder, and the typing
+  // indicator only appeared once the effect had run — roughly two seconds
+  // of looking like nothing was happening.
+  const [isStreaming, setIsStreaming] = useState(needsOpening)
 
   // Reads a plain-text stream into the last assistant message, one chunk at a
   // time. `onChunk` returns the prose that should be visible for the text
@@ -153,10 +163,7 @@ export default function GameScreen({
     if (!needsOpening || openingRequested.current) return
     openingRequested.current = true
 
-    let cancelled = false
-
     const run = async () => {
-      setIsStreaming(true)
       try {
         const res = await fetch('/api/game/opening', {
           method: 'POST',
@@ -173,26 +180,32 @@ export default function GameScreen({
         // written at session creation, so everything received is prose.
         await consumeStream(res, (raw) => raw)
       } catch {
-        if (!cancelled) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: 'assistant',
-              content:
-                'The Game Master is gathering their thoughts. Refresh to begin.',
-            },
-          ])
-        }
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content:
+              'The Game Master is gathering their thoughts. Refresh to begin.',
+          },
+        ])
       } finally {
-        if (!cancelled) setIsStreaming(false)
+        // Unconditional. This used to be guarded by a `cancelled` flag raised
+        // in the effect cleanup, which read as ordinary teardown hygiene and
+        // was in fact the stall: under StrictMode the effect mounts, tears
+        // down and remounts, so cleanup raised the flag while the original
+        // request was still streaming. The stream finished, the guard was
+        // true, and isStreaming was never cleared — leaving the typing
+        // indicator running and the composer disabled on a session that had
+        // already loaded.
+        //
+        // There was nothing to guard against: the ref above allows one request
+        // per mount, and setState on an unmounted component has been a no-op
+        // since React 18.
+        setIsStreaming(false)
       }
     }
 
     void run()
-
-    return () => {
-      cancelled = true
-    }
   }, [needsOpening, sessionId])
 
   const sendMessage = async (message: string) => {
@@ -276,23 +289,27 @@ export default function GameScreen({
           >
             <IconArrowLeft size={20} />
           </Link>
-          <div className="flex items-center justify-center gap-2">
+          {/* min-w-0 is what lets the h2 below actually truncate. Without it
+              this group is sized by its content, so a long campaign name grows
+              the group instead of clipping and pushes the panel toggle off the
+              right edge — the same failure GenreCard's title row already
+              guards against. The empty className on the lore wrapper went with
+              it; it was styling nothing. */}
+          <div className="flex min-w-0 items-center justify-center gap-2">
             {lore && (
-              <div className="">
-                <WorldLoreModal
-                  genre={campaign.genre}
-                  lore={lore}
-                  trigger={(open) => (
-                    <button
-                      onClick={open}
-                      aria-label="World lore"
-                      className="shrink-0 p-1.5 text-text-muted transition-colors hover:text-accent cursor-pointer"
-                    >
-                      <IconBook size={20} />
-                    </button>
-                  )}
-                />
-              </div>
+              <WorldLoreModal
+                genre={campaign.genre}
+                lore={lore}
+                trigger={(open) => (
+                  <button
+                    onClick={open}
+                    aria-label="World lore"
+                    className="shrink-0 cursor-pointer p-1.5 text-text-muted transition-colors hover:text-accent"
+                  >
+                    <IconBook size={20} />
+                  </button>
+                )}
+              />
             )}
             <h2 className="truncate text-base font-bold text-text-primary sm:text-lg">
               {campaign.name}
@@ -334,6 +351,7 @@ export default function GameScreen({
           onSend={sendMessage}
           genre={campaign.genre}
           characterName={character.name}
+          npcPortraits={npcPortraits}
         />
       </div>
 
