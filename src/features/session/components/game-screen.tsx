@@ -124,14 +124,19 @@ export default function GameScreen({
   // character. Returns everything that was read.
   const consumeStream = async (
     res: Response,
-    onChunk: (raw: string) => string
+    onChunk: (raw: string) => string,
+    // The opening seeds its own bubble before the request goes out, so that the
+    // typing indicator is on screen during the wait rather than after it. A
+    // turn has no such wait to cover and opens its bubble here as before.
+    { appendBubble = true }: { appendBubble?: boolean } = {}
   ): Promise<string> => {
     const reader = res.body!.getReader()
     const decoder = new TextDecoder()
     let raw = ''
 
-    // Empty assistant message to stream into.
-    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+    if (appendBubble) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+    }
 
     for (;;) {
       const { done, value } = await reader.read()
@@ -163,6 +168,28 @@ export default function GameScreen({
     if (!needsOpening || openingRequested.current) return
     openingRequested.current = true
 
+    // The empty bubble goes up before the request, not after it. fetch does not
+    // resolve until the server has sent headers, and the opening route runs
+    // auth, the session query and the lore retrieval first — several seconds
+    // during which messages was still empty, so ChatPanel showed its
+    // "Your adventure begins. What do you do?" placeholder. The player was
+    // being invited to act while the Game Master was mid-sentence.
+    //
+    // Seeding the bubble here puts the typing indicator on screen for the whole
+    // wait instead of only for the part after the first byte arrives.
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+
+    // Drops the seeded bubble again when there turns out to be nothing to
+    // stream into it. Trailing and empty is the only shape it can have at that
+    // point — a bubble with content has already received text and must stay.
+    const dropSeededBubble = () =>
+      setMessages((prev) => {
+        const last = prev[prev.length - 1]
+        return last?.role === 'assistant' && last.content === ''
+          ? prev.slice(0, -1)
+          : prev
+      })
+
     const run = async () => {
       try {
         const res = await fetch('/api/game/opening', {
@@ -173,13 +200,17 @@ export default function GameScreen({
 
         // 204: the opening already exists — a refresh landed here, or a
         // previous request finished writing it. Nothing to render.
-        if (res.status === 204) return
+        if (res.status === 204) {
+          dropSeededBubble()
+          return
+        }
         if (!res.ok || !res.body) throw new Error('Opening stream failed')
 
         // The opening carries no state block; the starting snapshot was
         // written at session creation, so everything received is prose.
-        await consumeStream(res, (raw) => raw)
+        await consumeStream(res, (raw) => raw, { appendBubble: false })
       } catch {
+        dropSeededBubble()
         setMessages((prev) => [
           ...prev,
           {
@@ -191,12 +222,9 @@ export default function GameScreen({
       } finally {
         // Unconditional. This used to be guarded by a `cancelled` flag raised
         // in the effect cleanup, which read as ordinary teardown hygiene and
-        // was in fact the stall: under StrictMode the effect mounts, tears
-        // down and remounts, so cleanup raised the flag while the original
-        // request was still streaming. The stream finished, the guard was
-        // true, and isStreaming was never cleared — leaving the typing
-        // indicator running and the composer disabled on a session that had
-        // already loaded.
+        // was in fact a stall: under StrictMode the effect mounts, tears down
+        // and remounts, so cleanup raised the flag while the original request
+        // was still streaming, and isStreaming was never cleared.
         //
         // There was nothing to guard against: the ref above allows one request
         // per mount, and setState on an unmounted component has been a no-op

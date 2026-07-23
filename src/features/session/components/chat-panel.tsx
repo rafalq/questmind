@@ -15,7 +15,6 @@ import { Genre } from '@/worlds/'
 import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
 import { diffSnapshots } from '../lib/snapshot-diff'
 import { UIMessage } from '../lib/types'
-import type { NpcPortrait } from '@/features/lore/queries/get-npc-portraits'
 
 type Props = {
   messages: UIMessage[]
@@ -23,8 +22,6 @@ type Props = {
   onSend: (message: string) => void
   genre: Genre
   characterName: string
-  /** Authored cast of this world, keyed by lower-cased name. */
-  npcPortraits: Record<string, NpcPortrait>
 }
 
 const SCROLL_THRESHOLD = 100
@@ -35,7 +32,7 @@ export type ChatPanelHandle = {
 }
 
 const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
-  { messages, isStreaming, onSend, genre, characterName, npcPortraits },
+  { messages, isStreaming, onSend, genre, characterName },
   ref
 ) {
   const [input, setInput] = useState('')
@@ -126,7 +123,13 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
         {/* Shared column: narration and player turns sit on the same axis,
             so collapsing the stats panel adds margin, not sprawl. */}
         <div className="mx-auto w-full max-w-[68ch]">
-          {messages.length === 0 && (
+          {/* Not while streaming. On a brand-new session the opening is on its
+              way and the chat is briefly empty, which showed this line under a
+              Game Master who was already writing — an invitation to act,
+              addressed to a player with nothing yet to act on. GameScreen puts
+              an empty assistant bubble up for that window, so in practice this
+              rarely fires now; the guard covers the frame before it lands. */}
+          {messages.length === 0 && !isStreaming && (
             <p className="text-center text-text-muted text-sm mt-12">
               Your adventure begins. What do you do?
             </p>
@@ -138,32 +141,6 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
                 .slice(0, i)
                 .reverse()
                 .find((prev) => prev.snapshot)?.snapshot ?? null
-
-            // First appearance in this session gets the full portrait; a name
-            // the model reports again later gets the compact form. `npcMet` is
-            // meant to fire only on first meeting, but the model judges that
-            // from history and will occasionally repeat itself — this turns
-            // that inconsistency into the distinction the UI wants.
-            const seenEarlier = new Set(
-              messages
-                .slice(0, i)
-                .flatMap((prev) => prev.snapshot?.npcMet ?? [])
-                .map((n) => n.toLowerCase())
-            )
-
-            const npcs = (m.snapshot?.npcMet ?? [])
-              .map((name) => {
-                const npc = npcPortraits[name.toLowerCase()]
-                return npc
-                  ? {
-                      ...npc,
-                      isIntroduction: !seenEarlier.has(name.toLowerCase()),
-                    }
-                  : null
-              })
-              .filter((npc): npc is NpcPortrait & { isIntroduction: boolean } =>
-                Boolean(npc)
-              )
 
             return (
               <MessageBubble
@@ -179,7 +156,6 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
                 }
                 characterName={m.role === 'user' ? characterName : undefined}
                 changes={diffSnapshots(prevSnapshot, m.snapshot ?? null)}
-                npcs={npcs}
               />
             )
           })}
