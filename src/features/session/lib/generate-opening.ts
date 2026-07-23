@@ -33,14 +33,19 @@ export type OpeningInput = {
   lastSnapshot: GameSnapshot | null
 }
 
-// Language line appended to both intro and recap prompts. Returns '' for
-// English (the model's default), so the prompts stay untouched for 'en'.
-// This is what stops the FIRST message from being English — the opening is
-// saved into session history, and the model follows the language of that
-// history far more strongly than any system instruction on later turns.
+// Language line appended to both intro and recap prompts. Stated for every
+// language including English, which used to be left implicit on the grounds
+// that it is the model's default. It is not the default here: the narration
+// rules the opening ships with teach naming and punctuation through Polish
+// examples, and an English campaign given no instruction followed them.
+//
+// This line matters more than the system prompt's equivalent. The opening is
+// saved into session history, and on later turns the model follows the
+// language of that history far more strongly than any instruction — so the
+// first message decides the language of the whole session.
 function languageLine(language: string): string {
-  if (language === 'en') return ''
-  return `Write everything in ${getLanguage(language).promptName}. Every word of narrative, dialogue and description must be in ${getLanguage(language).promptName}.`
+  const { promptName } = getLanguage(language)
+  return `Write everything in ${promptName}. Every word of narrative, dialogue and description must be in ${promptName}.`
 }
 
 // Grammatical-gender line for both prompts. Matters most in the intro/recap

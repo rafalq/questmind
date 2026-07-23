@@ -24,15 +24,33 @@ export function buildLanguageSection(
 ): string {
   const { promptName } = getLanguage(languageCode)
 
-  // English needs no instruction — it's the model's default and the JSON
-  // is English anyway. Skip the section to save tokens.
-  if (languageCode === 'en') return ''
-
+  // English used to skip this section entirely, on the reasoning that it is the
+  // model's default and the JSON is English regardless. That reasoning assumed
+  // a language-neutral prompt, and this one is not: NARRATIVE_RULES teaches its
+  // naming, declension and dialogue-punctuation rules through Polish examples
+  // ("Szara Matka", "dla Duskborna", the em-dash convention). An English
+  // campaign therefore received no instruction to write English and a page of
+  // worked examples in Polish — and opened in Polish. The section is now always
+  // emitted; three lines of tokens are cheaper than a campaign in the wrong
+  // language.
   const lines = [
     `## Language`,
     `Narrate entirely in ${promptName}. All narration, dialogue, descriptions`,
     `and character speech must be in ${promptName}.`,
   ]
+
+  // Only for languages the examples could pull the model away from. Telling an
+  // English campaign to ignore rules it is about to read is clearer than
+  // leaving it to infer that they were meant for someone else.
+  if (languageCode === 'en') {
+    lines.push(
+      ``,
+      `The naming, declension and dialogue-punctuation examples further down are`,
+      `illustrations of rules for other languages. Narrate in English: keep every`,
+      `name exactly as the world description gives it, and use double quotation`,
+      `marks for dialogue.`
+    )
+  }
 
   if (variant === 'turn') {
     lines.push(
