@@ -75,13 +75,25 @@ Departures from the original plan, both intentional:
 
 **Remainder:** The Drift and Neon Warszawa have four scenes each against Tréigthe's twelve. Adding scenes is now purely additive — generate the image, add one line to `SCENE_IMAGES`.
 
-### 6.2 🔲 NPC portraits (`npcTag`)
+### 6.2 ✅ NPC portraits
 
-`npcMet: string[]` is already in the JSON contract and the GM populates it, but it carries _names_, not tags — and names are free-form, so they can't resolve to assets.
+**Delivered**, and by a simpler route than the one planned here.
 
-A parallel `npcTag` (enum, same discipline as `sceneTag`) would let a portrait appear when a significant NPC enters a scene. Likely shape: archetype-based (`priest`, `smuggler`, `warden`, `beggar`, `soldier`) rather than per-character, since generating a unique portrait for every improvised NPC is not tractable.
+The original note assumed a parallel `npcTag` enum would be needed, on the reasoning that `npcMet` carries free-form names rather than asset-resolvable tags. That reasoning holds for NPCs the model invents — but not for the authored cast, who exist as rows in `npcCharactersTable`. Their **name is already a stable key**, because the prompt instructs the model to copy it character-for-character from the NPC block. No new enum, no new contract field.
 
-Open question: archetype portraits risk visual repetition — two different priests, one face. May be better limited to _authored_ NPCs (scenario-defined, where a specific portrait can exist) and omitted entirely for improvised ones.
+What shipped:
+
+- `portraitUrl` on `npcCharactersTable`, seeded for all fifteen authored NPCs (five per world).
+- `getNpcPortraits(genre)` returns a name → portrait map, lower-cased on both sides to survive capitalisation drift.
+- `NpcIntroductions` renders under the GM message, beside `SnapshotDelta`, resolved from that message's own snapshot.
+
+**Why the message and not the stats panel.** `npcMet` is an _event_ — populated only on the turn of a first meeting — while `sceneTag` is _state_, present every turn. A panel needs state; a message wants exactly this. Rendering it against the message also means a resumed campaign shows the same faces in the same places with nothing extra persisted, and scrolling back through a session reads as a gallery of who was met, in the order they were met.
+
+**First meeting vs later mentions.** A name the model reports again in a later turn renders as a compact avatar rather than the full portrait, decided client-side by scanning earlier snapshots in the session. This turns an inconsistency into a feature: `npcMet` is specified as first-meeting-only, but the model judges that from history and occasionally repeats itself.
+
+**Known limitation, and it is the right one:** invented NPCs never resolve to a portrait. That is the prompt's own rule working as designed — it tells the model an invented NPC "may be listed; it simply will not be remembered" — so a missing portrait is that boundary made visible rather than a lookup failure.
+
+**Remainder:** portraits appear only where the model reports a first meeting. Showing who is _currently present_ in a scene would need `npcPresent` in the contract — the same state-versus-event distinction as above, and the same reason it is deferred.
 
 ### 6.3 🔲 Character avatar (`avatarUrl`)
 
@@ -97,13 +109,15 @@ Until one of those is true, the column is dead weight. It should be shown in the
 
 **Delivered.** `cardImageUrl` is on the world definition and rendered behind the world selection cards.
 
-### 6.5 🔲 Region map with player position
+### 6.5 🟡 Region map with player position
 
 Scene images answer "what does this place look like"; they do not answer "where am I". A map modal, opened from a button in the session header, would render the region art with the player's current position marked from `snapshot.location`.
 
 Design already settled: generate maps **without labels** and overlay them in the DOM, so the same percentage coordinates drive both the location labels and the "you are here" marker, and labels stay editable without regenerating art. Keep the map's visual language per world — aged parchment for Tréigthe, holographic schematic for The Drift, neon navigation overlay for Neon Warszawa — so it reads as an artefact from inside the fiction.
 
 Note on labels: Tréigthe's place names (Cathair Luaith, Baile Fola) are Irish and are never translated under the naming rules in the GM prompt, so using them directly on the map avoids the i18n problem entirely for campaigns played in other languages.
+
+**Partially delivered.** Region maps now exist for all three worlds and render in the world lore modal, each in its own visual language. They are keyed by **world, not genre** — `mapImageUrl` sits on the world definition beside `cardImageUrl` and `classPortraitsBaseUrl`, which is the correct axis and a small down-payment on item 1. What is not built is the position marker: the map is currently reference art, not a live view of where the player stands.
 
 ### Cross-cutting: assets are per world
 
@@ -209,15 +223,24 @@ This closes the measurable success criterion from the project proposal: _"100% o
 
 **Remaining, and the real fix:** migrate the state block to **tool use**. Defining `update_game_state` as a tool with a JSON schema means the API enforces the structure instead of the model remembering to produce it. That eliminates this entire class of failure at once — missing separator, truncated JSON, and the em-dash separator variant the current parser cannot see. It requires reworking the parse and stream path, which is why it is future work rather than this sprint's fix.
 
-## 12. 🔲 Opening message bypasses the lore pipeline
+## 12. ✅ Opening message bypasses the lore pipeline
 
 `generate-opening.ts` builds its own prompt and does **not** call `buildSystemPrompt`, so the opening narration receives neither `worldCore` nor `KNOWN LOCATIONS`. Observed consequence: the model invented a city ("Duskhaven") and a historical event ("the Great War") that exist nowhere in the world, and the very next turn — which does go through the full pipeline — correctly used Cathair Luaith instead.
 
 This matters more than a normal hallucination: the opening sets the tone of the entire session, and it is the first thing a new player reads.
 
-**Fix:** have `generate-opening` call `buildSystemPrompt` exactly as the stream path does. One contract, one lore source, no second prompt to maintain.
+**Delivered.** `generate-opening` now calls `buildSystemPrompt` with a new `variant: 'opening'`, which supplies the full lore — world core, known locations, present NPCs, narration rules — while omitting the output contract, because the opening is prose only and handing the model a JSON contract it is then told to ignore is a contradiction rather than an instruction.
 
-## 13. 🔲 Tests for the snapshot pipeline
+Correction to the note above, worth keeping accurate for the report: "the Great War" was **not** a hallucination. It is a seeded world event with `includeInPrompt: true`. Only the invented city was. The distinction matters — the failure was narrower than first diagnosed, and the diagnosis was itself corrected by reading the seed rather than trusting the first reading.
+
+Two follow-on findings from the same fix:
+
+- **The language section leaked the contract.** `buildLanguageSection` told the model that everything after the separator stays English — inside a prompt that never described a separator. The model concluded a machine-readable block was expected and invented one of its own design (`session`, `playerCharacter`, `active_npcs`), which was saved verbatim and shown to the player. The section is now variant-aware.
+- **Belt and braces:** the opening strips anything following a separator before persisting, and logs when it does. Even with a clean prompt, the model has been shaped by thousands of turns that end in a state block and will occasionally produce one from habit.
+
+Verified in play: a fresh Polish Tréigthe campaign opened in Cathair Luaith, drew on a seeded world event, dated the character's birth consistently with the current year 500, and ended in prose.
+
+## 13. 🟡 Tests for the snapshot pipeline
 
 `repairSnapshot` is a pure function with no I/O, which makes it the cheapest high-value test target in the codebase. Planned cases:
 
@@ -227,7 +250,16 @@ This matters more than a normal hallucination: the opening sets the tone of the 
 - unknown `sceneTag` reverts to the previous scene
 - **every scene tag reachable from the database has an entry in `SCENE_IMAGES`** — otherwise adding a location to a seed silently falls back to the default background with no error anywhere
 
-Also worth covering: the streaming hold-back that withholds `SEPARATOR.length - 1` characters in case they are the start of a separator completing in a later chunk. A separator split across two chunks is exactly the kind of edge case that works until it doesn't.
+**Delivered** (12 tests, passing): every case above, plus quest-status validation, passthrough of server-authoritative fields on turn one, null-`abilityUsed` acceptance, and two asset-consistency checks — every mapped scene image exists on disk, and every genre defines a `default`.
+
+The disk check earns its place: a missing asset throws nowhere. `sceneImage` returns the path, the browser 404s, and the banner is silently blank. That exact failure has now recurred four times in this project — scene filenames with hyphens against underscores in the map, maps keyed by genre with two genres unmapped, and NPC portraits seeded as `.webp` while the files on disk were still `.jpg`. Each was found by eye, in the running app.
+
+**Remainder:**
+
+- An asset test for NPC portraits, reading `portraitUrl` out of the seed files. Same pattern as the scene test; it would have caught the `.jpg`/`.webp` mismatch before it reached the browser.
+- The streaming hold-back that withholds `SEPARATOR.length - 1` characters in case they begin a separator completing in a later chunk. A separator split across two chunks is exactly the kind of edge case that works until it doesn't.
+
+Tooling note for the report: the proposal named Jest; the project uses **Vitest 4**, the practical choice for a Next 16 / ESM codebase.
 
 ## 14. 🔲 Naming examples in the shared prompt are Tréigthe's
 
@@ -259,3 +291,34 @@ The temptation once (1) exists is to slide into (2). That slide is the actual ri
 **Where it connects to work already done:** the FR-006 token measurements (Drift session: 4,738 → 11,829 input tokens over 14 turns, ~546/turn) established that full history fits comfortably inside the 200k window and that cost, not context, is the practical limit. A player notebook is the interesting counter-proposal to full history: a compressed, human-curated summary of what matters, at a fraction of the tokens — and unlike automatic summarisation, the compression is done by the person who knows which details were significant. Worth stating in **Further Development** as the natural continuation of that finding rather than as a UI nicety.
 
 **Trigger:** post-submission, and only in version (1) first. Version (2) should not be attempted until the state block has migrated to tool use (item 11), since that is what makes the prompt path safe to extend.
+
+## 16. ✅ World lore modal: from three paragraphs to a reference
+
+**The problem, in the player's words:** "I start a session and I have no idea what is going on, where anything is, or why." The modal showed a world summary, a region description and a timeline. Nothing about who you can be, what the trades do, where you can go, or what any of the world's vocabulary means — and every world runs on vocabulary the player has never seen (the echo, the Static, Czarna Noc, the brygady).
+
+**Delivered:** a table of contents under the map, then World, History, Peoples, Trades, Places and Glossary. Reachable from the campaign card and from the session screen, via an optional `trigger` render-prop so one component serves both.
+
+**The architectural point worth making in the report:** almost none of this is authored twice.
+
+- Peoples and Trades render from `getWorld(slug).races/.classes` — the same objects the character wizard reads, so the modal cannot describe a race the player cannot create.
+- Places render from `locationsTable`, using `promptContext`, which is already written as prose for someone who lives there. A location added to a seed appears in the modal on the next load.
+- Only the glossary is new content, and it lives in the world registry beside the definitions.
+
+This is the same principle that fixed the hard-coded scene list and the dead `prompt.intro` field: **a static copy of data that has a live source will drift, and the drift is always found late.** Three occurrences in this project, each fixed the same way.
+
+**Sequencing note:** the modal was written before verifying whether the events query filtered secrets. It does — `isTierSecret: false` and `includeInPrompt: true` — so the AI-only Imprisonment Pact and both "possible future" endings were never exposed. The check should have preceded the assumption.
+
+## 17. 🔲 Ability costs are not calibrated to the HP scale
+
+`calculateMaxHp` is `BASE_HP (50) + endurance × HP_PER_ENDURANCE (10)`, so an ordinary starting character sits near 190 HP. Bleeder's `Bloodcast` costs a flat 5 HP and `Crimson Echo` 8.
+
+That is 2.6% and 4.2% of the pool. The design intent — stated in the class comment, the world core and the glossary alike — is that _nothing is free_ and every working costs the caster something real. At this scale it costs almost nothing, and the same holds for the Diver and the Conduit, whose costs mirror the Bleeder's exactly.
+
+**Two ways out:**
+
+1. **Compress the HP scale** — e.g. `BASE_HP 20`, `HP_PER_ENDURANCE 3` puts a starting character near 62 HP and Bloodcast at ~8%.
+2. **Express costs as a fraction of `maxHp`** rather than as flat integers, so the price scales with progression instead of thinning out at higher levels. This is the better answer, and it is also a contract change: the prompt states costs to the model in absolute numbers.
+
+**Why deferred:** balance work needs several played sessions to evaluate, not a reasoning exercise, and it touches three classes across three worlds simultaneously. The mechanic is implemented and demonstrably functional — HP is deducted, the snapshot reflects it, the panel shows it. What is unfinished is the _number_, which is honest to state as such.
+
+**Worth saying plainly in Conclusions:** this is a game-design gap, not a software one, and it is the kind of thing that only surfaces from playing the thing rather than building it.
