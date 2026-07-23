@@ -62,7 +62,7 @@ async function seed() {
       nameTranslation: 'The Right Bank',
       slug: 'praga',
       locationType: 'city',
-      sceneTag: 'brick_district',
+      sceneTag: 'street_market',
       promptContext: `Praga — the right bank (~150,000, mostly unregistered). The Night barely touched it: Praga never trusted Syrenka enough to wire itself to her, and it does not trust the Ratusz grid now. Coal smoke, brick kamienice, string lights running off brygada generators. Where Śródmieście has Ratusz, Praga has the brygady: Brygada Prądu (power), the Przewoźnicy (the ferrymen — the bridges are checkpointed, the river is not), and the Złomiarze (salvage). Ratusz keeps one small permit office here that nobody visits.
 
 Everything smells of coal, frying oil and river damp. The Bazar Różyckiego trades everything the left bank pretends not to need. Ratusz writ runs thin this side of the river — a Diver can work here in the open, for a price, and nobody reports it. Brygada law is the only law: debts are enforced, and the enforcement is visible on the riverbank if you look.
@@ -150,6 +150,7 @@ No ferryman has crossed at night in three months. They do not explain why. They 
       worldId: world.id,
       primaryLocationId: praga.id,
       name: 'Grażyna Wat',
+      portraitUrl: '/images/cyberpunk/neon-warszawa/npcs/grazyna-wat.webp',
       title: 'Brygadzistka of Brygada Prądu',
       role: 'faction_leader',
       race: 'streetborn',
@@ -198,6 +199,7 @@ No ferryman has crossed at night in three months. They do not explain why. They 
       worldId: world.id,
       primaryLocationId: praga.id,
       name: 'Rysiek Prom',
+      portraitUrl: '/images/cyberpunk/neon-warszawa/npcs/rysiek-prom.webp',
       title: null,
       role: 'npc_major',
       race: 'streetborn',

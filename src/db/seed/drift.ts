@@ -127,7 +127,7 @@ Three habitats: Kessler's Rest (hub, Choir power), Tetherport (spinward docks, g
       nameTranslation: 'The Anchorage',
       slug: 'kesslers-rest',
       locationType: 'city',
-      sceneTag: 'station_concourse',
+      sceneTag: 'station_corridor',
       promptContext: `Kessler's Rest — largest habitat in the Cinder Belt (~20,000 people), welded together from nine hulls around a dead relay tower in Year 12. Dominated by the Silent Stack and the Choir that runs it. The Council of Seven Decks governs nominally — in practice the Choir decides.
 
 The habitat smells of ozone and recycled air. Corridors are riveted, bulkheads grey, the Stack's antenna spire visible from every concourse. The Forgeborn chair on the Council has been empty for three months. Strangers are noticed. The Dialtone are disappearing.`,
@@ -238,6 +238,7 @@ The habitat smells of ozone and recycled air. Corridors are riveted, bulkheads g
       worldId: world.id,
       primaryLocationId: kesslersRest.id,
       name: 'Veyra Sol',
+      portraitUrl: '/images/sci-fi/drift/npcs/veyra-sol.webp',
       title: 'First Cantor',
       role: 'faction_leader',
       race: 'hullborn',
@@ -251,7 +252,8 @@ The habitat smells of ozone and recycled air. Corridors are riveted, bulkheads g
       secret:
         'Founded the Dialtone twenty years ago as a honeypot to identify people searching for the living network. The honeypot has escaped her control and begun attracting genuine believers. She knows the quarantine is failing. She does not know what the controlled reconnection requires.',
       relationships: {
-        'Old Karsa': 'Former student. She pretends not to remember. Karsa does.',
+        'Old Karsa':
+          'Former student. She pretends not to remember. Karsa does.',
         'Council of Seven Decks':
           'Useful administrators. Respects their function, not their persons.',
         'The Warden of Vents': 'A tool. Nothing more.',
@@ -296,6 +298,7 @@ The habitat smells of ozone and recycled air. Corridors are riveted, bulkheads g
       worldId: world.id,
       primaryLocationId: kesslersRest.id,
       name: 'Old Karsa',
+      portraitUrl: '/images/sci-fi/drift/npcs/old-karsa.webp',
       title: 'The Grey Medic',
       role: 'npc_major',
       race: 'hullborn',
@@ -355,6 +358,7 @@ The habitat smells of ozone and recycled air. Corridors are riveted, bulkheads g
       worldId: world.id,
       primaryLocationId: kesslersRest.id,
       name: 'The Unlisted',
+      portraitUrl: '/images/sci-fi/drift/npcs/the-unlisted.webp',
       title: 'The Frame With No Manifest',
       role: 'hidden',
       race: 'remnant',

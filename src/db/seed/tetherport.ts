@@ -59,7 +59,7 @@ async function seed() {
       nameTranslation: 'The Docking Sprawl',
       slug: 'tetherport',
       locationType: 'city',
-      sceneTag: 'docks',
+      sceneTag: 'docking_bay',
       promptContext: `Tetherport — the spinward docks (~12,000 people). Named for the kilometre of salvage tethers that kept the first hulls alive through the Thin Air, not for any harbour. Where Kessler's Rest has the Choir, Tetherport has the guilds: the Air Guild, the Riggers, and the Hullwrights hold the docking ring between them, and the Choir keeps one small chapel here that nobody visits.
 
 Everything smells of coolant, scorched metal and recycler brine. Scaffold quays, black void, dock drones that have learned to keep clear of people. The Choir's writ runs thin this far spinward — a Conduit can work here in the open, for a price, and nobody reports it. Guild law is the only law: debts are enforced, and the enforcement is visible on the docking ring if you look.
@@ -147,6 +147,7 @@ No crew has flown trailing-edge past the Dead Flotilla in three months. The pilo
       worldId: world.id,
       primaryLocationId: tetherport.id,
       name: 'Mara Voss',
+      portraitUrl: '/images/sci-fi/drift/npcs/mara-voss.webp',
       title: 'Mistress of the Air Guild',
       role: 'faction_leader',
       race: 'hullborn',
@@ -195,6 +196,7 @@ No crew has flown trailing-edge past the Dead Flotilla in three months. The pilo
       worldId: world.id,
       primaryLocationId: tetherport.id,
       name: 'Dekker Rho',
+      portraitUrl: '/images/sci-fi/drift/npcs/dekker-rho.webp',
       title: null,
       role: 'npc_major',
       race: 'hullborn',

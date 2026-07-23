@@ -128,7 +128,7 @@ Three districts matter: Śródmieście (left bank, Ratusz power, the Iglica), Pr
       nameTranslation: 'The Glass District',
       slug: 'srodmiescie',
       locationType: 'city',
-      sceneTag: 'neon_street',
+      sceneTag: 'corporate_plaza',
       promptContext: `Śródmieście — the left-bank core (~300,000 registered), rebuilt in glass and neon around the Iglica: the Ratusz arcology raised on the bones of the Pałac Kultury after the Night. The Rada Dzielnic governs nominally — in practice Ratusz decides.
 
 Rain most days, neon reflected in wet concrete, drones at rooftop level, checkpoint queues at the bridge ramps. The Iglica's crown is visible from every street. The Tunneler seat on the Rada has been empty for three months. Strangers are scanned. The Chór is disappearing — its members vanishing one by one.`,
@@ -240,6 +240,7 @@ Rain most days, neon reflected in wet concrete, drones at rooftop level, checkpo
       worldId: world.id,
       primaryLocationId: srodmiescie.id,
       name: 'Irena Gawron',
+      portraitUrl: '/images/cyberpunk/neon-warszawa/npcs/irena-gawron.webp',
       title: 'Dyrektor',
       role: 'faction_leader',
       race: 'streetborn',
@@ -298,6 +299,7 @@ Rain most days, neon reflected in wet concrete, drones at rooftop level, checkpo
       worldId: world.id,
       primaryLocationId: srodmiescie.id,
       name: 'Doktor Wanda',
+      portraitUrl: '/images/cyberpunk/neon-warszawa/npcs/doktor-wanda.webp',
       title: 'The Grey Medic',
       role: 'npc_major',
       race: 'streetborn',
@@ -357,6 +359,7 @@ Rain most days, neon reflected in wet concrete, drones at rooftop level, checkpo
       worldId: world.id,
       primaryLocationId: srodmiescie.id,
       name: 'Niezameldowany',
+      portraitUrl: '/images/cyberpunk/neon-warszawa/npcs/niezameldowany.webp',
       title: 'The Unregistered',
       role: 'hidden',
       race: 'golem',
