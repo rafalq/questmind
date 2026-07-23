@@ -17,15 +17,19 @@ export default function Tooltip({
   position = 'top',
 }: TooltipProps) {
   return (
-    <div className="relative group/tooltip inline-flex">
+    <div className="group/tooltip relative inline-flex">
       {children}
+      {/* on-surface: this is used inside .on-media cards (the active-campaign
+          badge on a character card), where it would otherwise inherit the
+          light-on-artwork palette and draw pale text on its own bg-bg-elevated
+          panel. The bubble is its own surface, not part of the artwork.
+
+          role="tooltip" without aria-describedby on the trigger is only half
+          the wiring, but it is the half that can be done without a ref here;
+          the text is also visible on hover, so it is not the sole channel. */}
       <span
-        className={`
-          absolute ${positionClasses[position]}
-          px-2 py-1 text-xs text-text-primary bg-bg-elevated border border-border
-          whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100
-          transition-opacity pointer-events-none z-50
-        `}
+        role="tooltip"
+        className={`on-surface absolute ${positionClasses[position]} pointer-events-none z-50 whitespace-nowrap border border-border bg-bg-elevated px-2 py-1 text-xs text-text-primary opacity-0 shadow-lg transition-opacity group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100`}
       >
         {content}
       </span>

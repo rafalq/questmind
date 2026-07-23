@@ -33,6 +33,10 @@
   --color-accent: var(--qm-accent);
   --color-accent-hover: var(--qm-accent-hover);
   --color-accent-fg: var(--qm-accent-fg);
+  --color-positive: var(--qm-positive);
+  --color-positive-fg: var(--qm-positive-fg);
+  --color-negative: var(--qm-negative);
+  --color-negative-fg: var(--qm-negative-fg);
   --color-border: var(--qm-border);
   --color-border-subtle: var(--qm-border-subtle);
   --breakpoint-xs: 25rem;
@@ -41,6 +45,9 @@
 /*
  * DARK — the default QuestMind theme.
  * :root covers the moment before the class is set; .dark is an explicit choice.
+ *
+ * Kept in sync with the .on-surface block further down, which restates this
+ * palette so a subtree can climb back out of .on-media.
  */
 :root,
 .dark {
@@ -55,6 +62,14 @@
   --qm-accent-fg: #0a0805;
   --qm-border: #2a2016;
   --qm-border-subtle: #1a1508;
+
+  /* Semantic pair for stat modifiers and similar up/down signals. Used as a
+     filled chip (background + foreground), which is legible in both themes
+     without a per-theme text colour at the call site. */
+  --qm-positive: #2f6f4f;
+  --qm-positive-fg: #eaf6f0;
+  --qm-negative: #8c2f2f;
+  --qm-negative-fg: #fdeeee;
 
   /* Genre tints fall back to the page background until [data-genre] scopes
      them; see the tint block near the end of this file. */
@@ -91,6 +106,12 @@
   --qm-accent-fg: #fff;
   --qm-border: #d4c4a0;
   --qm-border-subtle: #e8dcc8;
+
+  /* Darker fills than in dark mode so white chip text keeps 4.5:1. */
+  --qm-positive: #1f5a3d;
+  --qm-positive-fg: #fff;
+  --qm-negative: #a02222;
+  --qm-negative-fg: #fff;
   --qm-bg-chat: var(--qm-bg-base);
   --qm-bg-genre: var(--qm-bg-base);
 
@@ -124,6 +145,57 @@
   --qm-border-subtle: #4a4030;
 
   color-scheme: dark;
+}
+
+/*
+ * .on-surface — the way back out of .on-media.
+ *
+ * Custom properties inherit down the DOM tree, and position:fixed does not
+ * change that. A modal rendered inside a card — CharacterSelectModal lives in
+ * GenreCard's `actions` slot, WorldLoreModal in its `subtitle` slot — is a
+ * descendant of .on-media even though it paints across the whole viewport. It
+ * inherited the light-on-artwork palette and drew cream text on its own white
+ * panel.
+ *
+ * Any overlay that escapes its parent visually must therefore say so:
+ *   <div className="on-surface fixed inset-0 …">
+ *
+ * The palettes below duplicate the two blocks above. CSS has no mixins, and a
+ * plain `.on-surface { --qm-text-primary: var(--qm-text-primary) }` cannot
+ * work — a property cannot reference the value it is shadowing. Keep the three
+ * copies in step when a colour changes.
+ */
+:root .on-surface,
+.dark .on-surface {
+  --qm-bg-base: #0a0805;
+  --qm-bg-surface: #0d0b07;
+  --qm-bg-elevated: #130f08;
+  --qm-text-primary: #e8dcc8;
+  --qm-text-secondary: #a89878;
+  --qm-text-muted: #9a8a6a;
+  --qm-accent: #c9a84c;
+  --qm-accent-hover: #debb6a;
+  --qm-accent-fg: #0a0805;
+  --qm-border: #2a2016;
+  --qm-border-subtle: #1a1508;
+
+  color-scheme: dark;
+}
+
+.light .on-surface {
+  --qm-bg-base: #faf6ef;
+  --qm-bg-surface: #f2ebe0;
+  --qm-bg-elevated: #fff;
+  --qm-text-primary: #1a1508;
+  --qm-text-secondary: #5a4520;
+  --qm-text-muted: #6b5836;
+  --qm-accent: #8a6a1e;
+  --qm-accent-hover: #6f5416;
+  --qm-accent-fg: #fff;
+  --qm-border: #d4c4a0;
+  --qm-border-subtle: #e8dcc8;
+
+  color-scheme: light;
 }
 
 @layer base {
