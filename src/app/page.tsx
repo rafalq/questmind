@@ -167,7 +167,8 @@ function Feature({
 
 // Podmień na prawdziwy zrzut ekranu sesji, np. '/images/demo/session-preview.jpg'.
 // Dopóki jest null, sekcja renderuje stylowany placeholder.
-const DEMO_IMAGE: string | null = null
+const DEMO_IMAGE: string | null = '/images/home-page/demo-v2.png'
+const DEMO_SESSION_NAME = 'The Light That Should Not Be'
 
 function Demo() {
   return (
@@ -190,18 +191,19 @@ function Demo() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#6a6a1a]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#1a5a2a]" />
           <span className="ml-3 truncate text-[10px] tracking-widest text-text-muted sm:text-xs">
-            THE BROKEN FLAGON TAVERN · SESSION 1
+            {DEMO_SESSION_NAME} · SESSION 1
           </span>
         </div>
 
         {/* Screenshot / placeholder */}
-        <div className="relative aspect-16/10 w-full">
+        <div className="relative aspect-16/10 w-full overflow-hidden">
           {DEMO_IMAGE ? (
             <Image
               src={DEMO_IMAGE}
               alt="QuestMind live session — AI Game Master narration with the stats panel updating in real time"
               fill
-              className="object-cover object-top"
+              quality={92}
+              className="object-contain"
               sizes="(min-width: 768px) 768px, 100vw"
             />
           ) : (

@@ -15,6 +15,9 @@ export const metadata = {
 // np. '/images/about/step-2-character.jpg'. Dopóki jest null,
 // renderuje się stylowany placeholder w tej samej ramce.
 // ---------------------------------------------------------------------------
+
+const IMAGE_PREFIX = '/images/about-page/'
+
 const steps: {
   number: string
   title: string
@@ -27,7 +30,7 @@ const steps: {
     title: 'Create your account',
     description:
       'Sign up with your email in seconds. Your campaigns, characters and story history are tied to your account — nothing is ever lost.',
-    image: null,
+    image: `${IMAGE_PREFIX}sign-up.png`,
     imageAlt: 'QuestMind sign-up page',
   },
   {
@@ -35,7 +38,7 @@ const steps: {
     title: 'Forge your character',
     description:
       'Pick a world, choose a race and class, shape your attributes and give your hero a name. Every race comes with its own portrait.',
-    image: null,
+    image: `${IMAGE_PREFIX}new-character.png`,
     imageAlt: 'Character creation wizard — race selection with portraits',
   },
   {
@@ -43,7 +46,7 @@ const steps: {
     title: 'Start a campaign',
     description:
       'Name your campaign and step into the world you chose. Read the lore before you jump in — the world has secrets worth knowing.',
-    image: null,
+    image: `${IMAGE_PREFIX}new-campaign.png`,
     imageAlt: 'Campaign dashboard with campaign cards',
   },
   {
@@ -51,7 +54,7 @@ const steps: {
     title: 'Play your story',
     description:
       'Type what you want to do. The AI Game Master narrates the outcome while your HP, inventory and quests update on their own.',
-    image: null,
+    image: `${IMAGE_PREFIX}session.png`,
     imageAlt: 'Live session — AI narration with the stats panel',
   },
 ]
