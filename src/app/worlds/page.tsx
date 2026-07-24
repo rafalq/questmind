@@ -1,5 +1,6 @@
 import Divider from '@/components/ui/divider'
 import { ROUTES } from '@/constants/routes'
+import { ENABLED_WORLDS, WORLDS } from '@/worlds'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -10,68 +11,87 @@ export const metadata = {
 }
 
 // ---------------------------------------------------------------------------
-// Opisy napisałem na podstawie Twoich dokumentów — podmień na fragmenty
-// własnego lore (te same teksty co w modalach), żeby wszystko było spójne.
-// `status: 'available' | 'coming-soon'` steruje badge'em — jak The Drift
-// będzie grywalny, zmień mu status. `facts` to opcjonalne metryki świata.
+// Only the marketing copy lives here. Everything that also exists in the world
+// registry (name, genre, images, races/classes counts, enabled flag) is read
+// from `getWorld(slug)` so this page can never contradict what the character
+// wizard and the lore modal show — the same rule the lore modal follows.
+//
+// TODO(counts): `locations` / `npcs` are still hard-coded below. Once the seed
+// is the source of truth, replace them with a count query in a server
+// component (`select count(*) from locations/npcs where world = slug`).
 // ---------------------------------------------------------------------------
-type WorldStatus = 'available' | 'coming-soon'
 
-const worlds: {
-  slug: string
-  name: string
-  subtitle: string
-  genre: string
-  status: WorldStatus
-  image: string
-  description: string[]
-  facts: { label: string; value: string }[]
-}[] = [
+const worldCopy: Record<
+  (typeof WORLDS)[number]['value'],
   {
-    slug: 'treigthe',
-    name: 'Tréigthe',
-    subtitle: 'The Forsaken',
-    genre: 'Dark Fantasy',
-    status: 'available',
-    image: '/images/fantasy/treigthe/fantasy-hero.jpg',
+    description: string[]
+    facts: { label: string; value: string }[]
+  }
+> = {
+  treigthe: {
     description: [
       'A land the gods walked away from. In the grey region of Talamh Liath, three cities cling to old roads and older grudges, and every stranger you meet is carrying something they will not say out loud.',
-      'Choose from four races and four classes, and step into a world where every NPC guards a hidden secret — one the Game Master will hint at, but never hand you. What you uncover depends entirely on where you look and who you push.',
+      'Magic here is paid for, not cast: power costs blood, memory, or something you will not notice missing until later. What you uncover depends entirely on where you look and who you push.',
     ],
     facts: [
-      { label: 'Races', value: '4' },
-      { label: 'Classes', value: '4' },
       { label: 'Cities', value: '3' },
-      { label: 'NPCs', value: '45' },
+      { label: 'Glossary', value: '22' },
     ],
   },
-  {
-    slug: 'the-drift',
-    name: 'The Drift',
-    subtitle: 'Between the Stars',
-    genre: 'Sci-Fi',
-    status: 'coming-soon',
-    image: '/images/sci-fi/drift/sci-fi-hero.jpg',
+  drift: {
     description: [
-      'Far from any homeworld, a scattered belt of stations, wrecks and mining outposts drifts through the dark. Out here the law is whatever the nearest airlock says it is, and every contract has a clause nobody read.',
-      'Trade, salvage, smuggle or explore — the Drift rewards those who ask the right questions and keep one hand near the throttle.',
+      'A convoy of ships strung together in the dark, one hundred and thirty cycles after the signal went out. Nothing has answered since. The Veil presses on the hulls, and the crews have long stopped agreeing on what is out there.',
+      'Salvage the wrecks the convoy passes, trade favours you cannot repay, and decide how much of the ship you are willing to spend to keep it moving.',
     ],
-    facts: [],
+    facts: [{ label: 'Glossary', value: '17' }],
   },
-  {
-    slug: 'neon-warszawa-2087',
-    name: 'Neon Warszawa 2087',
-    subtitle: 'The City That Rebuilt Itself',
-    genre: 'Cyberpunk',
-    status: 'coming-soon',
-    image: '/images/cyberpunk/neon-warszawa/cyberpunk-hero.jpg',
+  neon_warszawa: {
     description: [
-      'Warsaw, sixty years from now: chrome towers over the Vistula, black-market implant clinics in Praga, and corporations that own everything except the streets after midnight.',
+      'Warsaw, 2087 — ten years after the net went dark and the city learned to live without it. Chrome towers over the Wisła, back-room implant clinics in Praga, and corporations that own everything except the streets after midnight.',
       'Take jobs from fixers, jack into systems you should not touch, and decide how much of yourself you are willing to trade for an edge.',
     ],
-    facts: [],
+    facts: [{ label: 'Glossary', value: '17' }],
   },
-]
+}
+
+type WorldCard = {
+  slug: string
+  name: string
+  genre: string
+  image: string
+  enabled: boolean
+  subtitle: string
+  description: string[]
+  facts: { label: string; value: string }[]
+}
+
+const enabledSlugs = new Set(ENABLED_WORLDS.map((world) => world.value))
+
+const worlds: WorldCard[] = WORLDS.map((world) => {
+  // A missing key in `worldCopy` must not take the page down: fall back to the
+  // registry's own one-line description and drop the extra facts.
+  const copy = worldCopy[world.value] ?? {
+    description: [world.description],
+    facts: [],
+  }
+
+  return {
+    slug: world.value,
+    name: world.name,
+    genre: world.genre,
+    image: world.cardImageUrl,
+    enabled: enabledSlugs.has(world.value),
+    // The registry already carries a one-line `subtitle` and `description`;
+    // the long two-paragraph copy for this page lives in `worldCopy` above.
+    subtitle: world.subtitle,
+    description: copy.description,
+    facts: [
+      { label: 'Races', value: String(world.races.length) },
+      { label: 'Classes', value: String(world.classes.length) },
+      ...copy.facts,
+    ],
+  }
+})
 
 export default function WorldsPage() {
   return (
@@ -114,7 +134,7 @@ function WorldSection({
   world,
   reversed,
 }: {
-  world: (typeof worlds)[number]
+  world: WorldCard
   reversed: boolean
 }) {
   return (
@@ -134,10 +154,10 @@ function WorldSection({
               src={world.image}
               alt={`${world.name} — ${world.genre}`}
               fill
-              className="object-cover"
+              className={`object-cover ${world.enabled ? '' : 'grayscale-[0.5]'}`}
               sizes="(min-width: 768px) 512px, 100vw"
             />
-            {world.status === 'coming-soon' && (
+            {!world.enabled && (
               <div className="absolute inset-0 flex items-start justify-end bg-black/30 p-4">
                 <span className="border border-accent bg-black/70 px-3 py-1.5 text-[10px] tracking-[0.3em] text-accent">
                   COMING SOON
