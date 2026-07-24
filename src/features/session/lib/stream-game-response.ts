@@ -78,6 +78,10 @@ export function streamGameResponse({
         sessionId,
       })
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SERVER npcMet (raw):', snapshot?.npcMet)
+      }
+
       if (snapshot) {
         snapshot = await applyTurnEffects({
           snapshot,
@@ -85,6 +89,10 @@ export function streamGameResponse({
           classDef,
           activeAbilities,
         })
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SERVER npcMet (persisted):', snapshot?.npcMet)
       }
 
       const narrative =

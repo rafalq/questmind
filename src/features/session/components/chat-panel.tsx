@@ -15,6 +15,7 @@ import { Genre } from '@/worlds/'
 import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
 import { diffSnapshots } from '../lib/snapshot-diff'
 import { UIMessage } from '../lib/types'
+import type { NpcPortrait } from '@/features/lore/queries/get-npc-portraits'
 
 type Props = {
   messages: UIMessage[]
@@ -22,6 +23,9 @@ type Props = {
   onSend: (message: string) => void
   genre: Genre
   characterName: string
+  /** Authored cast of this world, keyed by lower-cased name. Resolved
+   *  against each turn's `npcMet` to show a portrait on first meeting. */
+  npcPortraits: Record<string, NpcPortrait>
 }
 
 const SCROLL_THRESHOLD = 100
@@ -32,7 +36,7 @@ export type ChatPanelHandle = {
 }
 
 const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
-  { messages, isStreaming, onSend, genre, characterName },
+  { messages, isStreaming, onSend, genre, characterName, npcPortraits },
   ref
 ) {
   const [input, setInput] = useState('')
@@ -142,6 +146,28 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
                 .reverse()
                 .find((prev) => prev.snapshot)?.snapshot ?? null
 
+            // People this turn introduced. `npcMet` carries names, so only the
+            // authored cast resolves to a portrait — the prompt also lets the
+            // model invent NPCs and warns it those will not be remembered, so a
+            // name with no match is that rule working, not a lookup failure.
+            const npcs = (m.snapshot?.npcMet ?? [])
+              .map((name) => npcPortraits[name.toLowerCase()])
+              .filter((npc): npc is NpcPortrait => Boolean(npc))
+
+            if (
+              process.env.NODE_ENV === 'development' &&
+              m.snapshot?.npcMet?.length
+            ) {
+              console.log(
+                'BUBBLE npcMet:',
+                m.snapshot.npcMet,
+                '| matched:',
+                npcs.map((n) => n.name),
+                '| portrait keys:',
+                Object.keys(npcPortraits ?? {}).length
+              )
+            }
+
             return (
               <MessageBubble
                 key={i}
@@ -156,6 +182,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
                 }
                 characterName={m.role === 'user' ? characterName : undefined}
                 changes={diffSnapshots(prevSnapshot, m.snapshot ?? null)}
+                npcs={npcs}
               />
             )
           })}

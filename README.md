@@ -62,17 +62,9 @@ Three properties of this pipeline are worth calling out, because they are what s
 
 ## Tech stack
 
-| Layer      | Choice                                                      |
-| ---------- | ----------------------------------------------------------- |
-| Framework  | Next.js 16 (App Router, Turbopack), React 19                |
-| Language   | TypeScript                                                  |
-| Styling    | Tailwind CSS v4                                             |
-| Auth       | Clerk                                                       |
-| Database   | PostgreSQL (Neon serverless) via Drizzle ORM                |
-| AI         | Anthropic Claude API, streamed through the Vercel AI SDK    |
-| Validation | Zod — world definitions, state blocks, seed data            |
-| Testing    | Vitest 4 (unit), Cypress (end-to-end), Testing Library, MSW |
-| Tooling    | ESLint, Prettier, Stylelint, Husky + lint-staged            |
+<<<<<<< HEAD | Layer | Choice | | ---------- | ----------------------------------------------------------- | | Framework | Next.js 16 (App Router, Turbopack), React 19 | | Language | TypeScript | | Styling | Tailwind CSS v4 | | Auth | Clerk | | Database | PostgreSQL (Neon serverless) via Drizzle ORM | | AI | Anthropic Claude API, streamed through the Vercel AI SDK | | Validation | Zod — world definitions, state blocks, seed data | | Testing | Vitest 4 (unit), Cypress (end-to-end), Testing Library, MSW | | Tooling | ESLint, Prettier, Stylelint, Husky + lint-staged | ======= | Layer | Choice | | ---------- | -------------------------------------------------------- | | Framework | Next.js 16 (App Router, Turbopack), React 19 | | Language | TypeScript | | Styling | Tailwind CSS v4 | | Auth | Clerk | | Database | PostgreSQL (Neon serverless) via Drizzle ORM | | AI | Anthropic Claude API, streamed through the Vercel AI SDK | | Validation | Zod — world definitions, state blocks, seed data | | Testing | Vitest 4 |
+
+> > > > > > > 79446ff5959a35e374133c4fad4be4ac5ef915eb
 
 ## Getting started
 
@@ -117,6 +109,7 @@ ENABLE_DEBUG_COMMANDS="true"
 ### Database
 
 ```bash
+<<<<<<< HEAD
 pnpm db:push          # push the schema straight to the database
 pnpm db:studio        # optional: browse the data
 ```
@@ -141,6 +134,23 @@ The seeds run in dependency order — each world before the extra locations that
 | `pnpm seed:praga`         | Additional Neon Warszawa district                |
 
 > The seed scripts are **not idempotent** — a second run inserts a duplicate world. Run them against an empty database.
+
+======= pnpm drizzle-kit push # apply the schema
+
+````
+
+Then seed the worlds. Each script seeds one world or one city, and they are **not idempotent** — run them against an empty database:
+
+```bash
+npx tsx src/db/seed/treigthe.ts        # Tréigthe (fantasy) + Cathair Luaith
+npx tsx src/db/seed/baile-fola.ts      # additional Tréigthe city
+npx tsx src/db/seed/drift.ts           # The Drift (sci-fi)
+npx tsx src/db/seed/tetherport.ts      # additional Drift location
+npx tsx src/db/seed/neon-warszawa.ts   # Neon Warszawa 2087 (cyberpunk)
+npx tsx src/db/seed/praga.ts           # additional Neon Warszawa district
+````
+
+> > > > > > > 79446ff5959a35e374133c4fad4be4ac5ef915eb
 
 ### Run
 
@@ -213,7 +223,11 @@ With `ENABLE_DEBUG_COMMANDS=true` in a non-production environment, the chat acce
 
 ## Documentation
 
-- [`docs/data-model.md`](docs/future/data-model.md) — deferred design decisions, delivered features, and the reasoning behind both. Items are marked rather than deleted once delivered, so the record shows what was weighed and what changed the decision.
+<<<<<<< HEAD
+
+- # [`docs/data-model.md`](docs/future/data-model.md) — deferred design decisions, delivered features, and the reasoning behind both. Items are marked rather than deleted once delivered, so the record shows what was weighed and what changed the decision.
+- [`docs/data-model.md`](docs/data-model.md) — deferred design decisions, delivered features, and the reasoning behind both. Items are marked rather than deleted once delivered, so the record shows what was weighed and what changed the decision.
+  > > > > > > > 79446ff5959a35e374133c4fad4be4ac5ef915eb
 - [`docs/refactor-plan.md`](docs/refactor-plan.md) — refactor audit and remaining queue.
 
 ## Academic context
