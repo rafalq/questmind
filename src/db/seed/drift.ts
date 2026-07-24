@@ -13,8 +13,9 @@
 // Add remaining locations and NPCs following the same pattern
 // (see tetherport.ts — the Baile Fola analog).
 
-import { config } from 'dotenv'
-config({ path: '.env.local' })
+// Must stay the first import: it loads .env.local before '@/db' is
+// evaluated. See ./env for why the order is not optional.
+import './env'
 
 import { db } from '@/db'
 import {

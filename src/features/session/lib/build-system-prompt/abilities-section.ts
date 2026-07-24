@@ -1,4 +1,5 @@
 // src/lib/ai/prompt/abilities-section.ts
+import { describeAbilityCost } from '@/features/character/lib/ability-cost'
 import type { AbilityDefinition } from '@/worlds/schema'
 
 /**
@@ -16,15 +17,9 @@ export function buildAbilitiesSection(
 ): string {
   if (abilities.length === 0) return ''
 
-  const lines = abilities.map((a) => {
-    const cost =
-      a.cost?.kind === 'hp'
-        ? ` (costs ${a.cost.amount} HP)`
-        : a.cost?.kind === 'narrative'
-          ? ` (costs ${a.cost.note})`
-          : ''
-    return `- ${a.name}${cost}: ${a.gmGuidance}`
-  })
+  const lines = abilities.map(
+    (a) => `- ${a.name}${describeAbilityCost(a.cost)}: ${a.gmGuidance}`
+  )
 
   return [
     `## Abilities (${className})`,

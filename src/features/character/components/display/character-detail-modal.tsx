@@ -1,7 +1,9 @@
 'use client'
 
-import { genreFont, GenreIcon } from '@/lib/genre-theme'
-import { useEffect, useId, useRef, useState } from 'react'
+import Modal from '@/components/ui/modal'
+import { formatAbilityCost } from '@/features/character/lib/ability-cost'
+import { useExpandableSet } from '@/hooks/use-expandable-set'
+import { GenreIcon } from '@/lib/genre-theme'
 import {
   computeTier,
   effectiveAttributes,
@@ -184,15 +186,7 @@ function AttributeGrid({
 }
 
 function AbilityList({ abilities }: { abilities: AbilityDefinition[] }) {
-  const [expanded, setExpanded] = useState<Set<string>>(new Set())
-
-  const toggle = (value: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      next.has(value) ? next.delete(value) : next.add(value)
-      return next
-    })
-  }
+  const { isExpanded, toggle } = useExpandableSet()
 
   return (
     <div>
@@ -203,9 +197,9 @@ function AbilityList({ abilities }: { abilities: AbilityDefinition[] }) {
       ) : (
         <ul className="flex flex-col gap-1">
           {abilities.map((ability) => {
-            const isOpen = expanded.has(ability.value)
+            const isOpen = isExpanded(ability.value)
             const cost =
-              ability.cost?.kind === 'hp' ? `${ability.cost.amount} HP` : null
+              formatAbilityCost(ability.cost)
 
             return (
               <li key={ability.value} className="border border-border/30">
@@ -241,24 +235,6 @@ function AbilityList({ abilities }: { abilities: AbilityDefinition[] }) {
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 export default function CharacterDetailModal({ character, onClose }: Props) {
-  const titleId = useId()
-  const dialogRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
-
-  // Move focus into the dialog on open, so keyboard and screen-reader users
-  // land inside it rather than continuing from the card behind. Reading and
-  // calling a DOM method is an external-system effect, not derived state.
-  useEffect(() => {
-    dialogRef.current?.focus()
-  }, [])
-
   // Everything below derives from characterXp. Nothing about progression is
   // stored, so a levelled character shows its current numbers rather than its
   // creation-day ones — and the sheet is correct with no session in progress.
@@ -286,49 +262,30 @@ export default function CharacterDetailModal({ character, onClose }: Props) {
   const maxHp = calculateMaxHp(attributes.endurance)
 
   return (
-    // The scrim is black in both themes on purpose — it is a dimmer, not a
-    // surface, so it does not follow the palette.
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-      onClick={onClose}
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        // data-genre scopes --qm-bg-genre, which has a value per theme. This
-        // is deliberately NOT .on-media: unlike a card, the sheet has no
-        // artwork under it, so it should be a light surface in the light
-        // theme and take the ordinary text tokens. The old inline
-        // backgroundColor from genreBg pinned it dark in both themes, which is
-        // what left near-black text sitting on a near-black panel.
-        data-genre={character.genre}
-        className="relative flex max-h-[90dvh] w-full max-w-lg flex-col overflow-y-auto border border-border bg-bg-genre shadow-xl focus:outline-none"
-        style={{ fontFamily: genreFont[character.genre] }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <ModalHeader genre={character.genre} onClose={onClose} />
+    <Modal open onClose={onClose} genre={character.genre} size="md">
+      {(titleId) => (
+        <>
+          <ModalHeader genre={character.genre} onClose={onClose} />
 
-        <div className="flex flex-col gap-6 p-4 sm:p-6">
-          <CharacterSummary
-            character={character}
-            level={level}
-            tier={tier}
-            titleId={titleId}
-          />
+          <div className="flex flex-col gap-6 p-4 sm:p-6">
+            <CharacterSummary
+              character={character}
+              level={level}
+              tier={tier}
+              titleId={titleId}
+            />
 
-          <AttributeGrid
-            attributes={attributes}
-            labels={world.attributeLabels}
-            keyAttribute={classDef?.keyAttribute}
-            maxHp={maxHp}
-          />
+            <AttributeGrid
+              attributes={attributes}
+              labels={world.attributeLabels}
+              keyAttribute={classDef?.keyAttribute}
+              maxHp={maxHp}
+            />
 
-          <AbilityList abilities={abilities} />
-        </div>
-      </div>
-    </div>
+            <AbilityList abilities={abilities} />
+          </div>
+        </>
+      )}
+    </Modal>
   )
 }

@@ -181,6 +181,7 @@ The `intro` field also carried a hand-written list of key locations, which the l
 - `Genre` — **resolved.** Was three copies; now re-exported from `worlds/schema/primitives.ts`, with `db/schema/enums.ts` deriving the pgEnum from the same array.
 - `Attribute` / `ATTRIBUTES` — still three copies: `worlds/schema/attribute.ts` (canonical), `constants/shared.ts`, `types/wizard-types.ts`. They compile because they are structurally identical, which is exactly why nobody noticed.
 - `calculateMaxHp` / `BASE_HP` / `HP_PER_ENDURANCE` — still two copies: `lib/hp.ts` and `constants/shared.ts`.
+- **Ability cost formatting — resolved, and it was not inert.** `cost?.kind === 'hp'` was branched on in five places. Unlike the copies above, these were not structurally identical: four of the five handled only one arm of a two-arm discriminated union. See item 18.
 
 Adding a seventh attribute, or rebalancing HP, would need every copy changed, and missing one would diverge silently.
 
@@ -257,7 +258,11 @@ The disk check earns its place: a missing asset throws nowhere. `sceneImage` ret
 **Remainder:**
 
 - An asset test for NPC portraits, reading `portraitUrl` out of the seed files. Same pattern as the scene test; it would have caught the `.jpg`/`.webp` mismatch before it reached the browser.
-- The streaming hold-back that withholds `SEPARATOR.length - 1` characters in case they begin a separator completing in a later chunk. A separator split across two chunks is exactly the kind of edge case that works until it doesn't.
+- The streaming hold-back that withholds characters in case they begin a separator completing in a later chunk. **This one was not hypothetical.** It was flagged here as an untested edge case; it was in fact already wrong in one of the two streams. The opening route had been fixed to withhold a tail only when it really is a prefix of the separator, but the turn loop — where the player spends the entire session — still withheld a fixed `SEPARATOR.length - 1` characters from every chunk, holding the visible text a constant distance behind the model. Both streams now share `pendingPrefixLength` in `separator-stream.ts`.
+
+  The extraction also changed the shape of the test that was owed: `pendingPrefixLength(text, separator)` is a pure function over two strings, so the cases (empty tail, full separator, partial prefix, prefix that is not a prefix) are now the cheapest test in the codebase rather than something reachable only through a live stream. Still to write.
+
+  Worth stating plainly in Conclusions: the item was on this list, correctly identified as risky, and the reason it stayed broken is that a fix applied in one place was never carried to the other. That is an argument for the shared module, not for more diligence.
 
 Tooling note for the report: the proposal named Jest; the project uses **Vitest 4**, the practical choice for a Next 16 / ESM codebase.
 
@@ -306,6 +311,8 @@ The temptation once (1) exists is to slide into (2). That slide is the actual ri
 
 This is the same principle that fixed the hard-coded scene list and the dead `prompt.intro` field: **a static copy of data that has a live source will drift, and the drift is always found late.** Three occurrences in this project, each fixed the same way.
 
+**Correction found later.** The table of contents listed a History section that scrolled nowhere. Two `div`s carried `data-section="world"` — the timeline had been given the wrong id — so `querySelector('[data-section="history"]')` matched nothing and the button silently did nothing. Six entries, one dead, and it survived because a jump-list failure looks exactly like a click that missed. Fixed; the section ids are now asserted against `SECTIONS` in a comment at the point of use.
+
 **Sequencing note:** the modal was written before verifying whether the events query filtered secrets. It does — `isTierSecret: false` and `includeInPrompt: true` — so the AI-only Imprisonment Pact and both "possible future" endings were never exposed. The check should have preceded the assumption.
 
 ## 17. 🔲 Ability costs are not calibrated to the HP scale
@@ -322,3 +329,70 @@ That is 2.6% and 4.2% of the pool. The design intent — stated in the class com
 **Why deferred:** balance work needs several played sessions to evaluate, not a reasoning exercise, and it touches three classes across three worlds simultaneously. The mechanic is implemented and demonstrably functional — HP is deducted, the snapshot reflects it, the panel shows it. What is unfinished is the _number_, which is honest to state as such.
 
 **Worth saying plainly in Conclusions:** this is a game-design gap, not a software one, and it is the kind of thing that only surfaces from playing the thing rather than building it.
+
+**Amendment.** The gap was wider than a calibration problem. `AbilityCostSchema` has two arms — `hp` and `narrative` — and the narrative arm was invisible everywhere in the UI (item 18). So the argument above, that costs are too cheap to matter, was made about the half of the cost system that was actually being displayed. Any recalibration should now be judged against both arms.
+
+---
+
+# Items added during the refactor sprint
+
+Delivered in the refactor pass over `src/`. Three of the five are defects rather than tidying, and they are recorded here because each is an instance of a pattern this file already argues: a rule with more than one home drifts, and the drift is found late.
+
+## 18. ✅ Ability costs: one arm of a two-arm union was rendered
+
+**The failure:** `AbilityCostSchema` is a discriminated union. `hp` is mechanical - the GM must reflect it in the snapshot, so it is a number the player can verify. `narrative` is a price the GM invents and enforces in prose, carrying a written `note`. Five places branched on `cost?.kind`. **Four checked only for `hp`:** the stats panel, the character sheet, the class card and the summary step. Only `buildAbilitiesSection`, the prompt builder, handled both.
+
+So an ability with a narrative cost instructed the model to charge for it and told the player it was free. The character sheet - the screen whose entire job is to state what a character can do and what it costs - was the least accurate surface in the app on exactly that question.
+
+**Why it went unseen:** every authored ability currently in the three worlds uses `hp`. The narrative arm is exercised by the schema and by the prompt, not by any seeded data, so the omission had nothing to render incorrectly - it had nothing to render at all. A missing badge looks identical to an ability that is genuinely free.
+
+**Delivered.** `features/character/lib/ability-cost.ts` owns the formatting, with `describeAbilityCost()` for the prompt's parenthetical form. Adding a third cost kind is now a change in one file, and the four UI sites follow without having to be found first.
+
+**Report value:** this is the cleanest example in the project of the pattern named in item 16 - not a static copy of live data this time, but a _domain rule_ with five homes. The type system did not catch it, because narrowing a union to one arm is legal code; TypeScript has no opinion about the arm you forgot. Exhaustiveness would have needed a `switch` with a `never` default, which is the actual lesson.
+
+## 19. ✅ Dialog primitive, and the accessibility it was hiding
+
+Three dialogs, three hand-written shells: the character sheet, the world lore modal and the delete confirmation. They disagreed on scrim opacity, on whether Escape closed them, and on whether they announced as dialogs at all.
+
+`ConfirmDialog` had **no `role`, no `aria-modal`, no Escape handler and no focus management** - on the one dialog in the app whose wrong answer is unrecoverable. A keyboard user could reach _Delete_ and not _Cancel_. The other two had partial handling: focus moved in on open but was never returned, so closing the character sheet dropped focus to the top of the document and reaching the next campaign card meant tabbing through the whole dashboard. None of the three locked background scroll, which on touch means a scroll starting just outside the panel moves the page behind and the dialog appears frozen.
+
+**Delivered.** `components/ui/modal.tsx` owns role, `aria-modal`, `aria-labelledby`, Escape, focus in and out, scroll lock and the scrim. All three dialogs are built on it. The title id is handed to the caller through a render prop rather than assumed, because an `aria-labelledby` pointing at nothing is worse than none - the dialog then announces as unlabelled while the markup looks correct.
+
+**Relevance to NFR-003:** the usability target is stated in terms of a first-time user completing a flow unaided. It says nothing about input method, which is why this was invisible to it. Worth noting in the report as a limitation of how the requirement was written, not as a failure to meet it.
+
+## 20. ✅ Seed environment loading depended on transpilation to CommonJS
+
+Every seed opened with:
+
+```ts
+import { config } from 'dotenv'
+config({ path: '.env.local' })
+
+import { db } from '@/db'
+```
+
+which reads as "load the environment, then connect" and is not what runs. ES modules evaluate all of a module's imports before any statement in its body, so `@/db` initialises **first** and `config()` runs after it - the connection string is read before it has been loaded.
+
+It worked only because `tsx` transpiles these scripts to CommonJS, where `require()` follows statement order. Under native ESM it fails, and it fails as an unset `DATABASE_URL` several frames from the cause.
+
+**Delivered.** `db/seed/env.ts` holds the call; each seed imports it first for its side effect. Import evaluation order _is_ specified, so this is correct in both module systems.
+
+**Same family as the Edge Runtime crash** recorded in the interim report, where importing the database config into a streaming route pulled `dotenv` somewhere it could not load. Both are the same mistake: treating module initialisation as if it followed the order the source is written in.
+
+**Not done, deliberately:** the seeds are still not idempotent - a second run inserts a duplicate world. Fixing it means asserting which columns are unique, and guessing wrong corrupts working seed data. Trigger: before any re-seed of a populated database.
+
+## 21. ✅ Turn loop decomposed
+
+`stream-game-response.ts` was a single 380-line `start(controller)` doing six unrelated jobs: prompt assembly, the stream, snapshot parsing and recovery, server-authoritative progression, the capstone burn, and persistence. Split into `build-turn-request.ts`, `separator-stream.ts`, `extract-snapshot.ts`, `apply-turn-effects.ts` and `persist-turn.ts`; the orchestrator is 121 lines and asserts one thing - the order.
+
+**Why it belongs in this file rather than only in a commit message:** the split is along the lines these things _fail_ on, and that is the shape worth drawing in section 2.2 of the report. Prompt assembly is deterministic string work with no I/O, which makes it the testable half of a system whose other half is a network stream. Snapshot extraction owns the three distinct failure modes named in item 10. Turn effects are where the model narrates and the server rules - the boundary items 10 and 17 both depend on.
+
+Also folded in: two Anthropic clients constructed differently, one relying on the SDK reading `ANTHROPIC_API_KEY` itself and one passing it explicitly. Both worked, which is why it went unnoticed; it stops being cosmetic the moment either needs a timeout or a retry policy.
+
+Same pass on the client side: `game-screen.tsx` (413 lines) split into `use-game-session.ts`, `use-side-panel.ts` and a layout of 128 lines.
+
+## 22. 🔲 Two files deliberately left whole
+
+`world-lore-modal.tsx` (513 lines) and `stats-panel.tsx` (370) were reviewed for splitting and left as they are. Their sections are small, used only together, and ordered to match `SECTIONS` - the file reads top to bottom in the order the player sees it. The only argument for splitting is the line count, which is the weakest reason available.
+
+Recorded so it reads as a decision rather than an omission. **Trigger:** the first time a section from either is needed somewhere else.

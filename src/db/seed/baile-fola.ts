@@ -1,6 +1,6 @@
-// src/db/seeds/baile-fola.ts
+// src/db/seed/baile-fola.ts
 // Adds the second Tréigthe location: Baile Fola (Town of Blood).
-// Run with: npx tsx src/db/seeds/baile-fola.ts
+// Run with: npx tsx src/db/seed/baile-fola.ts
 //
 // Idempotent: exits if the location already exists.
 //
@@ -10,8 +10,9 @@
 // the NPC cast — with no application code involved, because presence is derived
 // from primaryLocationId in resolveLore.
 
-import { config } from 'dotenv'
-config({ path: '.env.local' })
+// Must stay the first import: it loads .env.local before '@/db' is
+// evaluated. See ./env for why the order is not optional.
+import './env'
 
 import { db } from '@/db'
 import {

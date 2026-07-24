@@ -26,7 +26,8 @@ import {
   IconTool,
   IconBolt,
 } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useExpandableSet } from '@/hooks/use-expandable-set'
+import { formatAbilityCost } from '@/features/character/lib/ability-cost'
 import CollapsibleSection from '@/components/ui/collapsible-section'
 import { SceneBanner } from './scene-banner'
 
@@ -168,17 +169,7 @@ export default function StatsPanel({
 }
 
 function InventorySection({ entries }: { entries: InventoryEntry[] }) {
-  // Which item rows are expanded. Click, not hover — the panel must work on
-  // touch at 360px (NFR-004), where hover doesn't exist.
-  const [expanded, setExpanded] = useState<Set<string>>(new Set())
-
-  const toggle = (name: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      next.has(name) ? next.delete(name) : next.add(name)
-      return next
-    })
-  }
+  const { isExpanded, toggle } = useExpandableSet()
 
   return (
     <div className="flex flex-col min-h-0">
@@ -188,7 +179,7 @@ function InventorySection({ entries }: { entries: InventoryEntry[] }) {
         <ul className="space-y-1 overflow-y-auto min-h-0 max-h-64 pr-1">
           {entries.map((entry) => {
             const Icon = CATEGORY_ICONS[entry.category]
-            const isOpen = expanded.has(entry.name)
+            const isOpen = isExpanded(entry.name)
 
             return (
               <li key={entry.name}>
@@ -233,15 +224,7 @@ function AbilitiesSection({
   onUseAbility: (name: string) => void
   capstoneUsed: boolean
 }) {
-  const [expanded, setExpanded] = useState<Set<string>>(new Set())
-
-  const toggle = (value: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      next.has(value) ? next.delete(value) : next.add(value)
-      return next
-    })
-  }
+  const { isExpanded, toggle } = useExpandableSet()
 
   return (
     <div>
@@ -250,9 +233,9 @@ function AbilitiesSection({
       ) : (
         <ul className="space-y-1">
           {abilities.map((ability) => {
-            const isOpen = expanded.has(ability.value)
+            const isOpen = isExpanded(ability.value)
             const cost =
-              ability.cost?.kind === 'hp' ? `${ability.cost.amount} HP` : null
+              formatAbilityCost(ability.cost)
             const spent = ability.capstone === true && capstoneUsed
             return (
               <li key={ability.value}>

@@ -1,53 +1,40 @@
-import ButtonLink from '@/components/ui/button-link'
+import DashboardSection from '@/components/common/dashboard-section'
+import CampaignListSkeleton from '@/components/ui/loader/skeleton/campaign-list-skeleton'
+import CharacterListSkeleton from '@/components/ui/loader/skeleton/character-list-skeleton'
 import { ROUTES } from '@/constants/routes'
 import CampaignListServer from '@/features/campaign/components/campaign-list-server'
-import CampaignListSkeleton from '@/components/ui/loader/skeleton/campaign-list-skeleton'
-import CharacterList from '@/features/character/components/display/character-list-server'
-import CharacterListSkeleton from '@/components/ui/loader/skeleton/character-list-skeleton'
+import CharacterListServer from '@/features/character/components/display/character-list-server'
 import { Suspense } from 'react'
 
 export default function DashboardPage() {
   return (
     <>
-      <section className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-10">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
-              Welcome back, Adventurer
-            </h1>
-            <p className="text-text-secondary mt-1">Your campaigns await.</p>
-          </div>
-          <div className="shrink-0">
-            <ButtonLink href={ROUTES.newCampaign}>+ New Campaign</ButtonLink>
-          </div>
-        </div>
-        {/* The fallback used to be a one-line "Loading campaigns..." standing in
-            for a three-column grid, so both sections jumped down the page when
-            the queries resolved. The skeleton occupies the space the cards are
-            about to take. */}
+      {/* Each list streams in behind its own boundary, so a slow character
+          query cannot hold up the campaigns above it.
+
+          The fallbacks are shaped skeletons rather than a line of text: a
+          one-line "Loading campaigns..." standing in for a three-column grid
+          made both sections jump down the page when the queries resolved. */}
+      <DashboardSection
+        as="h1"
+        title="Welcome back, Adventurer"
+        description="Your campaigns await."
+        action={{ href: ROUTES.newCampaign, label: '+ New Campaign' }}
+      >
         <Suspense fallback={<CampaignListSkeleton />}>
           <CampaignListServer />
         </Suspense>
-      </section>
+      </DashboardSection>
 
-      <section className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-10">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
-              Your Characters
-            </h1>
-            <p className="text-text-secondary mt-1">
-              Manage your adventurers across all genres.
-            </p>
-          </div>
-          <div className="shrink-0">
-            <ButtonLink href={ROUTES.newCharacter}>+ New Character</ButtonLink>
-          </div>
-        </div>
+      <DashboardSection
+        title="Your Characters"
+        description="Manage your adventurers across all genres."
+        action={{ href: ROUTES.newCharacter, label: '+ New Character' }}
+      >
         <Suspense fallback={<CharacterListSkeleton />}>
-          <CharacterList />
+          <CharacterListServer />
         </Suspense>
-      </section>
+      </DashboardSection>
     </>
   )
 }

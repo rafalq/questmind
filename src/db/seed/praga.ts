@@ -10,8 +10,9 @@
 // NPC cast — with no application code involved, because presence is derived
 // from primaryLocationId in resolveLore.
 
-import { config } from 'dotenv'
-config({ path: '.env.local' })
+// Must stay the first import: it loads .env.local before '@/db' is
+// evaluated. See ./env for why the order is not optional.
+import './env'
 
 import { db } from '@/db'
 import {

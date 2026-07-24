@@ -3,6 +3,7 @@ import type { FormData } from '@/features/character/types/wizard-types'
 import { calculateAttributeTotal } from '@/features/character/constants'
 import { calculateMaxHp } from '@/features/character/lib/hp'
 import { resolveAbilities } from '@/features/character/lib/progression'
+import { formatAbilityCost } from '@/features/character/lib/ability-cost'
 import { buildStartingInventory } from '@/worlds/starting-equipment'
 import { buildInventoryDisplay } from '@/features/session/lib/inventory-display'
 import type {
@@ -134,7 +135,10 @@ export default function SummaryPanel({
               Starting abilities
             </p>
             <ul className="flex flex-col gap-2">
-              {startingAbilities.map((ability) => (
+              {startingAbilities.map((ability) => {
+                const cost = formatAbilityCost(ability.cost)
+
+                return (
                 <li key={ability.value}>
                   <div className="flex items-baseline gap-1.5">
                     <IconBolt
@@ -144,17 +148,18 @@ export default function SummaryPanel({
                     <span className="text-text-secondary text-sm flex-1">
                       {ability.name}
                     </span>
-                    {ability.cost?.kind === 'hp' && (
+                    {cost && (
                       <span className="text-red-400/70 text-xs shrink-0">
-                        {ability.cost.amount} HP
+                        {cost}
                       </span>
                     )}
                   </div>
                   <p className="text-text-muted text-xs leading-snug pl-4.5 mt-0.5">
                     {ability.description}
                   </p>
-                </li>
-              ))}
+                  </li>
+                )
+              })}
             </ul>
           </div>
         )}

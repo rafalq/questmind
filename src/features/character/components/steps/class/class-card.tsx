@@ -1,4 +1,5 @@
 // steps/class/class-card.tsx
+import { formatAbilityCost } from '@/features/character/lib/ability-cost'
 import ModifierBadge from '@/features/character/components/steps/modifier-badge'
 import type { ClassDefinition } from '@/worlds'
 import ClassPortrait from '../class-portrait'
@@ -61,23 +62,27 @@ export default function ClassCard({
               Abilities
             </p>
             <ul className="flex flex-col items-center gap-0.5">
-              {cls.abilities.map((a) => (
-                <li
-                  key={a.value}
-                  className="flex items-baseline justify-center gap-2.5 text-xs"
-                >
-                  <span className="text-text-secondary">{a.name}</span>
-                  <span className="text-text-muted/60 tabular-nums">
-                    T{a.tier}
-                    {a.cost?.kind === 'hp' && (
-                      <span className="text-red-400/60 text-[10px] tabular-nums">
-                        {' '}
-                        · {a.cost.amount} HP
-                      </span>
-                    )}
-                  </span>
-                </li>
-              ))}
+              {cls.abilities.map((a) => {
+                const cost = formatAbilityCost(a.cost)
+
+                return (
+                  <li
+                    key={a.value}
+                    className="flex items-baseline justify-center gap-2.5 text-xs"
+                  >
+                    <span className="text-text-secondary">{a.name}</span>
+                    <span className="text-text-muted/60 tabular-nums">
+                      T{a.tier}
+                      {cost && (
+                        <span className="text-red-400/60 text-[10px]">
+                          {' '}
+                          · {cost}
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         )}

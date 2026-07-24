@@ -1,8 +1,9 @@
+import CtaSection from '@/components/marketing/cta-section'
+import SectionEyebrow from '@/components/marketing/section-eyebrow'
+import SectionHeader from '@/components/marketing/section-header'
 import Divider from '@/components/ui/divider'
-import { ROUTES } from '@/constants/routes'
 import { ENABLED_WORLDS, WORLDS } from '@/worlds'
 import Image from 'next/image'
-import Link from 'next/link'
 
 export const metadata = {
   title: 'Worlds · QuestMind',
@@ -96,7 +97,19 @@ const worlds: WorldCard[] = WORLDS.map((world) => {
 export default function WorldsPage() {
   return (
     <>
-      <Header />
+      <section className="px-4 pb-12 pt-24 sm:px-8 sm:pt-28 md:px-12 lg:px-24">
+        <SectionHeader
+          as="h1"
+          eyebrow="The Worlds of QuestMind"
+          heading={
+            <>
+              Choose where your story <span className="text-accent">begins</span>
+            </>
+          }
+          description="Each world has its own races, classes, places and secrets. The Game Master speaks in its voice — grim in one, cold in another, electric in the third."
+        />
+      </section>
+
       <div className="flex flex-col">
         {worlds.map((world, i) => (
           <div key={world.slug}>
@@ -105,27 +118,13 @@ export default function WorldsPage() {
           </div>
         ))}
       </div>
-      <CTA />
-    </>
-  )
-}
 
-// ----- Header -----
-function Header() {
-  return (
-    <section className="px-4 pb-12 pt-24 text-center sm:px-8 sm:pt-28 md:px-12 lg:px-24">
-      <p className="mb-4 text-[10px] uppercase tracking-[0.3em] text-accent sm:text-xs sm:tracking-[0.4em]">
-        The Worlds of QuestMind
-      </p>
-      <h1 className="mx-auto mb-6 max-w-3xl text-3xl font-bold leading-tight tracking-wide sm:text-4xl md:text-5xl">
-        Choose where your story <span className="text-accent">begins</span>
-      </h1>
-      <p className="font-(family-name:--font-im-fell) mx-auto max-w-2xl text-base italic leading-relaxed text-text-secondary sm:text-lg">
-        Each world has its own races, classes, places and secrets. The Game
-        Master speaks in its voice — grim in one, cold in another, electric in
-        the third.
-      </p>
-    </section>
+      <CtaSection
+        heading="Pick a world. The rest is up to you."
+        description="Create a free account and forge your first character."
+        ctaLabel="BEGIN YOUR QUEST"
+      />
+    </>
   )
 }
 
@@ -169,9 +168,7 @@ function WorldSection({
 
         {/* Text */}
         <div className="w-full text-center md:w-1/2 md:text-left">
-          <p className="mb-2 text-[10px] uppercase tracking-[0.3em] text-accent sm:text-xs">
-            {world.genre}
-          </p>
+          <SectionEyebrow className="mb-2">{world.genre}</SectionEyebrow>
           <h2 className="mb-1 text-2xl font-bold tracking-wide sm:text-3xl">
             {world.name}
           </h2>
@@ -207,26 +204,6 @@ function WorldSection({
           )}
         </div>
       </div>
-    </section>
-  )
-}
-
-// ----- CTA -----
-function CTA() {
-  return (
-    <section className="border-t border-border px-4 py-16 text-center sm:px-8 sm:py-20">
-      <h2 className="mb-4 text-2xl font-bold tracking-wide sm:text-3xl md:text-4xl">
-        Pick a world. The rest is up to you.
-      </h2>
-      <p className="font-(family-name:--font-im-fell) mb-8 text-base italic text-text-muted sm:text-lg">
-        Create a free account and forge your first character.
-      </p>
-      <Link
-        href={ROUTES.signUp}
-        className="inline-block w-full max-w-xs bg-accent px-10 py-4 text-sm font-bold tracking-widest text-accent-fg transition-colors hover:bg-accent-hover sm:w-auto sm:max-w-none"
-      >
-        BEGIN YOUR QUEST
-      </Link>
     </section>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import Modal from './modal'
 import Button from './button'
 
 type ConfirmDialogProps = {
@@ -12,6 +13,15 @@ type ConfirmDialogProps = {
   isPending?: boolean
 }
 
+/**
+ * Confirmation for a destructive action.
+ *
+ * It was the only dialog in the app with no role, no aria-modal, no Escape and
+ * no focus handling - so a keyboard user could reach Delete but not Cancel,
+ * and a screen reader announced nothing about being in a dialog at all. On the
+ * one dialog where the wrong answer is unrecoverable. All of that now comes
+ * from Modal.
+ */
 export default function ConfirmDialog({
   isOpen,
   title,
@@ -21,33 +31,35 @@ export default function ConfirmDialog({
   onCancel,
   isPending = false,
 }: ConfirmDialogProps) {
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
-      <div className="relative z-10 w-full max-w-md mx-4 p-5 sm:p-8 bg-bg-base border border-border">
-        <h2 className="text-lg sm:text-xl font-bold text-text-primary mb-2">
-          {title}
-        </h2>
-        <p className="text-text-secondary text-sm mb-6 sm:mb-8">{message}</p>
-        <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 sm:justify-end">
-          <Button
-            onClick={onCancel}
-            disabled={isPending}
-            className="w-full sm:w-auto"
+    <Modal open={isOpen} onClose={onCancel} size="sm">
+      {(titleId) => (
+        <div className="p-5 sm:p-8">
+          <h2
+            id={titleId}
+            className="mb-2 text-lg font-bold text-text-primary sm:text-xl"
           >
-            Cancel
-          </Button>
-          <Button
-            onClick={onConfirm}
-            disabled={isPending}
-            className="w-full sm:w-auto border-red-800 text-red-500 hover:bg-red-900/30 hover:text-red-500"
-          >
-            {isPending ? 'Deleting...' : confirmLabel}
-          </Button>
+            {title}
+          </h2>
+          <p className="mb-6 text-sm text-text-secondary sm:mb-8">{message}</p>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end sm:gap-4">
+            <Button
+              onClick={onCancel}
+              disabled={isPending}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={onConfirm}
+              disabled={isPending}
+              className="w-full border-red-800 text-red-500 hover:bg-red-900/30 hover:text-red-500 sm:w-auto"
+            >
+              {isPending ? 'Deleting...' : confirmLabel}
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </Modal>
   )
 }

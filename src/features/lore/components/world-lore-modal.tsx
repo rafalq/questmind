@@ -1,11 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import Modal from '@/components/ui/modal'
 import Image from 'next/image'
 import { IconMap, IconX, IconBook } from '@tabler/icons-react'
 import type { WorldLore } from '@/features/lore/queries/get-world-lore'
 import type { Genre } from '@/features/character/constants/'
-import { genreFont } from '@/lib/genre-theme'
 import { getWorld } from '@/worlds'
 import { WORLD_GLOSSARIES } from '@/worlds/schema/glossary'
 import type { GlossaryEntry } from '@/worlds/schema/glossary'
@@ -44,18 +44,6 @@ function ModalTrigger({ name, onOpen }: { name: string; onOpen: () => void }) {
       <IconMap size={13} />
       <span className="uppercase tracking-widest">{name}</span>
     </button>
-  )
-}
-
-function ModalBackdrop({ onClose }: { onClose: () => void }) {
-  // Black in both themes on purpose: this is a dimmer, not a surface, so it
-  // does not follow the palette.
-  return (
-    <div
-      className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
-      onClick={onClose}
-      aria-hidden
-    />
   )
 }
 
@@ -449,32 +437,14 @@ function MapImage({
 
 export default function WorldLoreModal({ genre, lore, trigger }: Props) {
   const [isOpen, setIsOpen] = useState(false)
-  const titleId = useId()
-  const dialogRef = useRef<HTMLDivElement>(null)
-  const sectionRefs = useRef<Partial<Record<SectionId, HTMLDivElement | null>>>(
-    {}
-  )
+  const close = useCallback(() => setIsOpen(false), [])
 
-  // Escape closes. Bound only while open, so there is no listener sitting on
-  // every campaign card on the dashboard.
-  useEffect(() => {
-    if (!isOpen) return
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isOpen])
-
-  // Move focus into the dialog on open so keyboard users land inside it
-  // rather than continuing from the card behind.
-  useEffect(() => {
-    if (isOpen) dialogRef.current?.focus()
-  }, [isOpen])
+  // Scrolls the section into view inside the dialog body rather than following
+  // an anchor: the panel is the scroll container, and a native #hash would
+  // move the page behind it instead.
+  const sectionsRef = useRef<HTMLDivElement>(null)
   const jumpTo = useCallback((id: SectionId) => {
-    dialogRef.current
+    sectionsRef.current
       ?.querySelector(`[data-section="${id}"]`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
@@ -487,68 +457,56 @@ export default function WorldLoreModal({ genre, lore, trigger }: Props) {
         <ModalTrigger name={lore.world.name} onOpen={() => setIsOpen(true)} />
       )}
 
-      {isOpen && (
-        <>
-          <ModalBackdrop onClose={() => setIsOpen(false)} />
-          <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              ref={dialogRef}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={titleId}
-              tabIndex={-1}
-              // data-genre scopes --qm-bg-genre, which has a value per theme.
-              // The old inline backgroundColor from genreBg pinned this panel
-              // dark in both themes while the text tokens followed the theme —
-              // so in the light theme it was dark text on a dark surface. Not
-              // .on-media: there is no artwork behind the panel, so it should
-              // be a light surface in the light theme and use ordinary tokens.
-              data-genre={genre}
-              className="pointer-events-auto flex max-h-[85dvh] w-full max-w-2xl flex-col overflow-y-auto border border-border bg-bg-genre shadow-xl scrollbar-subtle focus:outline-none"
-              style={{ fontFamily: genreFont[genre] }}
-            >
-              <ModalHeader
-                name={lore.world.name}
-                subtitle={lore.world.subtitle}
-                onClose={() => setIsOpen(false)}
-                titleId={titleId}
-              />
-              <MapImage
-                worldSlug={lore.world.slug}
-                regionName={lore.region?.name ?? lore.world.name}
-              />
-              <div className="pt-4 sm:pt-6">
-                <TableOfContents onJump={jumpTo} />
+      <Modal open={isOpen} onClose={close} genre={genre} size="lg">
+        {(titleId) => (
+          <>
+            <ModalHeader
+              name={lore.world.name}
+              subtitle={lore.world.subtitle}
+              onClose={close}
+              titleId={titleId}
+            />
+            <MapImage
+              worldSlug={lore.world.slug}
+              regionName={lore.region?.name ?? lore.world.name}
+            />
+            <div className="pt-4 sm:pt-6">
+              <TableOfContents onJump={jumpTo} />
+            </div>
+
+            {/* Every data-section here must match an id in SECTIONS, or the
+                matching entry in the table of contents silently does nothing.
+                The timeline was labelled "world", so History scrolled
+                nowhere - two elements carried data-section="world" and there
+                was no "history" in the document at all. */}
+            <div ref={sectionsRef} className="flex flex-col gap-8 p-4 sm:p-6">
+              <div data-section="world" className="scroll-mt-4">
+                <WorldSection publicLore={lore.world.publicLore} />
+                {lore.region && (
+                  <div className="mt-8">
+                    <RegionSection region={lore.region} />
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col gap-8 p-4 sm:p-6">
-                <div data-section="world" className="scroll-mt-4">
-                  <WorldSection publicLore={lore.world.publicLore} />
-                  {lore.region && (
-                    <div className="mt-8">
-                      <RegionSection region={lore.region} />
-                    </div>
-                  )}
-                </div>
-                <div data-section="world" className="scroll-mt-4">
-                  <TimelineSection events={lore.events} />
-                </div>
-                <div data-section="peoples" className="scroll-mt-4">
-                  <PeoplesSection worldSlug={lore.world.slug} />
-                </div>
-                <div data-section="trades" className="scroll-mt-4">
-                  <TradesSection worldSlug={lore.world.slug} />
-                </div>
-                <div data-section="places" className="scroll-mt-4">
-                  <PlacesSection locations={lore.locations} />
-                </div>
-                <div data-section="glossary" className="scroll-mt-4">
-                  <GlossarySection worldSlug={lore.world.slug} />
-                </div>
+              <div data-section="history" className="scroll-mt-4">
+                <TimelineSection events={lore.events} />
+              </div>
+              <div data-section="peoples" className="scroll-mt-4">
+                <PeoplesSection worldSlug={lore.world.slug} />
+              </div>
+              <div data-section="trades" className="scroll-mt-4">
+                <TradesSection worldSlug={lore.world.slug} />
+              </div>
+              <div data-section="places" className="scroll-mt-4">
+                <PlacesSection locations={lore.locations} />
+              </div>
+              <div data-section="glossary" className="scroll-mt-4">
+                <GlossarySection worldSlug={lore.world.slug} />
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </Modal>
     </>
   )
 }

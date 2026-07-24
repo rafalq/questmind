@@ -1,47 +1,22 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { type GameSnapshot } from '@/db/schema/session'
+import { getClassDef } from '@/features/character/lib/get-class-def'
+import { resolveAbilities } from '@/features/character/lib/progression'
+import { buildOpeningRequest } from '@/features/session/lib/generate-opening'
+import {
+  isOpeningInFlight,
+  streamOpeningResponse,
+} from '@/features/session/lib/stream-opening-response'
+import { getSession } from '@/features/session/queries/get-session'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
-import { getSession } from '@/features/session/queries/get-session'
-import {
-  buildOpeningRequest,
-  persistOpening,
-  stripStateBlock,
-} from '@/features/session/lib/generate-opening'
-import { SEPARATOR } from '@/features/session/lib/build-system-prompt/'
-import { AI_MODEL, MAX_TOKENS } from '@/lib/ai/config'
-import { getWorld } from '@/worlds'
-import { resolveAbilities } from '@/features/character/lib/progression'
-import { type GameSnapshot } from '@/db/schema/session'
 
 // Same runtime as /api/game. Both routes stream from the same SDK against the
-// same database config, so they have to agree — running this one on Node while
+// same database config, so they have to agree - running this one on Node while
 // the turn loop runs on Edge would mean two sets of environment assumptions and
 // a second chance to reintroduce the dotenv-in-db/index.ts crash.
 export const runtime = 'edge'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 const schema = z.object({ sessionId: z.string().uuid() })
-
-/**
- * Length of the trailing run of characters that could still grow into
- * SEPARATOR. Returns 0 for anything that cannot possibly be mid-separator,
- * which is every ordinary chunk of prose.
- */
-function pendingPrefixLength(text: string): number {
-  const max = Math.min(SEPARATOR.length - 1, text.length)
-  for (let n = max; n > 0; n--) {
-    if (text.endsWith(SEPARATOR.slice(0, n))) return n
-  }
-  return 0
-}
-
-// Serverless instances do not share this, so it is not a distributed lock —
-// the database check below is what actually prevents a duplicate opening. This
-// only stops the cheap, common case: React's development StrictMode mounting
-// the effect twice and firing two requests within the same millisecond, before
-// either has written anything for the other to find.
-const inFlight = new Set<string>()
 
 export async function POST(req: Request) {
   const { userId } = await auth()
@@ -71,7 +46,7 @@ export async function POST(req: Request) {
   const hasOpening = messages.some(
     (m) => m.role === 'assistant' && m.content !== ''
   )
-  if (hasOpening || inFlight.has(sessionId)) {
+  if (hasOpening || isOpeningInFlight(sessionId)) {
     return new Response(null, { status: 204 })
   }
 
@@ -80,9 +55,7 @@ export async function POST(req: Request) {
 
   // Abilities active at the character's current tier. Resolved here rather
   // than inside buildOpeningRequest so the registry lookup stays in one place.
-  const classDef = getWorld(character.world).classes.find(
-    (c) => c.value === character.characterClass
-  )
+  const classDef = getClassDef(character.world, character.characterClass)
   const abilities = classDef
     ? resolveAbilities(classDef.abilities, lastSnapshot?.tier ?? 1)
     : []
@@ -107,97 +80,5 @@ export async function POST(req: Request) {
     lastSnapshot,
   })
 
-  inFlight.add(sessionId)
-
-  const encoder = new TextEncoder()
-
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      // Everything the model produced, separator and any invented state block
-      // included. What reaches the client is a prefix of this.
-      let full = ''
-      // How much of the prose has already been enqueued.
-      let sent = 0
-      let cut = false
-
-      const flush = (upTo: number) => {
-        if (upTo > sent) {
-          controller.enqueue(encoder.encode(full.slice(sent, upTo)))
-          sent = upTo
-        }
-      }
-
-      try {
-        const modelStream = client.messages.stream({
-          model: AI_MODEL,
-          // 700, not 400 — the prompt caps prose at ~200 words, but
-          // token-heavy languages (e.g. Polish) overrun a 400-token ceiling
-          // and get cut mid-sentence before the opening finishes.
-          max_tokens: MAX_TOKENS.opening,
-          system,
-          messages: [{ role: 'user', content: task }],
-        })
-
-        for await (const event of modelStream) {
-          if (
-            event.type !== 'content_block_delta' ||
-            event.delta.type !== 'text_delta'
-          ) {
-            continue
-          }
-
-          full += event.delta.text
-          if (cut) continue
-
-          const idx = full.indexOf(SEPARATOR)
-          if (idx !== -1) {
-            // A state block started. Emit the prose before it and stop; the
-            // rest is accumulated only so the log below can report it.
-            flush(idx)
-            cut = true
-            continue
-          }
-
-          // Hold back only what could still turn out to be a separator. One
-          // can arrive split across two deltas, and a fragment already painted
-          // on screen cannot be taken back — the player would watch stray
-          // punctuation appear under the opening paragraph.
-          //
-          // Withholding the last SEPARATOR.length characters unconditionally
-          // was too blunt: it kept the visible text a fixed distance behind
-          // the model on every delta, so the prose looked like it had stopped
-          // short of where it had actually reached. The tail is now withheld
-          // only when it really is a prefix of the separator.
-          flush(full.length - pendingPrefixLength(full))
-        }
-
-        // Stream finished: release whatever was being held back.
-        if (!cut) flush(full.length)
-
-        controller.close()
-      } catch (error) {
-        console.error(`Opening stream failed for session ${sessionId}:`, error)
-        controller.error(error)
-      } finally {
-        // Persisted from the accumulated text, not from what the client
-        // received. If the player closed the tab halfway through, the opening
-        // they never saw is still the one waiting when they resume.
-        try {
-          await persistOpening(sessionId, stripStateBlock(full, sessionId))
-        } catch (error) {
-          console.error(`Failed to save opening for ${sessionId}:`, error)
-        }
-        inFlight.delete(sessionId)
-      }
-    },
-  })
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'no-store',
-      // Proxies that buffer a response defeat the point of streaming it.
-      'X-Accel-Buffering': 'no',
-    },
-  })
+  return streamOpeningResponse({ sessionId, system, task })
 }

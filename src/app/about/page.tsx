@@ -1,5 +1,8 @@
+import CtaSection from '@/components/marketing/cta-section'
+import SectionHeader from '@/components/marketing/section-header'
 import Divider from '@/components/ui/divider'
 import { ROUTES } from '@/constants/routes'
+import { WORLDS } from '@/worlds'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -10,10 +13,9 @@ export const metadata = {
 }
 
 // ---------------------------------------------------------------------------
-// How to play — kolejność: konto → postać → kampania → gra.
-// Podmień `image: null` na ścieżki do prawdziwych screenshotów,
-// np. '/images/about/step-2-character.jpg'. Dopóki jest null,
-// renderuje się stylowany placeholder w tej samej ramce.
+// How to play — the order mirrors the real flow a new player goes through:
+// account → character → campaign → session. Every step is illustrated with a
+// screenshot of the actual screen it describes.
 // ---------------------------------------------------------------------------
 
 const IMAGE_PREFIX = '/images/about-page/'
@@ -22,7 +24,7 @@ const steps: {
   number: string
   title: string
   description: string
-  image: string | null
+  image: string
   imageAlt: string
 }[] = [
   {
@@ -59,55 +61,49 @@ const steps: {
   },
 ]
 
-const worlds = [
-  {
-    name: 'Tréigthe',
-    tagline: 'The Forsaken · Dark Fantasy',
-    image: '/images/fantasy/treigthe/fantasy-hero.jpg',
-  },
-  {
-    name: 'The Drift',
-    tagline: 'Sci-Fi',
-    image: '/images/sci-fi/drift/sci-fi-hero.jpg',
-  },
-  {
-    name: 'Neon Warszawa 2087',
-    tagline: 'Cyberpunk',
-    image: '/images/cyberpunk/neon-warszawa/cyberpunk-hero.jpg',
-  },
-]
+// This teaser links straight to /worlds, so the two pages naming the same
+// world differently — or pointing at an image path that has since moved — is
+// exactly the drift the registry exists to prevent. Names and artwork are
+// therefore read from it, and only the tagline stays here as editorial copy.
+// Same rule /worlds already follows for its long-form descriptions.
+const worldTaglines: Partial<
+  Record<(typeof WORLDS)[number]['value'], string>
+> = {
+  treigthe: 'The Forsaken · Dark Fantasy',
+}
+
+const worlds = WORLDS.map((world) => ({
+  name: world.name,
+  // The genre alone reads fine for the worlds that have no bespoke tagline.
+  tagline: worldTaglines[world.value] ?? world.genre,
+  image: world.cardImageUrl,
+}))
 
 export default function AboutPage() {
   return (
     <>
-      <Intro />
+      <section className="px-4 pb-16 pt-24 sm:px-8 sm:pt-28 md:px-12 lg:px-24">
+        <SectionHeader
+          as="h1"
+          eyebrow="About QuestMind"
+          heading={
+            <>
+              A Game Master that never{' '}
+              <span className="text-accent">sleeps</span>
+            </>
+          }
+          description="Tabletop RPGs usually need a group, a schedule and an experienced Game Master. QuestMind needs none of that. An AI narrates your adventure, remembers what happened, reacts to any decision you make — and keeps your character sheet up to date while you play. All you bring is curiosity."
+        />
+      </section>
       <Divider />
       <HowToPlay />
       <Divider />
       <WorldsTeaser />
-      <CTA />
+      <CtaSection
+        heading="Your adventure is one click away"
+        ctaLabel="BEGIN YOUR QUEST"
+      />
     </>
-  )
-}
-
-// ----- Intro -----
-function Intro() {
-  return (
-    <section className="px-4 pb-16 pt-24 text-center sm:px-8 sm:pt-28 md:px-12 lg:px-24">
-      <p className="mb-4 text-[10px] uppercase tracking-[0.3em] text-accent sm:text-xs sm:tracking-[0.4em]">
-        About QuestMind
-      </p>
-      <h1 className="mx-auto mb-6 max-w-3xl text-3xl font-bold leading-tight tracking-wide sm:text-4xl md:text-5xl">
-        A Game Master that never <span className="text-accent">sleeps</span>
-      </h1>
-      <p className="font-(family-name:--font-im-fell) mx-auto max-w-2xl text-base italic leading-relaxed text-text-secondary sm:text-lg">
-        Tabletop RPGs usually need a group, a schedule and an experienced Game
-        Master. QuestMind needs none of that. An AI narrates your adventure,
-        remembers what happened, reacts to any decision you make — and keeps
-        your character sheet up to date while you play. All you bring is
-        curiosity.
-      </p>
-    </section>
   )
 }
 
@@ -115,14 +111,11 @@ function Intro() {
 function HowToPlay() {
   return (
     <section className="px-4 py-16 sm:px-8 sm:py-20 md:px-12 lg:px-24">
-      <div className="mb-10 text-center sm:mb-14">
-        <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-accent sm:text-xs sm:tracking-[0.4em]">
-          How to play
-        </p>
-        <h2 className="text-2xl font-bold tracking-wide md:text-3xl">
-          From sign-up to first quest
-        </h2>
-      </div>
+      <SectionHeader
+        eyebrow="How to play"
+        heading="From sign-up to first quest"
+        className="mb-10 sm:mb-14"
+      />
 
       <div className="mx-auto flex max-w-5xl flex-col gap-12 sm:gap-16">
         {steps.map((step, i) => (
@@ -146,27 +139,16 @@ function Step({
         reversed ? 'md:flex-row-reverse' : 'md:flex-row'
       }`}
     >
-      {/* Screenshot / placeholder */}
+      {/* Screenshot */}
       <div className="w-full border border-border bg-bg-surface md:w-1/2">
         <div className="relative aspect-16/10 w-full">
-          {step.image ? (
-            <Image
-              src={step.image}
-              alt={step.imageAlt}
-              fill
-              className="object-cover object-top"
-              sizes="(min-width: 768px) 480px, 100vw"
-            />
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#201a11]/40 px-6 text-center">
-              <span className="text-2xl text-accent" aria-hidden="true">
-                ✦
-              </span>
-              <p className="text-[10px] tracking-[0.3em] text-text-muted sm:text-xs">
-                SCREENSHOT — {step.title.toUpperCase()}
-              </p>
-            </div>
-          )}
+          <Image
+            src={step.image}
+            alt={step.imageAlt}
+            fill
+            className="object-cover object-top"
+            sizes="(min-width: 768px) 480px, 100vw"
+          />
         </div>
       </div>
 
@@ -190,14 +172,11 @@ function Step({
 function WorldsTeaser() {
   return (
     <section className="px-4 py-16 sm:px-8 sm:py-20 md:px-12 lg:px-24">
-      <div className="mb-10 text-center sm:mb-14">
-        <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-accent sm:text-xs sm:tracking-[0.4em]">
-          The Worlds
-        </p>
-        <h2 className="text-2xl font-bold tracking-wide md:text-3xl">
-          Three worlds. Countless stories.
-        </h2>
-      </div>
+      <SectionHeader
+        eyebrow="The Worlds"
+        heading="Three worlds. Countless stories."
+        className="mb-10 sm:mb-14"
+      />
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
         {worlds.map((world) => (
@@ -236,23 +215,6 @@ function WorldsTeaser() {
           EXPLORE THE WORLDS
         </Link>
       </div>
-    </section>
-  )
-}
-
-// ----- CTA -----
-function CTA() {
-  return (
-    <section className="border-t border-border px-4 py-16 text-center sm:px-8 sm:py-20">
-      <h2 className="mb-4 text-2xl font-bold tracking-wide sm:text-3xl">
-        Your adventure is one click away
-      </h2>
-      <Link
-        href={ROUTES.signUp}
-        className="inline-block w-full max-w-xs bg-accent px-10 py-4 text-sm font-bold tracking-widest text-accent-fg transition-colors hover:bg-accent-hover sm:w-auto sm:max-w-none"
-      >
-        BEGIN YOUR QUEST
-      </Link>
     </section>
   )
 }

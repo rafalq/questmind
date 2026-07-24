@@ -1,6 +1,6 @@
-// src/db/seeds/treigthe.ts
+// src/db/seed/treigthe.ts
 // Seed script for the Tréigthe (fantasy) world.
-// Run with: npx tsx src/db/seeds/treigthe.ts
+// Run with: npx tsx src/db/seed/treigthe.ts
 //
 // This seeds:
 // - The Tréigthe world record
@@ -11,8 +11,9 @@
 //
 // Add remaining locations and NPCs following the same pattern.
 
-import { config } from 'dotenv'
-config({ path: '.env.local' })
+// Must stay the first import: it loads .env.local before '@/db' is
+// evaluated. See ./env for why the order is not optional.
+import './env'
 
 import { db } from '@/db'
 import {
@@ -512,7 +513,7 @@ The city smells of ash and cold stone. Streets are cobbled, buildings grey, the 
   console.log(`✓ World events seeded (8 events, 3 prompt-injected)`)
   console.log(`\n✅ Tréigthe seed complete.`)
   console.log(`   Next: add remaining 8 locations following the same pattern.`)
-  console.log(`   Run: npx tsx src/db/seeds/treigthe.ts`)
+  console.log(`   Run: npx tsx src/db/seed/treigthe.ts`)
 }
 
 seed()

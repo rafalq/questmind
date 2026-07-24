@@ -12,8 +12,9 @@
 // Idempotent: exits if the world already exists.
 // Second location: praga.ts (the Baile Fola / Tetherport analog).
 
-import { config } from 'dotenv'
-config({ path: '.env.local' })
+// Must stay the first import: it loads .env.local before '@/db' is
+// evaluated. See ./env for why the order is not optional.
+import './env'
 
 import { db } from '@/db'
 import {
