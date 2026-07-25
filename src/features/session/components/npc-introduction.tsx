@@ -64,7 +64,8 @@ export default function NpcIntroductions({
               width={280}
               height={373}
               sizes="(max-width: 640px) 60vw, 280px"
-              className="aspect-3/4 w-2/3 max-w-70 rounded-md object-cover object-top sm:w-1/2"
+              className="
+              w-full rounded-md"
             />
             <figcaption className="font-sans text-sm leading-tight">
               <span className="block text-text-primary">{npc.name}</span>

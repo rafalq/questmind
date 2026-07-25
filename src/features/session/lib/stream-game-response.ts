@@ -57,19 +57,6 @@ export function streamGameResponse({
         emit: (text) => controller.enqueue(encoder.encode(text)),
       })
 
-      // TODO(logging): drop once the model reliably emits a separator every
-      // time. It should never stop without one, but it does, and the stop
-      // reason is the only way to tell a truncation from a refusal.
-      const final = await events.finalMessage()
-      console.log(
-        'STOP REASON:',
-        final.stop_reason,
-        '| in:',
-        final.usage.input_tokens,
-        '| out:',
-        final.usage.output_tokens
-      )
-
       let snapshot: GameSnapshot | null = await extractSnapshot({
         full,
         separatorIndex,
@@ -78,10 +65,6 @@ export function streamGameResponse({
         sessionId,
       })
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('SERVER npcMet (raw):', snapshot?.npcMet)
-      }
-
       if (snapshot) {
         snapshot = await applyTurnEffects({
           snapshot,
@@ -89,10 +72,6 @@ export function streamGameResponse({
           classDef,
           activeAbilities,
         })
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('SERVER npcMet (persisted):', snapshot?.npcMet)
       }
 
       const narrative =

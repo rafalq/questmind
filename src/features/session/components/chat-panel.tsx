@@ -146,13 +146,30 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
                 .reverse()
                 .find((prev) => prev.snapshot)?.snapshot ?? null
 
-            // People this turn introduced. `npcMet` carries names, so only the
-            // authored cast resolves to a portrait — the prompt also lets the
-            // model invent NPCs and warns it those will not be remembered, so a
-            // name with no match is that rule working, not a lookup failure.
+            // A name is "seen earlier" if it appeared in any snapshot before
+            // this message. First appearance gets the full portrait; later
+            // mentions get the compact avatar. `npcMet` is meant to be
+            // first-meeting-only, but the model judges that from history and
+            // repeats itself, so the UI decides rather than trusting the flag.
+            const seenEarlier = new Set(
+              messages
+                .slice(0, i)
+                .flatMap((prev) => prev.snapshot?.npcMet ?? [])
+                .map((n) => n.toLowerCase())
+            )
+
             const npcs = (m.snapshot?.npcMet ?? [])
-              .map((name) => npcPortraits[name.toLowerCase()])
-              .filter((npc): npc is NpcPortrait => Boolean(npc))
+              .map((name) => {
+                const npc = npcPortraits[name.toLowerCase()]
+                if (!npc) return null
+                return {
+                  ...npc,
+                  isIntroduction: !seenEarlier.has(name.toLowerCase()),
+                }
+              })
+              .filter((npc): npc is NpcPortrait & { isIntroduction: boolean } =>
+                Boolean(npc)
+              )
 
             if (
               process.env.NODE_ENV === 'development' &&

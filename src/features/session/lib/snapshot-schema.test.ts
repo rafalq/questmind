@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { repairSnapshot, resolveSceneTag } from './snapshot-schema'
 import { SCENE_IMAGES } from '@/worlds/schema/scenes'
@@ -162,5 +162,41 @@ describe('scene assets', () => {
     for (const [genre, scenes] of Object.entries(SCENE_IMAGES)) {
       expect(scenes.default, `${genre} has no default scene`).toBeTruthy()
     }
+  })
+})
+
+describe('NPC portrait assets', () => {
+  // The seed files are the source of truth for portrait paths — the DB is
+  // populated from them — so the test reads them directly rather than importing
+  // anything. This is the check that has been missing every time a portrait
+  // filename drifted from the path in the seed (old-carsa vs old-karsa,
+  // unlisted vs the-unlisted): the mismatch throws nowhere, the <img> 404s, and
+  // the portrait is silently absent in play.
+  const SEED_FILES = [
+    'treigthe',
+    'baile-fola',
+    'drift',
+    'tetherport',
+    'neon-warszawa',
+    'praga',
+  ]
+
+  it('every seeded portraitUrl points at a file that exists', () => {
+    const missing: string[] = []
+
+    for (const seed of SEED_FILES) {
+      const src = readFileSync(
+        join(process.cwd(), `src/db/seed/${seed}.ts`),
+        'utf8'
+      )
+      for (const match of src.matchAll(/portraitUrl: '([^']+)'/g)) {
+        const publicPath = join(process.cwd(), 'public', match[1])
+        if (!existsSync(publicPath)) {
+          missing.push(`${seed}.ts → ${match[1]}`)
+        }
+      }
+    }
+
+    expect(missing).toEqual([])
   })
 })
