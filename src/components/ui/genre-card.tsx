@@ -49,8 +49,10 @@ export default function GenreCard({
     <>
       <div
         onClick={onClick}
-        // data-genre scopes the genre tint (--qm-bg-genre), which now has a
-        // value per theme instead of one hardcoded colour.
+        // data-genre scopes the genre tint (--qm-bg-genre) AND the per-world
+        // accent (--qm-accent), both of which now have a value per world/theme
+        // instead of one hardcoded colour. This is what makes two cards from
+        // different worlds read as different — world = colour.
         //
         // on-media is the important one: this card is always a dark surface,
         // because the artwork sits under a dark overlay in both themes. The
@@ -66,10 +68,12 @@ export default function GenreCard({
           fontFamily: genreFont[genre],
           backgroundPosition: 'center 30%',
           ...(imageUrl && {
-            // Overlay strength comes from the theme token so it can be tuned
-            // in one place; the fallback keeps the card readable if the
-            // variable is ever missing.
-            backgroundImage: `linear-gradient(rgb(var(--qm-image-overlay, 10 8 5 / 0.82)), rgb(var(--qm-image-overlay, 10 8 5 / 0.82))), url("${imageUrl}")`,
+            // Scrim is a full gradient from the theme (--qm-image-scrim):
+            // darker at the top and bottom where the text lives, lighter
+            // through the middle so the artwork shows — most visibly in light
+            // mode, which is where a flat dark scrim was swallowing the hero.
+            // The fallback keeps the card readable if the token is ever missing.
+            backgroundImage: `var(--qm-image-scrim, linear-gradient(rgb(0 0 0 / 0.82), rgb(0 0 0 / 0.82))), url("${imageUrl}")`,
           }),
         }}
       >
@@ -114,7 +118,7 @@ export default function GenreCard({
           {/* min-w-0 lets the heading actually shrink inside the flex row;
               without it a long campaign name pushes the avatar off the card.
               break-words handles single long tokens the clamp cannot split. */}
-          <h2 className="min-w-0 break-words text-base font-bold text-text-primary sm:text-lg">
+          <h2 className="min-w-0 wrap-break-word text-base font-bold text-text-primary sm:text-lg">
             {title}
           </h2>
           {avatar && <div className="shrink-0">{avatar}</div>}

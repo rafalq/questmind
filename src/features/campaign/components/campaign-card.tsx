@@ -57,6 +57,11 @@ export default function CampaignCard({
     <GenreCard
       genre={campaign.genre}
       imageUrl={genreCardImage(campaign.genre)}
+      // Type marker: a top accent bar in the world's colour. Its counterpart
+      // on character cards is the accent ring around the portrait. inset
+      // box-shadow (not border-t) so it can't be overridden by the card's own
+      // border-border, and it renders over the artwork, under the content.
+      className="shadow-[inset_0_3px_0_0_var(--qm-accent)]"
       title={
         <CampaignEditableTitle campaignId={campaign.id} name={campaign.name} />
       }

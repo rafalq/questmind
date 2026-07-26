@@ -76,9 +76,24 @@
   --qm-bg-chat: var(--qm-bg-base);
   --qm-bg-genre: var(--qm-bg-base);
 
-  /* Scrim over artwork. Space-separated channels, no rgb() wrapper, so it can
-     be composed as rgb(var(--qm-image-overlay)) at the call site. */
+  /* Legacy flat scrim, kept for any consumer that still reads it (e.g. the
+     scene banner). Space-separated channels, no rgb() wrapper, so it composes
+     as rgb(var(--qm-image-overlay)) at the call site. */
   --qm-image-overlay: 0 0 0 / 0.72;
+
+  /* Card scrim, as a full gradient so the middle of the artwork can breathe
+     while the text zones (top meta/title, bottom footer) stay dark. Composed
+     directly: background-image: var(--qm-image-scrim), url(...). Dark mode is
+     intentionally close to the old flat 0.72 — the light block is where this
+     earns its keep. */
+  --qm-image-scrim: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 78%) 0%,
+    rgb(0 0 0 / 70%) 20%,
+    rgb(0 0 0 / 58%) 48%,
+    rgb(0 0 0 / 62%) 66%,
+    rgb(0 0 0 / 82%) 100%
+  );
 
   color-scheme: dark;
 }
@@ -114,11 +129,22 @@
   --qm-negative-fg: #fff;
   --qm-bg-chat: var(--qm-bg-base);
   --qm-bg-genre: var(--qm-bg-base);
-
-  /* Slightly stronger than in dark. The artwork keeps light text on top of it
-     in both themes (see .on-media), so a lighter scrim here would cut contrast
-     rather than improve it — the opposite of the usual instinct. */
   --qm-image-overlay: 0 0 0 / 0.78;
+
+  /* Lighter through the middle than dark mode so the hero artwork actually
+     shows in the light theme, where the old flat dark scrim was swallowing it.
+     Top and bottom stay dark to protect the meta/title and footer text, and
+     .on-media adds a text-shadow as a second line of defence in the lighter
+     middle band — so contrast holds even where the image shows through. This
+     is why the light scrim can be lighter than dark without failing AA. */
+  --qm-image-scrim: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 72%) 0%,
+    rgb(0 0 0 / 62%) 20%,
+    rgb(0 0 0 / 34%) 48%,
+    rgb(0 0 0 / 40%) 66%,
+    rgb(0 0 0 / 80%) 100%
+  );
 
   color-scheme: light;
 }
@@ -144,6 +170,12 @@
   --qm-border: #6b5d43;
   --qm-border-subtle: #4a4030;
 
+  /* Text sits directly on artwork through the lighter middle of the scrim, so
+     a shadow guarantees legibility independent of whatever pixels are behind
+     it. Reset on .on-surface (modals), which paint on their own solid panel. */
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 70%),
+    0 0 8px rgb(0 0 0 / 35%);
   color-scheme: dark;
 }
 
@@ -196,6 +228,14 @@
   --qm-border-subtle: #e8dcc8;
 
   color-scheme: light;
+}
+
+/*
+ * A modal paints on its own solid panel, so the artwork text-shadow inherited
+ * from the .on-media ancestor would just smudge its text. Turn it off.
+ */
+.on-surface {
+  text-shadow: none;
 }
 
 @layer base {
@@ -291,16 +331,46 @@ body {
  * .on-media wins for text and border, and the tint applies to background only.
  * Stated explicitly because the two rules above and .on-media have the same
  * specificity, and relying on source order for that would be fragile.
+ *
+ * The accent is now per world: this shared block sets the text and border
+ * palette, and the three [data-genre='…'] blocks below give each world its own
+ * accent. That is what makes two cards from different worlds read as different
+ * at a glance — world = colour — while the card *type* (campaign vs character)
+ * is carried by structure in the components: a top accent bar on campaign
+ * cards, an accent ring on the character portrait.
+ *
+ * Note: this also colours the accent on any other .on-media[data-genre]
+ * element (e.g. a scene banner over artwork). That is intentional — world
+ * identity through colour, consistently. If you ever want it card-only, swap
+ * these three selectors for a card-scoped class instead of data-genre.
  */
 .on-media[data-genre] {
   --qm-text-primary: #f4ecdb;
   --qm-text-secondary: #d8cbb0;
   --qm-text-muted: #b3a488;
+  --qm-border: #6b5d43;
+  --qm-border-subtle: #4a4030;
+}
+
+/* Fantasy — the original gold. */
+.on-media[data-genre='fantasy'] {
   --qm-accent: #dcb75f;
   --qm-accent-hover: #ecc97c;
   --qm-accent-fg: #14100a;
-  --qm-border: #6b5d43;
-  --qm-border-subtle: #4a4030;
+}
+
+/* Sci-fi — cold cyan, legible as small text on the dark scrim. */
+.on-media[data-genre='sci-fi'] {
+  --qm-accent: #55c7d6;
+  --qm-accent-hover: #7fdbe8;
+  --qm-accent-fg: #06131a;
+}
+
+/* Cyberpunk — hot magenta. */
+.on-media[data-genre='cyberpunk'] {
+  --qm-accent: #e07ac0;
+  --qm-accent-hover: #ef98d1;
+  --qm-accent-fg: #1a0714;
 }
 
 /* Scene banner cross-fade — the <img> is remounted on scene change, so a

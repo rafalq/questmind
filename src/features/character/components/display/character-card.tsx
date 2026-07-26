@@ -88,12 +88,17 @@ export default function CharacterCard({ character }: Props) {
   const avatar = (
     // The character's chosen portrait. Falls back to the class icon (on the same
     // dark disc as before) when no avatar was picked or the image fails to load.
+    //
+    // Type marker: an accent ring in the world's colour. Its counterpart on
+    // campaign cards is the top accent bar. A ringed portrait (a face) vs a
+    // faceless card with a top bar is what separates the two card types at a
+    // glance; the ring colour also carries the world, same as everywhere else.
     <Avatar
       src={character.avatarUrl}
       alt={character.name}
       size="md"
       fallback={<ClassIcon size={18} className="text-accent" />}
-      className="bg-black/40"
+      className="bg-black/40 ring-2 ring-accent"
     />
   )
 
