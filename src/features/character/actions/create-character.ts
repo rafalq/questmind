@@ -40,6 +40,7 @@ const schema = z.object({
   gender: z.string().optional(),
   characterClass: z.string().min(1),
   attributes: attributesSchema,
+  avatarUrl: z.string().optional(),
 })
 
 export const createCharacter = authActionClient
@@ -99,7 +100,7 @@ export const createCharacter = authActionClient
         race,
         gender: gender ?? null,
         characterClass,
-        avatarUrl: null,
+        avatarUrl: parsedInput.avatarUrl ?? null,
         inventory: buildStartingInventory(
           raceDef.startingEquipment,
           classDef.startingEquipment

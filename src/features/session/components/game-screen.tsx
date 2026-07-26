@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Character,
   type campaignsTable,
   type charactersTable,
   type messagesTable,
@@ -17,7 +18,6 @@ import StatsPanel from './stats-panel'
 
 type DbMessage = typeof messagesTable.$inferSelect
 type Campaign = typeof campaignsTable.$inferSelect
-type Character = typeof charactersTable.$inferSelect
 
 type Props = {
   sessionId: string
@@ -93,7 +93,7 @@ export default function GameScreen({
           isStreaming={isStreaming}
           onSend={sendMessage}
           genre={campaign.genre}
-          characterName={character.name}
+          character={character}
           npcPortraits={npcPortraits}
         />
       </div>

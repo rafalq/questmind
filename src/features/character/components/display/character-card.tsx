@@ -16,6 +16,7 @@ import CharacterDetailModal from './character-detail-modal'
 import Tooltip from '@/components/ui/tooltip'
 import { TREIGTHE_CLASS_ICONS } from '@/features/character/constants/fantasy/treigthe'
 import { IconUser } from '@tabler/icons-react'
+import Avatar from '@/components/ui/avatar'
 
 type Props = {
   character: CharacterDetail
@@ -85,13 +86,15 @@ export default function CharacterCard({ character }: Props) {
     ] ?? IconUser
 
   const avatar = (
-    // bg-bg-base/40 resolved to a translucent cream in the light theme — the
-    // pale disc visible over the artwork. The backing has to be dark in both
-    // themes, like everything else on this surface, so it is stated literally
-    // rather than taken from a theme token.
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-black/40 text-accent">
-      <ClassIcon size={18} />
-    </div>
+    // The character's chosen portrait. Falls back to the class icon (on the same
+    // dark disc as before) when no avatar was picked or the image fails to load.
+    <Avatar
+      src={character.avatarUrl}
+      alt={character.name}
+      size="md"
+      fallback={<ClassIcon size={18} className="text-accent" />}
+      className="bg-black/40"
+    />
   )
 
   return (

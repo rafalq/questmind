@@ -48,7 +48,12 @@ const STEP_COMPONENTS: Record<
   summary: StepSummary,
 }
 
-export default function CreateCharacterWizard() {
+export default function CreateCharacterWizard({
+  takenAvatars = [],
+}: {
+  /** Portraits already used by this user's other characters (server-fetched). */
+  takenAvatars?: string[]
+}) {
   const router = useRouter()
   const [stepIndex, setStepIndex] = useState(0)
   const [data, setData] = useState<FormData>(INITIAL_DATA)
@@ -158,6 +163,7 @@ export default function CreateCharacterWizard() {
       characterClass: data.characterClass,
       gender: data.gender ?? undefined,
       attributes: data.attributes,
+      avatarUrl: data.avatarUrl ?? undefined,
     })
   }
 
@@ -185,7 +191,17 @@ export default function CreateCharacterWizard() {
         aria-label={`Step ${stepIndex + 1} of ${activeSteps.length}: ${currentStep.label}`}
         className="min-h-100 outline-none"
       >
-        <StepComponent data={data} onChange={onChange} />
+        {/* Summary needs the taken-portrait list; every other step has the
+            plain { data, onChange } signature, so it's special-cased here. */}
+        {currentStep.id === 'summary' ? (
+          <StepSummary
+            data={data}
+            onChange={onChange}
+            takenAvatars={takenAvatars}
+          />
+        ) : (
+          <StepComponent data={data} onChange={onChange} />
+        )}
       </div>
 
       <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">

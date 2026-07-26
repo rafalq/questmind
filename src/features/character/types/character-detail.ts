@@ -33,4 +33,5 @@ export type CharacterDetail = {
   inventory: string[]
   attributes: AttributeRow[]
   activeCampaign: ActiveCampaign | null
+  avatarUrl: string | null
 }

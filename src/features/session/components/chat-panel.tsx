@@ -16,13 +16,14 @@ import { IconArrowNarrowDownDashed, IconSend } from '@tabler/icons-react'
 import { diffSnapshots } from '../lib/snapshot-diff'
 import { UIMessage } from '../lib/types'
 import type { NpcPortrait } from '@/features/lore/queries/get-npc-portraits'
+import { Character } from '@/db/schema/character'
 
 type Props = {
   messages: UIMessage[]
   isStreaming: boolean
   onSend: (message: string) => void
   genre: Genre
-  characterName: string
+  character: Character
   /** Authored cast of this world, keyed by lower-cased name. Resolved
    *  against each turn's `npcMet` to show a portrait on first meeting. */
   npcPortraits: Record<string, NpcPortrait>
@@ -36,7 +37,7 @@ export type ChatPanelHandle = {
 }
 
 const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
-  { messages, isStreaming, onSend, genre, characterName, npcPortraits },
+  { messages, isStreaming, onSend, genre, character, npcPortraits },
   ref
 ) {
   const [input, setInput] = useState('')
@@ -197,7 +198,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
                   i === messages.length - 1 &&
                   m.role === 'assistant'
                 }
-                characterName={m.role === 'user' ? characterName : undefined}
+                character={m.role === 'user' ? character : undefined}
                 changes={diffSnapshots(prevSnapshot, m.snapshot ?? null)}
                 npcs={npcs}
               />

@@ -7,6 +7,7 @@ export type FormData = {
   gender: 'male' | 'female' | null
   characterClass: string | null
   attributes: Record<Attribute, number>
+  avatarUrl?: string
 }
 
 export const DEFAULT_ATTRIBUTES: Record<Attribute, number> = {

@@ -5,13 +5,15 @@ import { SnapshotChange } from '../lib/snapshot-diff'
 import SnapshotDelta from './snapshot-delta'
 import NpcIntroductions from '@/features/session/components/npc-introduction'
 import type { NpcPortrait } from '@/features/lore/queries/get-npc-portraits'
+import CharacterAvatar from '@/features/character/components/display/character-avatar'
+import { Character } from '@/db/schema/character'
 
 type Props = {
   role: 'user' | 'assistant'
   content: string
   isStreaming?: boolean
   isNarration?: boolean
-  characterName?: string
+  character?: Character
   genre: Genre
   changes?: SnapshotChange[]
   npcs?: NpcPortrait[]
@@ -22,7 +24,7 @@ export default function MessageBubble({
   content,
   isStreaming,
   isNarration,
-  characterName,
+  character,
   genre,
   changes,
   npcs,
@@ -45,17 +47,29 @@ export default function MessageBubble({
               }`
         }
       >
-        {!isNarration && isAssistant && (
-          <div className="text-xs text-text-muted mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
-            <IconEye size={16} /> Game Master
+        {!isNarration && !isAssistant ? (
+          <div className="flex items-start gap-3">
+            <div className="flex flex-col gap-1">
+              <div className="text-xs text-accent-fg/85 mb-2 font-semibold uppercase tracking-widest self-end">
+                {character?.name ?? 'You'}
+              </div>
+              <div>{renderContent(content)}</div>
+            </div>
+            <div>
+              <CharacterAvatar
+                world={character?.world ?? ''}
+                race={character?.race ?? ''}
+                gender={character?.gender ?? null}
+                name={character?.name ?? ''}
+                avatarUrl={character?.avatarUrl ?? undefined}
+                size="sm"
+              />
+            </div>
           </div>
+        ) : (
+          <div>{renderContent(content)}</div>
         )}
-        {!isNarration && !isAssistant && (
-          <div className="text-xs text-accent-fg/85 mb-2 font-semibold uppercase tracking-widest flex items-center gap-1">
-            <IconUser size={16} /> {characterName ?? 'You'}
-          </div>
-        )}
-        <div>{renderContent(content)}</div>
+
         {changes && changes.length > 0 && <SnapshotDelta changes={changes} />}
         {npcs && npcs.length > 0 && <NpcIntroductions npcs={npcs} />}
         {isStreaming && isAssistant && (
