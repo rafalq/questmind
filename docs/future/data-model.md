@@ -95,15 +95,27 @@ What shipped:
 
 **Remainder:** portraits appear only where the model reports a first meeting. Showing who is _currently present_ in a scene would need `npcPresent` in the contract — the same state-versus-event distinction as above, and the same reason it is deferred.
 
-### 6.3 🔲 Character avatar (`avatarUrl`)
+### 6.3 ✅ Character avatar (`avatarUrl`)
 
-`charactersTable.avatarUrl` exists and `createCharacter` explicitly writes `null` to it. Meanwhile the portrait convention is already fully working elsewhere: `buildClassPortraitUrl` resolves `{race}-{gender}-{class}.jpg` against `WorldDefinition.classPortraitsBaseUrl`, and the wizard displays it.
+**Delivered** — by taking the branch the original note treated as hypothetical. The choice was framed here as: drop the column and keep deriving from race/gender/class, _or_ populate it, "which only makes sense if avatars will one day be user-uploaded or per-character generated." That condition is now true. The player picks a face at character creation, so `avatarUrl` is a live per-character value rather than dead weight, and the wizard persists the chosen URL instead of the `null` `createCharacter` used to write.
 
-So the character _has_ a portrait — it is just derived at render time rather than stored.
+Deriving did not disappear — it became the fallback rather than the mechanism. `CharacterAvatar` resolves a portrait through a three-tier preference order:
 
-**Decision to make:** either drop the column and keep deriving from race/gender/class (simpler, no dead column), or populate it at creation, which only makes sense if avatars will one day be user-uploaded or per-character generated rather than per-combination.
+1. the stored `avatarUrl` the player chose in the wizard;
+2. a deterministic pooled face seeded from `characterId` (djb2 hash → `1..poolSize`), for legacy characters created before the picker existed;
+3. the base race/gender portrait — the original render-time derivation, now the floor.
 
-Until one of those is true, the column is dead weight. It should be shown in the stats panel regardless — the panel currently names the character but shows no face, which is a missed opportunity in a game about identity.
+Tier 2 is the point worth keeping: a character with no stored avatar still renders a _stable_ face rather than a shared silhouette, and the same id always maps to the same face, so nothing shifts on re-render or resume.
+
+What shipped:
+
+- **Asset pool.** 84 face variants — 21 race×gender slots × 4 faces each — plus a `_default.webp` per world, generated in Leonardo.ai to match the existing painterly wizard portraits (loose brushwork, plain painted background, matte finish) rather than the neon-noir style tried first, which clashed with the wizard art. Bust-crop avatars live in an `avatars/` subfolder beside the base race portraits.
+- **`avatar-pool.ts`** is the single source of truth for URL construction, following the same per-world registry pattern as `classPortraitsBaseUrl` and `SCENE_IMAGES` — no global paths.
+- **Components:** a presentational `Avatar` (next/image, `onError` fallback to a class icon), `CharacterAvatar` (the resolver above), `AvatarPicker`, and `GmAvatar` for narrator bubbles.
+- **Uniqueness per user.** `AvatarPicker` greys out and locks faces already taken by the player's other characters, threaded in from a server component via `getTakenAvatars`. The default selection on arrival falls back `defaultUrl → first free → pool[0]`, so two characters do not open on the same locked face.
+- **Integration without a new wizard step:** the picker sits inside the existing Summary step, keeping the World→Race→Sex→Class→Attributes→Summary flow intact. Character cards and the GM/player message bubbles now render the chosen portrait — the bubble previously fell through to the full-silhouette race portrait because it never passed `avatarUrl` down.
+
+**Remainder:** the stats panel. The note above argued the panel "names the character but shows no face, which is a missed opportunity in a game about identity" — that surface is the one place the avatar is not yet wired in. It is a one-component change now that `CharacterAvatar` exists and every fallback is handled: the panel only needs to pass `world`, `race`, `gender`, `avatarUrl` and `characterId` through.
 
 ### 6.4 ✅ World card backgrounds
 
@@ -121,7 +133,7 @@ Note on labels: Tréigthe's place names (Cathair Luaith, Baile Fola) are Irish a
 
 ### Cross-cutting: assets are per world
 
-All items resolve through the world registry, not through global paths. `classPortraitsBaseUrl` established this pattern; `SCENE_IMAGES` now follows it.
+All items resolve through the world registry, not through global paths. `classPortraitsBaseUrl` established this pattern; `SCENE_IMAGES` follows it, and `avatar-pool.ts` now follows it for character faces.
 
 ## 7. 🔲 Encumbrance / carry capacity
 
