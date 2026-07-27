@@ -3,8 +3,8 @@ import { ROUTES } from './constants/routes'
 
 const isPublicRoute = createRouteMatcher([
   ROUTES.home,
-  ROUTES.signIn,
-  ROUTES.signUp,
+  `${ROUTES.signIn}(.*)`,
+  `${ROUTES.signUp}(.*)`,
   ROUTES.about,
   ROUTES.worlds,
 ])
