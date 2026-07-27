@@ -1,16 +1,10 @@
 import { ROUTES } from '@/constants/routes'
-import { Show, UserButton } from '@clerk/nextjs'
-import {
-  IconLayoutDashboard,
-  IconLogin2,
-  IconSquareLetterI,
-  IconUserPlus,
-  IconWorldMap,
-} from '@tabler/icons-react'
+import { IconSquareLetterI, IconWorldMap } from '@tabler/icons-react'
 import Logo from '../brand/logo'
 import NavLink from '../ui/nav-link'
 import ThemeToggle from '../ui/theme/theme-toggle'
 import MobileMenu from './mobile-menu'
+import NavbarAuth from './navbar-auth'
 
 export default function Navbar() {
   return (
@@ -36,41 +30,13 @@ export default function Navbar() {
           </NavLink>
 
           {/*
-            Auth cluster. Clerk's Show control component resolves auth state on
-            the client and stays reactive, so signing in or out updates the
-            navbar immediately — no manual refresh, no stale Router Cache. The
-            ClerkProvider is SSR-aware, so the correct branch is rendered on the
-            first server paint; there is no flash of the signed-out state. The
-            reserved min height and width keep the row from shifting sideways
-            while Clerk hydrates (NFR-001, NFR-004).
-
-            Show replaces the v6 SignedIn/SignedOut components, which were
-            consolidated into a single component in Clerk Core 3 (@clerk/nextjs v7).
+            Auth cluster. NavbarAuth is a client component driven by useAuth(),
+            so it reflects the live Clerk session and flips on sign-in / sign-out
+            without a manual refresh. The reserved min height and width keep the
+            row from shifting sideways while Clerk hydrates (NFR-001, NFR-004).
           */}
           <div className="flex min-h-8 min-w-8 items-center justify-end gap-3 sm:min-w-32 sm:gap-6">
-            {/* desktop links (sm and up) — signed-out state */}
-            <Show when="signed-out">
-              <NavLink href={ROUTES.signIn} className="hidden sm:inline-flex">
-                <IconLogin2 stroke={2} size={16} />
-                Sign In
-              </NavLink>
-              <NavLink href={ROUTES.signUp} className="hidden sm:inline-flex">
-                <IconUserPlus stroke={2} size={16} />
-                Get Started
-              </NavLink>
-            </Show>
-
-            {/* desktop link + avatar — signed-in state (avatar on every size) */}
-            <Show when="signed-in">
-              <NavLink
-                href={ROUTES.dashboard}
-                className="hidden sm:inline-flex"
-              >
-                <IconLayoutDashboard stroke={2} size={16} />
-                Dashboard
-              </NavLink>
-              <UserButton />
-            </Show>
+            <NavbarAuth />
 
             {/* hamburger with all links, mobile only */}
             <MobileMenu />

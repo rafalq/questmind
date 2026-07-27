@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { Show } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
 import NavLink from '../ui/nav-link'
 import { ROUTES } from '@/constants/routes'
 import {
@@ -19,6 +19,11 @@ export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const menuId = useId()
   const pathname = usePathname()
+
+  // Live Clerk auth state — same source as the desktop cluster, so the menu
+  // flips on sign-in / sign-out without a refresh and without a prop threaded
+  // through the server render.
+  const { isSignedIn } = useAuth()
 
   // A client-side navigation swaps the page out from under an open menu, so
   // the menu has to go with it. Adjusting state during render — React's
@@ -94,27 +99,23 @@ export default function MobileMenu() {
               Worlds
             </NavLink>
 
-            {/* Auth-dependent links resolve on the client via Clerk's Show
-                control component, in step with the navbar — no isSignedIn prop
-                to thread through the server render. Show replaces the v6
-                SignedIn/SignedOut components (consolidated in Clerk Core 3). */}
-            <Show when="signed-in">
+            {isSignedIn ? (
               <NavLink href={ROUTES.dashboard} className="py-2">
                 <IconLayoutDashboard stroke={2} size={16} />
                 Dashboard
               </NavLink>
-            </Show>
-
-            <Show when="signed-out">
-              <NavLink href={ROUTES.signIn} className="py-2">
-                <IconLogin2 stroke={2} size={16} />
-                Sign In
-              </NavLink>
-              <NavLink href={ROUTES.signUp} className="py-2">
-                <IconUserPlus stroke={2} size={16} />
-                Get Started
-              </NavLink>
-            </Show>
+            ) : (
+              <>
+                <NavLink href={ROUTES.signIn} className="py-2">
+                  <IconLogin2 stroke={2} size={16} />
+                  Sign In
+                </NavLink>
+                <NavLink href={ROUTES.signUp} className="py-2">
+                  <IconUserPlus stroke={2} size={16} />
+                  Get Started
+                </NavLink>
+              </>
+            )}
           </div>
         </>
       )}
