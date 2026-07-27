@@ -18,16 +18,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning className={fontVariables}>
-        <body className="bg-bg-base text-text-primary flex min-h-dvh flex-col">
+    <html lang="en" suppressHydrationWarning className={fontVariables}>
+      <body className="bg-bg-base text-text-primary flex min-h-dvh flex-col">
+        <ClerkProvider>
           <ThemeScript />
           <Navbar />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />
           <Toaster richColors />
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   )
 }
