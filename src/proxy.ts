@@ -9,11 +9,14 @@ const isPublicRoute = createRouteMatcher([
   ROUTES.worlds,
 ])
 
-export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
-    await auth.protect()
-  }
-})
+export default clerkMiddleware(
+  async (auth, request) => {
+    if (!isPublicRoute(request)) {
+      await auth.protect()
+    }
+  },
+  { debug: true }
+)
 
 export const config = {
   matcher: [
