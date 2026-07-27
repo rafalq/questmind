@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { Show } from '@clerk/nextjs'
 import NavLink from '../ui/nav-link'
 import { ROUTES } from '@/constants/routes'
 import {
@@ -14,11 +15,7 @@ import {
   IconX,
 } from '@tabler/icons-react'
 
-type MobileMenuProps = {
-  isSignedIn: boolean
-}
-
-export default function MobileMenu({ isSignedIn }: MobileMenuProps) {
+export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const menuId = useId()
   const pathname = usePathname()
@@ -97,23 +94,27 @@ export default function MobileMenu({ isSignedIn }: MobileMenuProps) {
               Worlds
             </NavLink>
 
-            {isSignedIn ? (
+            {/* Auth-dependent links resolve on the client via Clerk's Show
+                control component, in step with the navbar — no isSignedIn prop
+                to thread through the server render. Show replaces the v6
+                SignedIn/SignedOut components (consolidated in Clerk Core 3). */}
+            <Show when="signed-in">
               <NavLink href={ROUTES.dashboard} className="py-2">
                 <IconLayoutDashboard stroke={2} size={16} />
                 Dashboard
               </NavLink>
-            ) : (
-              <>
-                <NavLink href={ROUTES.signIn} className="py-2">
-                  <IconLogin2 stroke={2} size={16} />
-                  Sign In
-                </NavLink>
-                <NavLink href={ROUTES.signUp} className="py-2">
-                  <IconUserPlus stroke={2} size={16} />
-                  Get Started
-                </NavLink>
-              </>
-            )}
+            </Show>
+
+            <Show when="signed-out">
+              <NavLink href={ROUTES.signIn} className="py-2">
+                <IconLogin2 stroke={2} size={16} />
+                Sign In
+              </NavLink>
+              <NavLink href={ROUTES.signUp} className="py-2">
+                <IconUserPlus stroke={2} size={16} />
+                Get Started
+              </NavLink>
+            </Show>
           </div>
         </>
       )}
