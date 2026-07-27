@@ -16,7 +16,11 @@ import { validateSession } from '@/features/session/lib/validate-session'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 
-export const runtime = 'edge'
+// src/app/api/game/opening/route.ts
+// Vercel's static Edge checker flags node:fs/node:path that @anthropic-ai/sdk
+// references in its (unused) file-upload helpers; Turbopack doesn't tree-shake
+// the dead refs out. The SDK runs fine on Node, and streaming works identically.
+export const runtime = 'nodejs'
 
 const schema = z.object({
   sessionId: z.string().uuid(),
