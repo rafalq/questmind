@@ -408,3 +408,25 @@ Same pass on the client side: `game-screen.tsx` (413 lines) split into `use-game
 `world-lore-modal.tsx` (513 lines) and `stats-panel.tsx` (370) were reviewed for splitting and left as they are. Their sections are small, used only together, and ordered to match `SECTIONS` - the file reads top to bottom in the order the player sees it. The only argument for splitting is the line count, which is the weakest reason available.
 
 Recorded so it reads as a decision rather than an omission. **Trigger:** the first time a section from either is needed somewhere else.
+
+---
+
+# Items added during the deployment sprint
+
+Found while putting the public Vercel build in front of user testers. Recorded here for the same reason as the refactor defects: the cause sat several layers from the symptom, and the shape of that gap is the report material.
+
+## 23. ✅ Sign-in flow blocked by an exact-match route matcher
+
+**The symptom, and why it misled.** After signing in on the deployed build, the navbar kept showing _Sign In / Get Started_ and the redirect to `/dashboard` never fired — both recovered only on a manual full-page refresh. Every reading of that symptom points at the client: auth state that updates on reload but not on navigation is, on its face, a reactivity problem. Three fixes were made at that layer in turn — server-rendered auth (`connection()` + `auth()` inside a `Suspense` boundary) replaced with Clerk's `<Show>` control component, then with an explicit client `useAuth()` boundary — and each was reasonable, and each changed nothing, because the navbar was downstream of the actual failure.
+
+**The cause.** `isPublicRoute` was built from `createRouteMatcher([ROUTES.signIn, ROUTES.signUp, …])`, and `createRouteMatcher('/sign-in')` matches that path _exactly_, not its subtree. Clerk's hosted `<SignIn>` uses path-based routing: after the identifier step it advances the browser to `/sign-in/factor-one` (password), `/sign-in/factor-two`, `/sign-in/sso-callback` and so on. Those sub-routes were not public, so `auth.protect()` caught the **second step of sign-in, mid-authentication** — the user is legitimately still signed out there, so protection fired and killed the step. That step drives a Next.js Server Action (a `next-action` POST to `/sign-in/factor-one`); protected and unresolved, it returned 404, the flow died at that request, and the session was never established on the client. A full reload recovered only because it was a fresh server request that re-read the cookies directly.
+
+**The fix, one line of intent.** Widen the matcher to the subtree: `` `${ROUTES.signIn}(.*)` `` and `` `${ROUTES.signUp}(.*)` ``. The exact-match default is the trap — a matcher that reads as "sign-in is public" actually says "only the sign-in _entry_ is public," and multi-step auth flows live under it.
+
+**How it was actually found — the §2.7 point.** Reasoning from the UI produced three wrong fixes. What located it was turning on `clerkMiddleware({ debug: true })` and reading the middleware's own account of each request: `authStatus: signed-out`, `authReason: session-token-and-uat-missing`, on a `POST /sign-in/factor-one` carrying a `next-action` header. That one line named both the route being protected and the fact that it was a server-action step — the two facts the symptom had hidden. The lesson for the evaluation chapter is the inverse of the refactor defects: at a boundary you own, structured logging _of the boundary_ beats inference from what the boundary's failure does three layers downstream.
+
+**Same family as the interim-report bugs, one level out.** The Edge/`dotenv` crash and the seed env-order defect (item 20) were about module initialisation order; this is about _route_ scope. All three are a rule quietly narrower than the mental model of it — imports "run top to bottom," a matcher "matches sign-in." The config reads as the intent right up until an edge case proves it was matching something narrower.
+
+**Kept on merit, not as the fix.** The navbar's move to a client `useAuth()` boundary (`navbar-auth.tsx`) was not what solved this, and is retained on its own terms: it is the right home for auth-dependent chrome, and it drops the `connection()` / `Suspense` server round-trip the old navbar paid on every page. Recorded so the commit is not later mistaken for the bug fix it happened to travel with.
+
+**Deployment context worth one line in §2.2:** the middleware file is `proxy.ts`, not `middleware.ts` — Next.js 16 renamed the convention and moved it to the Node.js runtime. `clerkMiddleware()` supports the new name unchanged, so the rename is cosmetic here; the scope bug above was not.
