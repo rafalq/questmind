@@ -1,7 +1,7 @@
 // src/features/session/lib/build-system-prompt/index.ts
 // Main entry point — composes lore sections into the final system prompt.
 import { buildAbilitiesSection } from '@/features/session/lib/build-system-prompt/abilities-section'
-import { AbilityDefinition, Genre, getWorld } from '@/worlds'
+import { AbilityDefinition, Attribute, Genre, getWorld } from '@/worlds'
 import { buildLanguageSection } from './language-section'
 
 export interface PlayerContext {
@@ -12,6 +12,15 @@ export interface PlayerContext {
   gender: string | null
   world: string
   abilities: AbilityDefinition[]
+  /**
+   * Effective attributes — point-buy base plus race/class/gender modifiers
+   * plus per-level growth: the exact numbers the character-detail modal shows.
+   * Optional because the opening variant assembles its own player context and
+   * needs no stats: it narrates a scene, it resolves no action.
+   */
+  attributes?: Record<Attribute, number>
+  /** The class's defining attribute, flagged in the stats block. */
+  keyAttribute?: Attribute
 }
 
 export interface BuildPromptOptions {

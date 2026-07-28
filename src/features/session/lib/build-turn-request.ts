@@ -1,6 +1,9 @@
 import { getLanguage } from '@/features/campaign/constants/languages'
 import { getClassDef } from '@/features/character/lib/get-class-def'
-import { resolveAbilities } from '@/features/character/lib/progression'
+import {
+  effectiveAttributes,
+  resolveAbilities,
+} from '@/features/character/lib/progression'
 import { type Genre } from '@/worlds/schema/primitives'
 import { buildSystemPrompt, SEPARATOR } from './build-system-prompt/'
 import { type SessionContext } from './validate-session'
@@ -22,7 +25,13 @@ type Params = {
  * makes it the part worth testing directly.
  */
 export async function buildTurnRequest({ context, claudeMessages }: Params) {
-  const { campaign, character, campaignCharacter, lastSnapshot } = context
+  const {
+    campaign,
+    character,
+    campaignCharacter,
+    lastSnapshot,
+    baseAttributes,
+  } = context
 
   const classDef = getClassDef(character.world, character.characterClass)
 
@@ -38,6 +47,19 @@ export async function buildTurnRequest({ context, claudeMessages }: Params) {
     activeAbilities = activeAbilities.filter((a) => !a.capstone)
   }
 
+  // The exact numbers the character-detail modal renders: stored base (point-buy
+  // + race/class/gender mods) plus per-level growth. Same function, same args as
+  // the modal, so the stats the GM reasons over never diverge from the stats the
+  // player sees. Level comes from the live snapshot, falling back to the
+  // character's stored level on turn one before any snapshot exists.
+  const effectiveStats = classDef
+    ? effectiveAttributes(
+        baseAttributes,
+        classDef,
+        lastSnapshot?.level ?? character.level
+      )
+    : baseAttributes
+
   const { prompt: systemPrompt, validSceneTags } = await buildSystemPrompt({
     genre: campaign.genre as Genre,
     player: {
@@ -48,24 +70,18 @@ export async function buildTurnRequest({ context, claudeMessages }: Params) {
       gender: character.gender,
       world: character.world,
       abilities: activeAbilities,
+      attributes: effectiveStats,
+      keyAttribute: classDef?.keyAttribute,
     },
     language: campaign.language,
   })
-
-  // Dev-only: the tag list is generated per world, and reading it here is the
-  // fastest way to catch a world seeded with tags nothing renders.
-  if (process.env.NODE_ENV === 'development') {
-    console.log('VALID SCENE TAGS:', [...validSceneTags].join(', '))
-  }
 
   const baseSystem = lastSnapshot
     ? `${systemPrompt}\n\nCurrent game state:\n${JSON.stringify(lastSnapshot)}`
     : systemPrompt
 
   const system =
-    baseSystem +
-    languageDirective(campaign.language) +
-    formatDirective()
+    baseSystem + languageDirective(campaign.language) + formatDirective()
 
   return {
     system,

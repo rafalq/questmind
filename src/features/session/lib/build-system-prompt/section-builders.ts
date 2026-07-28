@@ -4,7 +4,12 @@
 
 import type { PlayerContext } from './'
 import { loreAppliesTo } from './lore-filter'
-import { getClassLabel, getRaceLabel } from '@/worlds'
+import {
+  getAttributeDescription,
+  getAttributeLabel,
+  getClassLabel,
+  getRaceLabel,
+} from '@/worlds'
 
 // ── Location block ─────────────────────────────────────────────────────────
 
@@ -126,6 +131,34 @@ export function genderToGrammar(
   return 'masculine'
 }
 
+/**
+ * The stats the GM resolves uncertain actions against. Empty unless the caller
+ * supplied attributes — the opening variant deliberately omits them, so this
+ * returns '' and the player block renders exactly as before.
+ *
+ * Labels and descriptions resolve through the world registry: 'strength' is
+ * Brawn in The Drift, Body in Neon Warszawa, and the description tells the
+ * model what each one governs, so the resolution rules can stay world-agnostic
+ * and let the model map action → attribute itself. Numbers carry no meaning
+ * without a scale, so the header anchors one: 1 crippling, ~10 ordinary, 20 the
+ * world's ceiling (ATTRIBUTE_HARD_MAX).
+ */
+function buildStatsBlock(player: PlayerContext): string {
+  if (!player.attributes) return ''
+
+  const lines = Object.entries(player.attributes).map(([attr, value]) => {
+    const label = getAttributeLabel(player.world, attr)
+    const desc = getAttributeDescription(player.world, attr)
+    const keyMark = attr === player.keyAttribute ? ' [defining attribute]' : ''
+    return `- ${label} — ${value}${keyMark}${desc ? `: ${desc}` : ''}`
+  })
+
+  return `## CHARACTER STATS
+${player.characterName}'s attributes, on a scale where 1 is a crippling weakness, about 10 is an ordinary person, and 20 is the peak this world allows. When an action's outcome is genuinely uncertain, weigh the attribute that governs it — read each description to judge which one an action falls under. A high score makes success the likely result; a low score makes a setback likely.
+
+${lines.join('\n')}`
+}
+
 export function buildPlayerBlock(player: PlayerContext): string {
   const grammar = genderToGrammar(player.gender)
 
@@ -135,7 +168,7 @@ export function buildPlayerBlock(player: PlayerContext): string {
   const race = getRaceLabel(player.world, player.race)
   const characterClass = getClassLabel(player.world, player.characterClass)
 
-  return `## PLAYER CHARACTER
+  const base = `## PLAYER CHARACTER
 Name: ${player.characterName}
 Race: ${race}
 Class: ${characterClass}
@@ -146,4 +179,7 @@ Tier access rules:
 - Reveal tier_2 lore relevant to the ${characterClass} class.
 - Judge tier_3 access case by case from what the player does in the session.
 - Never reveal tier_secret content directly.`
+
+  const stats = buildStatsBlock(player)
+  return stats ? `${base}\n\n${stats}` : base
 }

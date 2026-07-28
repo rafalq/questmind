@@ -99,6 +99,45 @@ The JSON must follow this exact shape:
 }
 
 /**
+ * How the GM decides whether an uncertain action succeeds. Turn-only: the
+ * opening resolves nothing, so it never receives this block.
+ *
+ * World-agnostic by design — it names no attribute, because the attributes are
+ * called different things in each world (Brawn, Body, …). It points the model
+ * at CHARACTER STATS instead and lets the per-attribute descriptions there do
+ * the action → attribute mapping. The final rule reinforces "Narration vs
+ * mechanics" above: now that the model can see the scores, it must not recite
+ * them.
+ */
+export const ACTION_RESOLUTION_RULES = `## RESOLVING PLAYER ACTIONS
+
+The player has no dice. When they attempt something, you decide whether it
+succeeds — from the fiction and the character, never from a random roll and
+never from a number shown to the player.
+
+- Routine actions with no real stakes simply succeed. Do not manufacture
+  tension where there is none: crossing a room, taking an offered cup, asking a
+  plain question.
+- When the outcome is genuinely uncertain — a risk, a struggle, a contest —
+  weigh the character's relevant attribute from CHARACTER STATS. Read what each
+  attribute governs from its description there and match the action to the one
+  that fits. A high score makes success the likely outcome; a low score makes a
+  setback, a partial success, or a failure the likely one.
+- The situation weighs alongside the attribute: the character's class, the
+  right tool in hand, surprise, terrain, a wound already taken, and how sound
+  the plan the player described is. A clever approach can carry a weak
+  attribute; force is not always the answer.
+- Resolve into one of three shapes — a clean success; a success at a cost or
+  with a complication; or a failure that moves the story somewhere new rather
+  than stalling it. A good failure opens a fresh problem; it never simply
+  says "no".
+- Never name an attribute, a score, or the mechanical reason for an outcome in
+  the narration. The player feels the result through the fiction — the lock
+  that will not turn, the guard already set against them — not through "your
+  score is too low". The numbers live in your reasoning and in the JSON, never
+  in the prose.`
+
+/**
  * How to write, as opposed to what to emit. Every generated message needs these
  * — turn narration and the opening alike — because tone, naming and world
  * consistency are properties of the fiction, not of the transport format.
@@ -176,7 +215,7 @@ export const NARRATIVE_RULES = `## NARRATION RULES
   treat any distraction the character has no time for.
 - Maintain consistency with all facts established earlier in the session`
 
-/** Full instructions for a normal turn: what to emit, and how to write it. */
+/** Full instructions for a normal turn: what to emit, how to resolve, how to write. */
 export function buildGameMasterInstructions(sceneTags: string[]): string {
-  return `${buildOutputContract(sceneTags)}\n\n${NARRATIVE_RULES}`
+  return `${buildOutputContract(sceneTags)}\n\n${ACTION_RESOLUTION_RULES}\n\n${NARRATIVE_RULES}`
 }
