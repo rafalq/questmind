@@ -119,7 +119,7 @@ export default function Modal({
           // the panel dark in both themes while the text followed the theme,
           // which left near-black text on a near-black panel.
           data-genre={genre}
-          className={`pointer-events-auto flex w-full flex-col overflow-y-auto border border-border shadow-xl scrollbar-subtle focus:outline-none ${
+          className={`on-surface pointer-events-auto flex w-full flex-col overflow-y-auto border border-border shadow-xl scrollbar-subtle focus:outline-none ${
             genre ? 'bg-bg-genre' : 'bg-bg-base'
           } ${SIZE[size]}`}
           style={genre ? { fontFamily: genreFont[genre] } : undefined}
