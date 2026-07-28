@@ -12,9 +12,11 @@ import type { Attribute } from '@/worlds/schema'
 import { useRef } from 'react'
 import { useGameSession } from '../hooks/use-game-session'
 import { useSidePanel } from '../hooks/use-side-panel'
+import { useZenMode } from '../hooks/use-zen-mode'
 import ChatPanel, { type ChatPanelHandle } from './chat-panel'
 import SessionHeader from './session-header'
 import StatsPanel from './stats-panel'
+import ZenToggle from './zen-toggle'
 
 type DbMessage = typeof messagesTable.$inferSelect
 type Campaign = typeof campaignsTable.$inferSelect
@@ -39,8 +41,8 @@ type Props = {
  * The session screen: chat on the left, stats on the right.
  *
  * This component is the layout and nothing else. The turn loop lives in
- * useGameSession and the drawer geometry in useSidePanel, because neither has
- * anything to do with the other and both were previously interleaved here.
+ * useGameSession, the drawer geometry in useSidePanel, and the reading mode in
+ * useZenMode — none of the three has anything to do with the others.
  */
 export default function GameScreen({
   sessionId,
@@ -60,6 +62,10 @@ export default function GameScreen({
 
   const panel = useSidePanel()
 
+  // fullscreen: true is the whole point on a TV — it reclaims the browser's
+  // own chrome, which the in-page overlay can't touch.
+  const zen = useZenMode({ fullscreen: true })
+
   // Clicking an ability seeds the composer. Imperative, not state: this is an
   // event, and lifting the input's state would re-render the chat on every
   // keystroke from up here.
@@ -78,14 +84,18 @@ export default function GameScreen({
     // full viewport under the navbar and push the composer off-screen. It also
     // avoids the mobile-Safari address-bar problem that plagues 100vh.
     <div className="relative flex min-h-0 flex-1 overflow-hidden bg-bg-base">
-      {/* Left: chat */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      {/* Left: chat. In zen this element becomes a fixed, full-viewport stage
+          (see globals.css [data-zen-stage]); position:fixed escapes the
+          overflow-hidden above because nothing here is a containing block. */}
+      <div data-zen-stage className="flex min-w-0 flex-1 flex-col">
         <SessionHeader
           campaignName={campaign.name}
           genre={campaign.genre}
           lore={lore}
           isPanelOpen={panel.isOpen}
           onTogglePanel={panel.toggle}
+          isZen={zen.isZen}
+          onToggleZen={zen.toggle}
         />
         <ChatPanel
           ref={chatRef}
@@ -104,6 +114,7 @@ export default function GameScreen({
           overlay, and dimming the chat behind it would make no sense. */}
       {panel.isOpen === true && (
         <div
+          data-zen-hide
           className="absolute inset-0 z-30 bg-black/50 lg:hidden"
           onClick={panel.close}
           aria-hidden
@@ -112,8 +123,9 @@ export default function GameScreen({
 
       {/* Right: stats. Overlay drawer below lg, in-flow column at lg and up.
           Width is animated only on desktop; the drawer slides instead, so the
-          content never reflows mid-transition. */}
+          content never reflows mid-transition. Hidden entirely in zen. */}
       <aside
+        data-zen-hide
         className={`absolute inset-y-0 right-0 z-40 w-[85vw] max-w-xs overflow-y-auto border-l border-border bg-bg-surface transition-transform duration-300 lg:static lg:z-auto lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:transition-[width] ${panel.panelClass}`}
       >
         <StatsPanel
@@ -123,6 +135,12 @@ export default function GameScreen({
           onUseAbility={handleUseAbility}
         />
       </aside>
+
+      {/* Floating exit — rendered outside every data-zen-hide element and above
+          the stage (z-70 > z-60). Only mounts in zen. */}
+      {zen.isZen && (
+        <ZenToggle isZen onToggle={zen.toggle} variant="floating" />
+      )}
     </div>
   )
 }

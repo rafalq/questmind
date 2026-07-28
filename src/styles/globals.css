@@ -394,3 +394,34 @@ body {
     animation: none;
   }
 }
+
+/* ── Zen mode ──────────────────────────────────────────────
+   Distraction-free reading. useZenMode() sets data-zen on <html>.
+   [data-zen-hide]  → removed (game header, stats panel, backdrop)
+   [data-zen-stage] → chat column, promoted to a fixed full-viewport stage */
+
+html[data-zen] {
+  overflow: hidden;
+}
+
+html[data-zen] [data-zen-hide] {
+  display: none !important;
+}
+
+/* The chat column fills the viewport. z-60 sits above the app's own layers
+   (backdrop z-30, stats z-40) and covers the navbar/footer, which are left in
+   place. If your navbar renders ABOVE this overlay, it uses z-index >= 60 —
+   tell me and I'll hide it directly in navbar.tsx instead. */
+html[data-zen] [data-zen-stage] {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--qm-bg-base);
+}
+
+/* Pack a little more narrative onto a big screen by easing the loose
+   line-height (leading-loose = 2). Beats the utility on specificity. Bump to 2
+   to restore, or delete this rule. */
+html[data-zen] [data-zen-stage] p {
+  line-height: 1.8;
+}

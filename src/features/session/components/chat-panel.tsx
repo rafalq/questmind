@@ -218,6 +218,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
           }}
           className="absolute bottom-28 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border border-accent bg-bg-surface p-1.5 text-xs text-accent transition-colors hover:border-accent-hover hover:bg-bg-elevated"
           aria-label="Jump to bottom"
+          title="Jump to latest"
         >
           <IconArrowNarrowDownDashed stroke={2} />
         </button>
