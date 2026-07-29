@@ -430,3 +430,34 @@ Found while putting the public Vercel build in front of user testers. Recorded h
 **Kept on merit, not as the fix.** The navbar's move to a client `useAuth()` boundary (`navbar-auth.tsx`) was not what solved this, and is retained on its own terms: it is the right home for auth-dependent chrome, and it drops the `connection()` / `Suspense` server round-trip the old navbar paid on every page. Recorded so the commit is not later mistaken for the bug fix it happened to travel with.
 
 **Deployment context worth one line in §2.2:** the middleware file is `proxy.ts`, not `middleware.ts` — Next.js 16 renamed the convention and moved it to the Node.js runtime. `clerkMiddleware()` supports the new name unchanged, so the rename is cosmetic here; the scope bug above was not.
+
+## 24. 🔲 Classless race with a race-specific ability pool
+
+**Idea.** The synthetic / divine races — Demigod (Tréigthe), Remnant (The Drift), Golem (Neon Warszawa) — become **classless**: they skip class selection entirely and draw from a fixed, race-specific ability pool (a Demigod's are divine; a Remnant's are machine) instead of a class's. They are also **deliberately statistically superior** to the mortal races, which the current flat "+3 net modifiers for everyone" balance does not express — a demigod that is mechanically equal to a Scarred contradicts the fiction.
+
+**The design rationale, which is the reason this is worth building rather than a whim.** In solo play the player chooses their own race, so a race that is _strictly better across the board_ makes every other race dead content — nobody picks the weaker option when the stronger one has no cost. The thing that balances a superior race is never "worse numbers"; it is a **cost**. The classlessness _is_ that cost: the race trades away class flexibility and the class ability tree for a rigid, pre-set racial kit. Stronger, but with no build choice and no evolving class path. That is a real trade-off a player can weigh, and it is what keeps the mortal races live. The two ideas — "superior stats" and "no class" — are not two features; they are the two halves of one balanced design.
+
+**Why this is the largest single change in this file, and why it is deferred.** Class is not one field — it is the spine the whole progression system hangs off, and a classless race pulls on every vertebra:
+
+- `effectiveAttributes(base, classDef, level)` reads `classDef.growth.{primary,secondary}` — with no class, where does per-level growth come from? A classless race needs its own growth source on the race definition.
+- `computeTier(level, keyAttributeValue)` reads `attributes[classDef.keyAttribute]` — no class means no key attribute, so the tier gates have nothing to gate on. Racial abilities would need their own unlock rule.
+- `resolveAbilities(classDef.abilities, tier)` — abilities _live on the class_. A racial pool means moving the whole ability shape (tier, `evolvesFrom`, `capstone`, `cost`, `gmGuidance`) onto `RaceDefinition`, i.e. a schema change plus a second ability-resolution path.
+- `buildTurnRequest` calls `getClassDef(...)` and threads `keyAttribute`, `growth` and abilities through unconditionally; all of it assumes a class exists.
+- The wizard would need to drop the Class step conditionally. Precedent exists — the Sex step is skipped for genderless races — but Sex carries only a small modifier and grammar, whereas Class carries the key attribute, growth, the ability tree and the tier gates. Not the same weight of omission.
+- Schema: what occupies the `characterClass` column for a classless character? The character modal and the summary panel both render class, key attribute and abilities-by-tier — every one of those display surfaces assumes a class.
+
+That is the character system's full spine — schema, progression, tiers, abilities, prompt assembly, wizard and two display surfaces — reworked for one race. Recorded here in full so it reads as a scoped decision with a known cost, not an omission.
+
+**Folds in the "Golem Cantor sounds wrong" observation.** The thematic itch — a priest-golem or an assassin-golem reads oddly — is really this same point from the other side: some race+class pairings do not fit the fiction. The heavy answer is this item (the race has no class to mismatch). The light answer is item 25 (forbid the pairings that jar), which is independent and far cheaper.
+
+**Trigger:** post-submission only. This is Further-Development material — the report gains more from a well-argued vision of where the character system leads (superior race balanced by lost flexibility) than from a half-built subsystem rushed in the final week at the cost of the working one.
+
+## 25. 🔲 Per-race allowed-class restriction
+
+**Idea.** Constrain which classes each race may take, so pairings that do not fit a world's fiction cannot be built at all — the "Golem Cantor sounds wrong" problem, solved by disallowing it rather than by removing class from the race (item 24).
+
+**Why it is cheap, and safe.** It is a _data_ rule, not logic: an allowed-classes list per race, enforced in `assertValidCombination` alongside the existing genderless/gender check. It touches only **new** characters — `baseValue` and `characterClass` are written once at creation, so existing saves are untouched and no migration is involved. The wizard's Class step already reads its options from the registry, so it would filter the offered classes to the race's allowed set with no new plumbing.
+
+**Relationship to item 24.** These are two answers to the same thematic problem and they are independent. Item 25 is the light, shippable version — keep classes, forbid the jarring pairs. Item 24 is the heavy, structural version — the superior races have no class to mismatch in the first place. Doing 25 does not block 24, and 24 would largely supersede 25 for the races it covers (a classless race has no class list to restrict), while 25 would still govern the mortal races.
+
+**Trigger:** to be done by the author post-submission; no dependency, can land any time as an isolated data change.
