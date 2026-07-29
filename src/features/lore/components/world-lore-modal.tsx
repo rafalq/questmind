@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { IconMap, IconX, IconBook } from '@tabler/icons-react'
 import type { WorldLore } from '@/features/lore/queries/get-world-lore'
 import type { Genre } from '@/features/character/constants/'
-import { getWorld } from '@/worlds'
+import { getWorld, getAttributeLabel, getAttributeDescription } from '@/worlds'
 import { WORLD_GLOSSARIES } from '@/worlds/schema/glossary'
 import type { GlossaryEntry } from '@/worlds/schema/glossary'
 
@@ -27,6 +27,7 @@ const SECTIONS = [
   { id: 'trades', label: 'Trades' },
   { id: 'places', label: 'Places' },
   { id: 'glossary', label: 'Glossary' },
+  { id: 'how-to-play', label: 'How to Play' },
 ] as const
 
 type SectionId = (typeof SECTIONS)[number]['id']
@@ -387,6 +388,106 @@ function GlossarySection({ worldSlug }: { worldSlug: string }) {
   )
 }
 
+function HowToPlaySection({ worldSlug }: { worldSlug: string }) {
+  const world = getWorld(worldSlug)
+  const attributes = Object.keys(world.attributeLabels) as Array<
+    keyof typeof world.attributeLabels
+  >
+
+  return (
+    <section>
+      <SectionHeading>How to Play</SectionHeading>
+      <div className="flex flex-col gap-6">
+        <div>
+          <p className="text-sm leading-relaxed text-text-secondary">
+            There are no dice. You describe what your character does in plain
+            language — &ldquo;I search the body for a key&rdquo;, &ldquo;I try
+            to talk the guard into letting me pass&rdquo; — and the Game Master
+            answers with the story and updates your stats. Anything you can
+            describe, you can attempt.
+          </p>
+        </div>
+
+        <LoreEntry name="Attributes">
+          <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+            Your attributes describe what your character is good at. They are
+            set when you create the character and shape how the Game Master
+            judges uncertain actions — a higher score makes success more likely.
+            On the scale: 1 is a crippling weakness, 5&ndash;7 an ordinary
+            person, 12 a trained specialist at the start of their path, and 24
+            the peak {world.name} allows. You start between 5 and 12; the last
+            points are earned only by playing.
+          </p>
+          <dl className="mt-3 flex flex-col gap-2">
+            {attributes.map((attr) => {
+              const label = getAttributeLabel(worldSlug, attr)
+              const desc = getAttributeDescription(worldSlug, attr)
+              return (
+                <div key={attr}>
+                  <dt className="text-sm font-semibold text-text-primary">
+                    {label}
+                  </dt>
+                  {desc && (
+                    <dd className="text-sm leading-relaxed text-text-secondary">
+                      {desc}
+                    </dd>
+                  )}
+                </div>
+              )
+            })}
+          </dl>
+          <p className="mt-3 text-sm leading-relaxed text-text-muted">
+            {getAttributeLabel(worldSlug, 'endurance')} sets your health, which
+            is fixed at creation and does not rise with levels — invest in it if
+            you want to survive longer.
+          </p>
+        </LoreEntry>
+
+        <LoreEntry name="Growing stronger">
+          <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+            Every turn earns experience. As you level up, your trade&rsquo;s
+            main attribute rises on its own, and climbing high enough in it
+            unlocks new tiers of ability — the second tier once that attribute
+            reaches 16, the third and most powerful once it reaches 22. A
+            character built around one attribute reaches those heights; a
+            generalist never quite does.
+          </p>
+        </LoreEntry>
+
+        <LoreEntry name="Abilities">
+          <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+            Each trade has abilities beyond ordinary actions. Some are free;
+            others cost something — health, or a debt the world collects later.
+            The cost is shown next to each ability. You need not memorise them:
+            say you want to use one, and the Game Master applies it.
+          </p>
+        </LoreEntry>
+
+        <LoreEntry name="How the Game Master decides">
+          <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+            When an outcome is uncertain, the Game Master weighs the attribute
+            it depends on — the higher it is, the better your odds — along with
+            your trade, the situation, and how sound your plan is. A clever
+            approach can carry a weak attribute; brute force is not always the
+            answer. Outcomes come in three shapes: clean success, success at a
+            cost, or a failure that pushes the story somewhere new. Routine
+            actions with no real stakes simply succeed.
+          </p>
+        </LoreEntry>
+
+        <LoreEntry name="Tips">
+          <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+            Be specific — &ldquo;I wedge my dagger under the lid and pry&rdquo;
+            gives the Game Master more than &ldquo;I open it&rdquo;. Play to
+            your strengths, but do not fear long shots: a good failure often
+            moves the story somewhere interesting.
+          </p>
+        </LoreEntry>
+      </div>
+    </section>
+  )
+}
+
 function MapImage({
   worldSlug,
   regionName,
@@ -502,6 +603,9 @@ export default function WorldLoreModal({ genre, lore, trigger }: Props) {
               </div>
               <div data-section="glossary" className="scroll-mt-4">
                 <GlossarySection worldSlug={lore.world.slug} />
+              </div>
+              <div data-section="how-to-play" className="scroll-mt-4">
+                <HowToPlaySection worldSlug={lore.world.slug} />
               </div>
             </div>
           </>
