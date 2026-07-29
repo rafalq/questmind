@@ -62,12 +62,12 @@ export const drift: WorldDefinitionInput = {
     {
       id: 'female',
       label: 'Female',
-      statModifiers: { strength: -1, charisma: 1 },
+      statModifiers: { strength: -1, perception: 1 },
     },
     {
       id: 'male',
       label: 'Male',
-      statModifiers: { strength: 1, charisma: -1 },
+      statModifiers: { strength: 1, perception: -1 },
     },
   ],
 
@@ -79,7 +79,7 @@ export const drift: WorldDefinitionInput = {
         'Born in the wrecks, generations deep. They have never seen a ' +
         'planet and do not believe the stories. Adaptable, distrustful, ' +
         'and harder to kill than the Drift keeps trying to prove.',
-      modifiers: { strength: 1, endurance: 1 },
+      modifiers: {},
       startingEquipment: [
         { name: 'Patched Vacsuit', qty: 1, slots: 2 },
         { name: 'Ration Brick', qty: 3 },
@@ -97,7 +97,7 @@ export const drift: WorldDefinitionInput = {
         'carrying engram fragments of the living Lattice. They remember ' +
         'the network — and the night it went silent. Each generation ' +
         'remembers a little less.',
-      modifiers: { mind: 2, perception: 2, endurance: -1 },
+      modifiers: { strength: -1, endurance: -1, mind: 1, perception: 1 },
       startingEquipment: [
         { name: 'Engram Bead', qty: 1 },
         { name: "Keeper's Coat", qty: 1, slots: 2 },
@@ -114,7 +114,13 @@ export const drift: WorldDefinitionInput = {
         'Gene-forged for the high-g reactor decks, keepers of the cores ' +
         'that keep the Drift breathing. Patient, secretive, and bound by ' +
         'maintenance oaths older than anyone who could explain them.',
-      modifiers: { endurance: 3, strength: 1, agility: -1 },
+      modifiers: {
+        strength: 1,
+        endurance: 2,
+        agility: -1,
+        mind: -1,
+        perception: -1,
+      },
       startingEquipment: [
         { name: 'Core Key', qty: 1 },
         { name: "Warden's Tag", qty: 1 },
@@ -133,7 +139,7 @@ export const drift: WorldDefinitionInput = {
         'a body built for one thing, holding a sliver of something built ' +
         'for everything. Their kind know no sex, only the slow, uneven ' +
         'weight of an incomplete mind.',
-      modifiers: { charisma: 3, strength: 2, endurance: -2 },
+      modifiers: { strength: 1, mind: 1, endurance: -1, perception: -1 },
       startingEquipment: [
         { name: 'Mindshard', qty: 1 },
         { name: 'Sealant Wraps', qty: 1, slots: 2 },
@@ -152,14 +158,14 @@ export const drift: WorldDefinitionInput = {
         'Salvage mercenary with no allegiance and no illusions. Cuts ' +
         'hulls for scrip and people when the contract says so. Survives ' +
         "because others don't.",
-      modifiers: { strength: 2, endurance: 2 },
+      modifiers: { strength: 2, agility: 1 },
       keyAttribute: 'strength',
-      growth: { primary: 'strength', secondary: 'endurance' },
+      growth: { primary: 'strength', secondary: 'agility' },
       // ───────────────────────────────────────────────────────────────────────────
       // BREAKER — makes others pay
       //
       // keyAttribute: 'strength'
-      // growth: { primary: 'strength', secondary: 'endurance' }
+      // growth: { primary: 'strength', secondary: 'agility' }
       //
       // No lace. No Static. Just a professional who has outlived everyone who
       // wasn't. Cheap, reliable, and utterly ordinary — which is the point.
@@ -244,14 +250,14 @@ export const drift: WorldDefinitionInput = {
         'Static-user who pays with their own nervous system. Every act ' +
         'of the dead network costs something real — synapses, memories, ' +
         'years.',
-      modifiers: { mind: 3, perception: 1, endurance: -1 },
+      modifiers: { mind: 2, perception: 1 },
       keyAttribute: 'mind',
-      growth: { primary: 'mind', secondary: 'endurance' },
+      growth: { primary: 'mind', secondary: 'perception' },
       // ───────────────────────────────────────────────────────────────────────────
       // CONDUIT — pays with their own body
       //
       // keyAttribute: 'mind'
-      // growth: { primary: 'mind', secondary: 'endurance' }
+      // growth: { primary: 'mind', secondary: 'perception' }
       //
       // The balance rule that makes the HP cost fair: a Conduit does what nobody
       // else can. Not "hits harder" — does the impossible. If an ordinary person
@@ -351,7 +357,7 @@ export const drift: WorldDefinitionInput = {
       description:
         'Smuggler, spy, shadow. Moves between hulks without appearing on ' +
         'a single manifest. Knows where the ducts are.',
-      modifiers: { agility: 3, perception: 1, strength: -1 },
+      modifiers: { agility: 2, perception: 1 },
       keyAttribute: 'agility',
       growth: { primary: 'agility', secondary: 'perception' },
       // ───────────────────────────────────────────────────────────────────────────
@@ -441,7 +447,7 @@ export const drift: WorldDefinitionInput = {
       description:
         'Priest of the dead network. Does not repair — bricks. The Choir ' +
         "tolerates them. Most people don't.",
-      modifiers: { charisma: 2, mind: 2, agility: -1 },
+      modifiers: { charisma: 2, mind: 1 },
       keyAttribute: 'charisma',
       growth: { primary: 'charisma', secondary: 'mind' },
       // ───────────────────────────────────────────────────────────────────────────

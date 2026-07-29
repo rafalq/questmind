@@ -42,7 +42,7 @@ export const treigthe: WorldDefinitionInput = {
     mind: 'Intellect',
     endurance: 'Constitution',
     agility: 'Dexterity',
-    charisma: 'Presence',
+    charisma: 'Charisma',
     perception: 'Awareness',
   },
 
@@ -67,12 +67,12 @@ export const treigthe: WorldDefinitionInput = {
     {
       id: 'female',
       label: 'Female',
-      statModifiers: { strength: -1, charisma: 1 },
+      statModifiers: { strength: -1, perception: 1 },
     },
     {
       id: 'male',
       label: 'Male',
-      statModifiers: { strength: 1, charisma: -1 },
+      statModifiers: { strength: 1, perception: -1 },
     },
   ],
 
@@ -84,7 +84,7 @@ export const treigthe: WorldDefinitionInput = {
       description:
         "Survivors marked by the gods' fall. Adaptable, distrustful, and " +
         'harder to kill than they should be.',
-      modifiers: { strength: 1, endurance: 1 },
+      modifiers: {},
       startingEquipment: [
         { name: 'Patchwork Cloak', qty: 1, slots: 2 },
         { name: 'Iron Ration', qty: 3 },
@@ -100,7 +100,7 @@ export const treigthe: WorldDefinitionInput = {
       description:
         'Ancient elves slowly fading from the world. They remember the ' +
         'living gods — and the night they died.',
-      modifiers: { mind: 2, perception: 2, endurance: -1 },
+      modifiers: { strength: -1, endurance: -1, mind: 1, perception: 1 },
       startingEquipment: [
         { name: 'Memory Shard', qty: 1 },
         { name: 'Fading Cloak', qty: 1, slots: 2 },
@@ -116,7 +116,13 @@ export const treigthe: WorldDefinitionInput = {
       description:
         'Dwarf guardians of the god-tombs. Patient, secretive, and bound ' +
         'by duties older than memory.',
-      modifiers: { endurance: 3, strength: 1, agility: -1 },
+      modifiers: {
+        strength: 1,
+        endurance: 2,
+        agility: -1,
+        mind: -1,
+        perception: -1,
+      },
       startingEquipment: [
         { name: 'Tomb Key', qty: 1 },
         { name: "Warden's Seal", qty: 1 },
@@ -134,7 +140,7 @@ export const treigthe: WorldDefinitionInput = {
         'fully human — a body caught between, carrying a fraction of power ' +
         'it was never meant to hold. Their kind know no sex, only the slow, ' +
         'uneven weight of incomplete divinity.',
-      modifiers: { charisma: 3, strength: 2, endurance: -2 },
+      modifiers: { strength: 1, mind: 1, endurance: -1, perception: -1 },
       startingEquipment: [
         { name: 'Godsblood Vial', qty: 1 },
         { name: 'Binding Wraps', qty: 1, slots: 2 },
@@ -153,14 +159,14 @@ export const treigthe: WorldDefinitionInput = {
       description:
         'Mercenary with no allegiance and no illusions. Fights for coin. ' +
         "Survives because others don't.",
-      modifiers: { strength: 2, endurance: 2 },
+      modifiers: { strength: 2, agility: 1 },
       keyAttribute: 'strength',
-      growth: { primary: 'strength', secondary: 'endurance' },
+      growth: { primary: 'strength', secondary: 'agility' },
       // ───────────────────────────────────────────────────────────────────────────
       // GRAVEBLADE — makes others pay
       //
       // keyAttribute: 'strength'
-      // growth: { primary: 'strength', secondary: 'endurance' }
+      // growth: { primary: 'strength', secondary: 'agility' }
       //
       // No magic. No echo. Just a professional who has outlived everyone who
       // wasn't. Cheap, reliable, and utterly ordinary — which is the point.
@@ -243,14 +249,14 @@ export const treigthe: WorldDefinitionInput = {
       description:
         'Echo mage who pays with their body. Every spell costs something ' +
         'real — blood, years, memory.',
-      modifiers: { mind: 3, perception: 1, endurance: -1 },
+      modifiers: { mind: 2, perception: 1 },
       keyAttribute: 'mind',
-      growth: { primary: 'mind', secondary: 'endurance' },
+      growth: { primary: 'mind', secondary: 'perception' },
       // ───────────────────────────────────────────────────────────────────────────
       // BLEEDER — pays with their own body
       //
       // keyAttribute: 'mind'
-      // growth: { primary: 'mind', secondary: 'endurance' }
+      // growth: { primary: 'mind', secondary: 'perception' }
       //
       // The balance rule that makes the HP cost fair: a Bleeder does what nobody
       // else can. Not "hits harder" — does the impossible. If an ordinary person
@@ -345,7 +351,7 @@ export const treigthe: WorldDefinitionInput = {
       description:
         'Smuggler, spy, shadow. Moves between worlds without being seen. ' +
         'Knows where the tunnels are.',
-      modifiers: { agility: 3, perception: 1, strength: -1 },
+      modifiers: { agility: 2, perception: 1 },
       keyAttribute: 'agility',
       growth: { primary: 'agility', secondary: 'perception' },
       // ───────────────────────────────────────────────────────────────────────────
@@ -433,7 +439,7 @@ export const treigthe: WorldDefinitionInput = {
       description:
         'Priest of the dead gods. Does not heal — curses. The Church ' +
         "tolerates them. Most people don't.",
-      modifiers: { charisma: 2, mind: 2, agility: -1 },
+      modifiers: { charisma: 2, mind: 1 },
       keyAttribute: 'charisma',
       growth: { primary: 'charisma', secondary: 'mind' },
       // ───────────────────────────────────────────────────────────────────────────

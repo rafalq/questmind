@@ -11,10 +11,10 @@ export type FormData = {
 }
 
 export const DEFAULT_ATTRIBUTES: Record<Attribute, number> = {
-  strength: 10,
-  mind: 10,
-  endurance: 10,
-  agility: 10,
+  strength: 5,
+  mind: 5,
+  endurance: 5,
+  agility: 5,
   charisma: 5,
   perception: 5,
 }
