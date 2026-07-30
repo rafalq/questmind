@@ -4,11 +4,19 @@ import CharacterListSkeleton from '@/components/ui/loader/skeleton/character-lis
 import { ROUTES } from '@/constants/routes'
 import CampaignListServer from '@/features/campaign/components/campaign-list-server'
 import CharacterListServer from '@/features/character/components/display/character-list-server'
+import OnboardingServer from '@/features/onboarding/components/onboarding-server'
 import { Suspense } from 'react'
 
 export default function DashboardPage() {
   return (
     <>
+      {/* Onboarding guide. Streams behind its own boundary and returns null
+          once the user has a campaign and a character, so it costs nothing on
+          a set-up dashboard and never blocks the lists below. */}
+      <Suspense fallback={null}>
+        <OnboardingServer />
+      </Suspense>
+
       {/* Each list streams in behind its own boundary, so a slow character
           query cannot hold up the campaigns above it.
 
