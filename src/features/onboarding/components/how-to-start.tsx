@@ -1,3 +1,4 @@
+import ScrollToLink from '@/features/onboarding/components/scroll-to-link'
 import Link from 'next/link'
 import {
   IconCheck,
@@ -54,7 +55,11 @@ export default function HowToStart({ campaignCount, characterCount }: Props) {
     {
       icon: IconWorld,
       title: 'Create a campaign',
-      cta: { href: ROUTES.newCampaign, label: 'New campaign' },
+      cta: {
+        kind: 'link' as const,
+        href: ROUTES.newCampaign,
+        label: 'New campaign',
+      },
       body: (
         <>
           Pick one of three worlds — Tréigthe, The Drift, or Neon Warszawa 2087
@@ -66,7 +71,11 @@ export default function HowToStart({ campaignCount, characterCount }: Props) {
     {
       icon: IconUserPlus,
       title: 'Create a character',
-      cta: { href: ROUTES.newCharacter, label: 'New character' },
+      cta: {
+        kind: 'link' as const,
+        href: ROUTES.newCharacter,
+        label: 'New character',
+      },
       body: (
         <>
           Run the wizard and{' '}
@@ -81,7 +90,14 @@ export default function HowToStart({ campaignCount, characterCount }: Props) {
     {
       icon: IconPlayerPlay,
       title: 'Play',
-      cta: null,
+      cta:
+        adaptive && hasCampaign
+          ? {
+              kind: 'scroll' as const,
+              targetId: 'campaigns',
+              label: 'Jump to your campaigns',
+            }
+          : null,
       body: (
         <>
           Press Play on the campaign card and choose a character — one from{' '}
@@ -134,15 +150,22 @@ export default function HowToStart({ campaignCount, characterCount }: Props) {
                 <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
                   {step.body}
                 </p>
-                {showCta && step.cta && (
-                  <Link
-                    href={step.cta.href}
-                    className="mt-2 inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-accent underline-offset-4 transition-colors hover:text-accent-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    style={{ fontFamily: 'var(--font-rajdhani)' }}
-                  >
-                    {step.cta.label} →
-                  </Link>
-                )}
+                {showCta &&
+                  step.cta &&
+                  (step.cta.kind === 'scroll' ? (
+                    <ScrollToLink
+                      targetId={step.cta.targetId}
+                      label={step.cta.label}
+                    />
+                  ) : (
+                    <Link
+                      href={step.cta.href}
+                      className="mt-2 inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-accent underline-offset-4 transition-colors hover:text-accent-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      style={{ fontFamily: 'var(--font-rajdhani)' }}
+                    >
+                      {step.cta.label} →
+                    </Link>
+                  ))}
               </div>
             </li>
           )

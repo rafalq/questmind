@@ -23,15 +23,18 @@ export default function DashboardPage() {
           The fallbacks are shaped skeletons rather than a line of text: a
           one-line "Loading campaigns..." standing in for a three-column grid
           made both sections jump down the page when the queries resolved. */}
+
       <DashboardSection
         as="h1"
         title="Welcome back, Adventurer"
         description="Your campaigns await."
         action={{ href: ROUTES.newCampaign, label: '+ New Campaign' }}
       >
-        <Suspense fallback={<CampaignListSkeleton />}>
-          <CampaignListServer />
-        </Suspense>
+        <div id="campaigns" className="scroll-mt-24">
+          <Suspense fallback={<CampaignListSkeleton />}>
+            <CampaignListServer />
+          </Suspense>
+        </div>
       </DashboardSection>
 
       <DashboardSection
