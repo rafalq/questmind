@@ -172,20 +172,6 @@ const ChatPanel = forwardRef<ChatPanelHandle, Props>(function ChatPanel(
                 Boolean(npc)
               )
 
-            if (
-              process.env.NODE_ENV === 'development' &&
-              m.snapshot?.npcMet?.length
-            ) {
-              console.log(
-                'BUBBLE npcMet:',
-                m.snapshot.npcMet,
-                '| matched:',
-                npcs.map((n) => n.name),
-                '| portrait keys:',
-                Object.keys(npcPortraits ?? {}).length
-              )
-            }
-
             return (
               <MessageBubble
                 key={i}

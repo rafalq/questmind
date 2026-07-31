@@ -49,7 +49,7 @@ export default function CampaignEditableTitle({ campaignId, name }: Props) {
         type="button"
         onClick={(e) => {
           e.stopPropagation()
-          setValue(name) // resync z aktualnym propsem
+          setValue(name) // re-sync with the current prop
           setIsEditing(true)
         }}
         title="Click to rename"

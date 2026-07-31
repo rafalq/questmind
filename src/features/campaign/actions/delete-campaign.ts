@@ -38,7 +38,6 @@ export const deleteCampaign = authActionClient
     //
     // Ideally currentHp/maxHp would be recalculated from the character's
     // actual endurance attribute here. For now DEFAULT_MAX_HP is used.
-    // TODO: join characterAttributesTable to get real endurance per character
 
     await db
       .update(campaignCharactersTable)

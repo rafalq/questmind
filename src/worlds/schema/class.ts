@@ -5,7 +5,6 @@
 import z from 'zod'
 import { ModifiersSchema } from './attribute'
 import { StartingItemSchema } from './item'
-// src/worlds/schema/class.ts  — dodaj do istniejącego ClassDefinitionSchema
 import { AbilityDefinitionSchema } from './ability'
 
 const AttributeKeySchema = z.enum([

@@ -49,10 +49,8 @@ export default function HomePage() {
 }
 
 // ----- Hero -----
-// TODO(registry): these three paths duplicate the world registry the same way
-// the About teaser used to. They are left literal only because the registry
-// exposes `cardImageUrl`, which is the card crop, not this landscape plate.
-// Add a `heroImageUrl` to the registry and read them from there.
+// Kept literal rather than read from the world registry: it exposes
+// `cardImageUrl` (the card crop), not this full-width hero plate.
 const heroImages = [
   '/images/fantasy/treigthe/fantasy-hero.jpg',
   '/images/sci-fi/drift/sci-fi-hero.jpg',

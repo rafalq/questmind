@@ -27,9 +27,6 @@ export default async function OnboardingServer() {
     getCharacters(),
   ])
 
-  // ⚠️ CONFIRM the field name. `select()` returns every column on
-  // campaignsTable, so if the played timestamp is called something other than
-  // `lastPlayedAt`, change it here (and only here).
   const hasPlayed = campaigns.some((c) => c.lastPlayedAt != null)
   if (hasPlayed) return null
 

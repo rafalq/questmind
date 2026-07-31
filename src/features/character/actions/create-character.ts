@@ -50,7 +50,7 @@ export const createCharacter = authActionClient
     const { name, world, race, gender, characterClass, attributes } =
       parsedInput
 
-    // Walidacja sumy punktów
+    // Validate the point-buy total
     const totalSpent = Object.values(attributes).reduce((sum, v) => sum + v, 0)
     if (totalSpent !== POINT_BUY_TOTAL) {
       throw new Error(
@@ -89,7 +89,7 @@ export const createCharacter = authActionClient
       }
     }
 
-    // Wstaw postać
+    // Insert the character
     const [character] = await db
       .insert(charactersTable)
       .values({
@@ -108,7 +108,7 @@ export const createCharacter = authActionClient
       })
       .returning()
 
-    // Wstaw atrybuty — race, class, and gender modifiers all combined
+    // Insert attributes — race, class, and gender modifiers all combined
     const attributeRows = ATTRIBUTES.map((attr) => ({
       characterId: character.id,
       attribute: attr,
