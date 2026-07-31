@@ -3,29 +3,37 @@ import SectionEyebrow from '@/components/marketing/section-eyebrow'
 import SectionHeader from '@/components/marketing/section-header'
 import Divider from '@/components/ui/divider'
 import { ROUTES } from '@/constants/routes'
-import { Dices, HeartPulse, ScrollText, type LucideIcon } from 'lucide-react'
+import {
+  IconDice,
+  IconHeartbeat,
+  IconProps,
+  IconScript,
+  type Icon,
+} from '@tabler/icons-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+type IconType = React.ComponentType<IconProps>
+
 const features: {
-  icon: LucideIcon
+  icon: IconType
   title: string
   description: string
 }[] = [
   {
-    icon: Dices,
+    icon: IconDice,
     title: 'AI Game Master',
     description:
       'Claude narrates your adventure and tracks every decision. No human GM required — just you and the story.',
   },
   {
-    icon: HeartPulse,
+    icon: IconHeartbeat,
     title: 'Live Character Stats',
     description:
       'HP, gold, inventory and quest flags update in real time as the story unfolds. No spreadsheets.',
   },
   {
-    icon: ScrollText,
+    icon: IconScript,
     title: 'Persistent Campaigns',
     description:
       'Save your session and return where you left off. Your choices shape a world that remembers you.',
@@ -148,7 +156,7 @@ function Feature({
   title,
   description,
 }: {
-  icon: LucideIcon
+  icon: IconType
   title: string
   description: string
 }) {

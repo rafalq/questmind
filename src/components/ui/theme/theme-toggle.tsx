@@ -1,7 +1,7 @@
 'use client'
 
 import { resolveTheme, useTheme } from '@/lib/theme'
-import { Moon, Sun } from 'lucide-react'
+import { IconMoon, IconSun } from '@tabler/icons-react'
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
@@ -16,12 +16,12 @@ export default function ThemeToggle() {
       title="Toggle theme"
       className="inline-flex h-9 w-9 items-center justify-center border border-border text-text-secondary transition-colors hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
-      <Sun
+      <IconSun
         className="hidden h-4 w-4 dark:block"
         strokeWidth={1.5}
         aria-hidden="true"
       />
-      <Moon
+      <IconMoon
         className="h-4 w-4 dark:hidden"
         strokeWidth={1.5}
         aria-hidden="true"
