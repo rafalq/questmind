@@ -6,7 +6,9 @@ import {
   resolveAbilities,
 } from './progression'
 import { getWorld } from '@/worlds'
+import { ATTRIBUTE_HARD_MAX } from '@/features/character/constants'
 
+// Bleeder: keyAttribute 'mind', growth { primary: 'mind', secondary: 'perception' }.
 const bleeder = getWorld('treigthe').classes.find((c) => c.value === 'bleeder')!
 
 describe('resolveAbilities', () => {
@@ -34,19 +36,19 @@ describe('resolveAbilities', () => {
 })
 
 describe('computeTier', () => {
-  it('starts at tier 1', () => {
+  it('starts at tier 1 below the first gate', () => {
     expect(computeTier(1, 14)).toBe(1)
   })
 
-  it('requires BOTH level and key attribute', () => {
-    expect(computeTier(3, 12)).toBe(2) // both met
-    expect(computeTier(2, 20)).toBe(1) // attribute fine, level too low
-    expect(computeTier(3, 11)).toBe(1) // level fine, attribute too low
+  it('gates on the key attribute alone — level is not a second condition', () => {
+    // TIER_GATES keep minLevel at 1, so the key attribute is the only real gate.
+    expect(computeTier(1, 16)).toBe(2) // key 16 is enough on its own, even at level 1
+    expect(computeTier(13, 15)).toBe(1) // key below 16 stays T1, even at max level
   })
 
-  it('gates tier 3 behind level 6', () => {
-    expect(computeTier(5, 20)).toBe(2)
-    expect(computeTier(6, 16)).toBe(3)
+  it('reaches tier 3 only at key attribute 22', () => {
+    expect(computeTier(1, 22)).toBe(3) // key 22 → T3 regardless of level
+    expect(computeTier(13, 21)).toBe(2) // one short of the T3 gate
   })
 })
 
@@ -60,15 +62,18 @@ describe('effectiveAttributes', () => {
     perception: 10,
   }
 
-  it('grows primary and secondary, leaves the rest alone', () => {
+  it('grows primary and secondary by +1/level, leaves the rest alone', () => {
     const at3 = effectiveAttributes(base, bleeder, 3)
-    expect(at3.mind).toBe(18) // 14 + 2 levels * 2
-    expect(at3.endurance).toBe(12) // 10 + 2 levels * 1
+    expect(at3.mind).toBe(16) // primary (mind): 14 + 2 level-ups * 1
+    expect(at3.perception).toBe(12) // secondary (perception): 10 + 2 level-ups * 1
+    expect(at3.endurance).toBe(10) // untouched — endurance is nobody's growth attribute
     expect(at3.strength).toBe(8) // untouched — growth never subtracts
   })
 
   it('caps at ATTRIBUTE_HARD_MAX', () => {
-    const at6 = effectiveAttributes(base, bleeder, 6)
-    expect(at6.mind).toBe(20) // 14 + 10 = 24, capped
+    // primary mind at max level: 14 + 12 level-ups * 1 = 26, clamped to 24.
+    const at13 = effectiveAttributes(base, bleeder, 13)
+    expect(at13.mind).toBe(ATTRIBUTE_HARD_MAX) // 24
+    expect(at13.perception).toBe(22) // secondary still below the cap
   })
 })
