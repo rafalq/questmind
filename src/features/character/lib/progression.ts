@@ -28,7 +28,13 @@ export function effectiveAttributes(
   const levelsGained = Math.max(0, level - 1)
   const result = { ...base }
 
-  const { primary, secondary } = classDef.growth
+  // growth.primary / growth.secondary are always attribute keys by construction
+  // (see each class's `growth` block in the world definitions). The schema types
+  // them loosely, so narrow to Attribute here to index the map without ts(7053).
+  const { primary, secondary } = classDef.growth as {
+    primary: Attribute
+    secondary: Attribute
+  }
   result[primary] += levelsGained * GROWTH_PRIMARY_PER_LEVEL
   result[secondary] += levelsGained * GROWTH_SECONDARY_PER_LEVEL
 
@@ -40,9 +46,12 @@ export function effectiveAttributes(
 }
 
 /**
- * Tier is derived, never stored: a conjunction of level AND the class's key
- * attribute. Level sets the pace; the attribute gate only catches a character
- * built without regard for its own class.
+ * Tier is derived, never stored. Under the current balance the gate is keyed on
+ * the class's key attribute alone: TIER_GATES keeps minLevel at 1, so level is
+ * not a second condition (see constants/progression.ts — at +1/level from a
+ * creation cap of 12, the key thresholds 16 and 22 cannot be reached early
+ * enough for a level gate to ever bind). A specialist who raises their key
+ * reaches T2/T3; a generalist who neglects it stays lower.
  */
 export function computeTier(level: number, keyAttributeValue: number): Tier {
   let tier: Tier = 1
