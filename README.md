@@ -4,6 +4,9 @@ An AI Game Master for solo tabletop role-playing. Create a character, pick a wor
 
 ![QuestMind live session](public/images/home-page/demo-v2.png)
 
+**Live application:** https://questmind-beta.vercel.app/  
+**Source repository:** https://github.com/rafalq/questmind
+
 ---
 
 ## The problem
